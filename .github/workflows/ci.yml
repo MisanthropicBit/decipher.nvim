@@ -1,0 +1,70 @@
+name: Run tests
+
+on:
+  pull_request: ~
+  push:
+    branches:
+      - master
+
+jobs:
+  style:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: JohnnyMorganz/stylua-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          version: latest
+          args: --check lua/ tests/
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        neovim_version: ['nightly', 'v0.7.2', 'v0.8.0']
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: date +%F > todays-date
+      - name: Restore cache for today's nightly.
+        uses: actions/cache@v2
+        with:
+          path: _neovim
+          key: ${{ runner.os }}-x64-${{ hashFiles('todays-date') }}
+      - name: Prepare plenary
+        run: |
+          git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
+          ln -s "$(pwd)" ~/.local/share/nvim/site/pack/vendor/start
+      - name: Setup neovim
+        uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: ${{ matrix.neovim_version }}
+
+      - name: Run tests
+        run: ./tests/run_tests.sh
+
+  # docs:
+  #   name: generate vimdoc
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: generate help
+  #       run: |
+  #         curl -Lq https://github.com/numToStr/lemmy-help/releases/latest/download/lemmy-help-x86_64-unknown-linux-gnu.tar.gz | tar xz
+  #         ./lemmy-help lua > doc/decipher.txt
+  #     - name: embed codeblocks
+  #       uses: dineshsonachalam/markdown-autodocs@v1.0.7
+  #       with:
+  #         commit_message: "doc: auto-generate markdown codeblock"
+  #         output_file_paths: '[./README.md]'
+  #         categories: '[code-block]'
+
+  #     - name: commit help
+  #       uses: stefanzweifel/git-auto-commit-action@v4
+  #       with:
+  #         branch: ${{ github.head_ref }}
+  #         commit_message: "doc: auto-generate vimdoc"
+  #         file_pattern: doc/*.txt

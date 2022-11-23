@@ -1,0 +1,67 @@
+*decipher.nvim*                                         {Encode and decode text}
+
+==============================================================================
+
+█▀▀▄ █▀▀▀ █▀▀▀
+█  █ ██   █
+█▄▄▀ █▄▄▄ █▄▄▄
+
+                               Version 1.0.0
+
+A small plugin that provides ways to encode and decode text using various
+codecs like base64.
+
+==============================================================================
+decipher                                                              *decipher*
+
+                                   `decipher`
+
+  Setup ....................................................... |decipher.setup|
+  Commands ................................................. |decipher.commands|
+  Mappings ................................................. |decipher.mappings|
+  Motions ................................................... |decipher.motions|
+  Codecs ..................................................... |decipher.codecs|
+  FAQ ........................................................... |decipher.faq|
+
+==============================================================================
+Setup                                                           *decipher.setup*
+
+There are currently no configuration options.
+
+==============================================================================
+Commands                                                     *decipher.commands*
+
+
+==============================================================================
+Mappings                                                     *decipher.mappings*
+
+
+==============================================================================
+Motions                                                       *decipher.motions*
+
+The following <Plug> mappings are provided.
+
+* <Plug>(DecipherEncodeCodecMotion)
+* <Plug>(DecipherDecodeCodecMotion)
+
+Where 'Codec' should be replaced with a titlecase codec name e.g.
+<Plug>(DecipherEncodeBase64Motion).
+
+==============================================================================
+Codecs                                                         *decipher.codecs*
+
+Currently supported codecs:
+
+* base64
+* url
+* base64-url
+
+==============================================================================
+FAQ                                                               *decipher.faq*
+
+==============================================================================
+License                                                       *decipher.license*
+
+BSD 3-Clause License. Copyright © 2020 Alexander Asp Bock
+
+ vim:tw=78:ts=8:ft=help:norl:

@@ -3,12 +3,12 @@
   <h2>decipher.nvim</h2>
   <p><i>Encode and decode text</i></p>
   <p>
-    <img src="https://img.shields.io/badge/version-1.0.0-blue" />
-    <a href="https://github.com/MisanthropicBit/decipher.nvim/actions?query=workflow%3A%22Run+vader+tests%22">
-        <img src="https://img.shields.io/github/workflow/status/MisanthropicBit/decipher.nvim/Run%20vader%20tests/master" />
+    <img src="https://img.shields.io/badge/version-1.0.0-blue?style=flat-square" />
+    <a href="https://img.shields.io/github/actions/workflow/status/MisanthropicBit/decipher.nvim/ci.yml?branch=master&style=flat-square">
+        <img src="https://img.shields.io/github/actions/workflow/status/MisanthropicBit/decipher.nvim/ci.yml?branch=master&style=flat-square" />
     </a>
     <a href="/LICENSE">
-        <img src="https://img.shields.io/github/license/MisanthropicBit/decipher.nvim" />
+        <img src="https://img.shields.io/github/license/MisanthropicBit/decipher.nvim?style=flat-square" />
     </a>
   </p>
   <br />

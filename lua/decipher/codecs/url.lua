@@ -2,6 +2,7 @@ local M = {}
 
 local bit = require("bit")
 
+-- stylua: ignore
 local reserved = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,

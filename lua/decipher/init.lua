@@ -4,8 +4,10 @@ local decipher_version = "1.0.0"
 
 local config = require("decipher.config")
 local codecs = require("decipher.codecs")
+local commands = require("decipher.commands")
 local error = require('decipher.error')
 local float = require("decipher.float")
+local mappings = require("decipher.mappings")
 local text = require("decipher.text")
 local util = require("decipher.util")
 local visual = require("decipher.visual")
@@ -130,6 +132,9 @@ function decipher.setup(user_config)
         error.error_message("This plugin only works with Neovim >= v0.5.0", false)
         return
     end
+
+    commands.setup(decipher)
+    mappings.setup(decipher)
 end
 
 return decipher

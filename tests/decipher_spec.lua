@@ -1,5 +1,5 @@
 local decipher = require("decipher")
--- local spy = require('luassert.spy')
+local stub = require("luassert.stub")
 
 describe("decipher", function()
     it("gets the current version", function()
@@ -11,6 +11,23 @@ describe("decipher", function()
         table.sort(codecs)
 
         assert.are.same(codecs, { "base64", "base64-url", "url" })
+    end)
+
+    it("prints an error if the neovim version is not supported", function()
+        stub(vim.fn, "has", false)
+        stub(vim.api, "nvim_echo")
+
+        decipher.setup({})
+
+        assert.stub(vim.fn.has).was_called_with("nvim-0.5.0")
+        assert.stub(vim.api.nvim_echo).was_called_with(
+            {
+                { "[decipher]:", "WarningMsg" },
+                { " This plugin only works with Neovim >= v0.5.0" }
+            },
+            false,
+            {}
+        )
     end)
 
     it("encodes a string using a codec", function()

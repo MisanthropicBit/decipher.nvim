@@ -4,6 +4,7 @@ local decipher_version = "1.0.0"
 
 local config = require("decipher.config")
 local codecs = require("decipher.codecs")
+local error = require('decipher.error')
 local float = require("decipher.float")
 local text = require("decipher.text")
 local util = require("decipher.util")
@@ -28,22 +29,6 @@ function decipher.codecs()
     return codecs.supported()
 end
 
----@param chunks string[][]
----@param history boolean
-local function error_message(chunks, history)
-    vim.api.nvim_echo(chunks, history, {})
-end
-
----@param codec_name string
-local function error_message_codec(codec_name)
-    error_message({
-        -- TODO: Move header into local function
-        { "[decipher]:", "WarningMsg" },
-        { " " .. "Codec not found:" },
-        { " " .. string.format("%s", codec_name), "WarningMsg" },
-    }, true)
-end
-
 ---@param codec_name string
 ---@param value string
 ---@param func_key string
@@ -52,7 +37,7 @@ local function handle_codec(codec_name, value, func_key)
     local codec = codecs.get(codec_name)
 
     if codec == nil then
-        error_message_codec(codec_name)
+        error.error_message_codec(codec_name)
         return nil
     end
 
@@ -130,7 +115,7 @@ function decipher.decode_preview_selection(codec_name)
     local value = decipher.decode(codec_name, text_value)
 
     if value == nil then
-        error_message(string.format("Failed to decode selection as '%s'", codec_name))
+        error.error_message(string.format("Failed to decode selection as '%s'", codec_name))
         return
     end
 
@@ -140,6 +125,11 @@ end
 ---@param user_config decipher.Config
 function decipher.setup(user_config)
     config.setup(user_config)
+
+    if not vim.fn.has("nvim-0.5.0") then
+        error.error_message("This plugin only works with Neovim >= v0.5.0", false)
+        return
+    end
 end
 
 return decipher

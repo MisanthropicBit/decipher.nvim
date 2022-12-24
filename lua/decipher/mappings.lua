@@ -41,40 +41,25 @@ function M.setup(decipher)
         local codec_name = util.title_case(codec)
 
         -- Visual selections
-        keymap.set(
-            "v",
-            string.format("<Plug>(DecipherEncode%s)", codec_name),
-            function() decipher.encode_selection(codec) end,
-            map_options
-        )
-        keymap.set(
-            "v",
-            string.format("<Plug>(DecipherDecode%s)", codec_name),
-            function() decipher.decode_selection(codec) end,
-            map_options
-        )
+        keymap.set("v", string.format("<Plug>(DecipherEncode%s)", codec_name), function()
+            decipher.encode_selection(codec)
+        end, map_options)
+        keymap.set("v", string.format("<Plug>(DecipherDecode%s)", codec_name), function()
+            decipher.decode_selection(codec)
+        end, map_options)
 
         -- Motions
-        keymap.set(
-            "n",
-            string.format("<Plug>(DecipherEncode%sMotion)", codec_name),
-            function() _decipher_encode_motion(codec, decipher) end,
-            motion_map_options
-        )
-        keymap.set(
-            "n",
-            string.format("<Plug>(DecipherDecode%sMotion)", codec_name),
-            function() _decipher_decode_motion(codec) end,
-            motion_map_options
-        )
+        keymap.set("n", string.format("<Plug>(DecipherEncode%sMotion)", codec_name), function()
+            _decipher_encode_motion(codec, decipher)
+        end, motion_map_options)
+        keymap.set("n", string.format("<Plug>(DecipherDecode%sMotion)", codec_name), function()
+            _decipher_decode_motion(codec)
+        end, motion_map_options)
 
         -- Previews
-        keymap.set(
-            "v",
-            string.format("<Plug>(DecipherPreview%s)", codec_name),
-            function() decipher.decode_preview_selection(codec) end,
-            map_options
-        )
+        keymap.set("v", string.format("<Plug>(DecipherPreview%s)", codec_name), function()
+            decipher.decode_preview_selection(codec)
+        end, map_options)
     end
 end
 

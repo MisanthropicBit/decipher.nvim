@@ -20,14 +20,10 @@ describe("decipher", function()
         decipher.setup({})
 
         assert.stub(vim.fn.has).was_called_with("nvim-0.5.0")
-        assert.stub(vim.api.nvim_echo).was_called_with(
-            {
-                { "[decipher]:", "WarningMsg" },
-                { " This plugin only works with Neovim >= v0.5.0" }
-            },
-            false,
-            {}
-        )
+        assert.stub(vim.api.nvim_echo).was_called_with({
+            { "[decipher]:", "WarningMsg" },
+            { " This plugin only works with Neovim >= v0.5.0" },
+        }, false, {})
     end)
 
     it("encodes a string using a codec", function()
@@ -42,14 +38,10 @@ describe("decipher", function()
         local encoded = decipher.encode("nope", "test")
         assert.is._nil(encoded)
 
-        assert.stub(vim.api.nvim_echo).was_called_with(
-            {
-                { "[decipher]:", "WarningMsg" },
-                { " Codec not found:" },
-                { " nope", "WarningMsg" }
-            },
-            true,
-            {}
-        )
+        assert.stub(vim.api.nvim_echo).was_called_with({
+            { "[decipher]:", "WarningMsg" },
+            { " Codec not found:" },
+            { " nope", "WarningMsg" },
+        }, true, {})
     end)
 end)

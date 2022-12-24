@@ -37,12 +37,19 @@ describe("decipher", function()
     end)
 
     it("issues an error and returns nil for an unknown/unsupported codec", function()
-        -- local notifier = spy.new(vim.notify)
-        local encoded = decipher.encode("nope", "light work")
+        stub(vim.api, "nvim_echo")
 
+        local encoded = decipher.encode("nope", "test")
         assert.is._nil(encoded)
-        -- assert.spy(notifier).was.called_with("Codec not found 'nope'", vim.log.levels.INFO)
 
-        -- notifier.revert()
+        assert.stub(vim.api.nvim_echo).was_called_with(
+            {
+                { "[decipher]:", "WarningMsg" },
+                { " Codec not found:" },
+                { " nope", "WarningMsg" }
+            },
+            true,
+            {}
+        )
     end)
 end)

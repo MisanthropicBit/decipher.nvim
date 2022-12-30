@@ -13,53 +13,68 @@ end
 ---@param codec_name either the name of the codec to use or the type of motion
 ---                  performed by the user
 ---@param decipher A reference to the decipher main module
-function _decipher_encode_motion(codec_name, decipher)
+function _decipher_motion(motion, codec_name, motion_func)
     -- If we did not receive a motion type, it is a codec name and we set up
     -- the operatorfunc for the g@ motion operator. Otherwise, the user
     -- completed the motion operator and we call decipher.encode_motion
-    if not is_motion_type(codec_name) then
-        vim.b._decipher_motion_codec_name = codec_name
+    if not is_motion_type(motion) then
+        local old_operatorfunc = vim.go.operatorfunc
 
-        -- vim.go.operatorfunc = v:lua.require("decipher.mappings")._decipher_encode_motion
+        -- Use a global function for the operatorfunc until the global option
+        -- supports accepting a lua function: https://github.com/neovim/neovim/issues/14157
+        _G._decipher_operatorfunc = function(motion)
+            -- Restore the old operatorfunc and remove the global function
+            vim.go.operatorfunc = old_operatorfunc
+            _G._decipher_operatorfunc = nil
+
+            _decipher_motion(motion, codec_name, motion_func)
+        end
+
+        vim.go.operatorfunc = "v:lua._decipher_operatorfunc"
         vim.api.nvim_feedkeys("g@", "n", false)
     else
-        decipher.encode_motion(vim.b._decipher_motion_codec_name, decipher)
-        vim.b._decipher_motion_codec_name = nil
+        motion_func(codec_name)
     end
 end
 
-function M.setup(decipher)
-    local keymap = vim.keymap
-    local map_options = { silent = true, noremap = true }
-    local motion_map_options = { silent = true, expr = true, noremap = true }
+local function make_plug_mapping(mode, name, func, options)
+    local options = vim.tbl_extend("force", { silent = true, noremap = true }, options or {})
 
-    -- Prompt mappings
-    keymap.set("v", "<Plug>(DecipherEncodePrompt)", decipher.encode_selection_prompt, map_options)
-    keymap.set("v", "<Plug>(DecipherDecodePrompt)", decipher.decode_selection_prompt, map_options)
+    vim.keymap.set(mode, "<Plug>(" .. name .. ")", func, options)
+end
+
+function M.setup(decipher)
+    -- Visual selection prompt mappings
+    make_plug_mapping("v", "DecipherEncodePrompt", decipher.encode_selection_prompt)
+    make_plug_mapping("v", "DecipherDecodePrompt", decipher.decode_selection_prompt)
 
     for _, codec in ipairs(decipher.codecs()) do
+        local plug_encode_name = "DecipherEncode" .. codec_name
+        local plug_decode_name = "DecipherDecode" .. codec_name
         local codec_name = util.title_case(codec)
 
         -- Visual selections
-        keymap.set("v", string.format("<Plug>(DecipherEncode%s)", codec_name), function()
+        make_plug_mapping("v", plug_encode_name, function()
             decipher.encode_selection(codec)
-        end, map_options)
-        keymap.set("v", string.format("<Plug>(DecipherDecode%s)", codec_name), function()
+        end)
+
+        make_plug_mapping("v", plug_decode_name, function()
             decipher.decode_selection(codec)
-        end, map_options)
+        end)
 
         -- Motions
-        keymap.set("n", string.format("<Plug>(DecipherEncode%sMotion)", codec_name), function()
-            _decipher_encode_motion(codec, decipher)
-        end, motion_map_options)
-        keymap.set("n", string.format("<Plug>(DecipherDecode%sMotion)", codec_name), function()
-            _decipher_decode_motion(codec)
-        end, motion_map_options)
+        make_plug_mapping("n", plug_encode_name .. "Motion", function()
+            _decipher_motion(nil, codec, decipher.encode_motion)
+        end, { expr = true })
+
+        make_plug_mapping("n", plug_decode_name .. "Motion", function()
+            _decipher_motion(nil, codec, decipher.decode_motion)
+        end, { expr = true })
 
         -- Previews
-        keymap.set("v", string.format("<Plug>(DecipherPreview%s)", codec_name), function()
+        make_plug_mapping("v", plug_decode_name .. "Preview", function()
             decipher.decode_preview_selection(codec)
-        end, map_options)
+        end)
     end
 end
 

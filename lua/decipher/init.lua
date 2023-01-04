@@ -60,68 +60,110 @@ function decipher.decode(codec_name, value)
     return handle_codec(codec_name, value, "decode")
 end
 
-local function handle_selection(codec_name, codec_func, selection_func)
-    local selection = selection_func()
-    local text_value = text.get_region(selection)
-    local value = codec_func(codec_name, text_value)
+---@param codec_name string
+---@param value string
+---@param selection function
+local function open_float_handler(codec_name, value, selection)
+    float.open(codec_name, { value }, config.float)
+end
 
-    if value == nil then
-        return
-    end
-
+---@param codec_name string
+---@param value string
+---@param selection function
+local function set_text_region_handler(codec_name, value, selection)
     -- Escape the string since you cannot set lines in a buffer if it contains newlines
     text.set_region(selection, util.escape_newlines(value))
 end
 
-function decipher.encode_selection(codec_name)
-    handle_selection(codec_name, decipher.encode, visual.get_selection)
-end
-
-function decipher.decode_selection(codec_name)
-    handle_selection(codec_name, decipher.decode, visual.get_selection)
-end
-
-function decipher.encode_motion(codec_name)
-    handle_selection(codec_name, decipher.encode, visual.get_motion)
-end
-
-function decipher.decode_motion(codec_name)
-    handle_selection(codec_name, decipher.decode, visual.get_motion)
-end
-
-local function codec_prompt(codec_func)
-    local codec_name
-
-    vim.ui.select(decipher.codecs(), { prompt = "Codec?: " }, function(item)
-        codec_name = item
-    end)
-
-    if codec_name == nil then
-        return
-    end
-
-    handle_selection(codec_name, codec_func, visual.get_selection)
-end
-
-function decipher.encode_selection_prompt()
-    codec_prompt(decipher.encode)
-end
-
-function decipher.decode_selection_prompt()
-    codec_prompt(decipher.decode)
-end
-
-function decipher.decode_preview_selection(codec_name)
-    local selection = visual.get_selection()
+local function process_codec(codec_name, codec_func, selection_func, options)
+    local selection = selection_func()
     local text_value = text.get_region(selection)
-    local value = decipher.decode(codec_name, text_value)
+    local value = codec_func(codec_name, text_value)
 
     if value == nil then
         error.error_message(string.format("Failed to decode selection as '%s'", codec_name))
         return
     end
 
-    float.open("base64", { value }, config.float)
+    local handler_func = options.preview == true and open_float_handler or set_text_region_handler
+
+    handler_func(codec_name, value, selection)
+end
+
+local function process_codec_prompt(codec_func, selection_func, handler_func)
+    local codec_name = prompt_codec_name()
+
+    if codec_name == nil then
+        return
+    end
+
+    process_codec(codec_name, codec_func, selection_func, handler_func)
+end
+
+---@param codec_name string
+function decipher.encode_selection(codec_name, options)
+    process_codec(
+        codec_name,
+        decipher.encode,
+        visual.get_selection,
+        options
+    )
+end
+
+---@param codec_name string
+function decipher.decode_selection(codec_name, options)
+    process_codec(
+        codec_name,
+        decipher.decode,
+        visual.get_selection,
+        options
+    )
+end
+
+---@param codec_name string
+function decipher.encode_motion(codec_name, options)
+    process_codec(
+        codec_name,
+        decipher.encode,
+        visual.get_motion,
+        options
+    )
+end
+
+---@param codec_name string
+function decipher.decode_motion(codec_name, options)
+    process_codec(
+        codec_name,
+        decipher.decode,
+        visual.get_motion,
+        options
+    )
+end
+
+local function prompt_codec_name()
+    local codec_name
+
+    vim.ui.select(decipher.codecs(), { prompt = "Codec?: " }, function(item)
+        codec_name = item
+    end)
+
+    return codec_name
+end
+
+function decipher.encode_selection_prompt(options)
+    process_codec_prompt(decipher.encode, visual.get_selection, options)
+end
+
+function decipher.decode_selection_prompt(options)
+    process_codec_prompt(decipher.decode, visual.get_selection, options)
+end
+
+function decipher.encode_motion_prompt(options)
+    process_codec_prompt(decipher.encode, visual.get_motion, options)
+end
+
+function decipher.decode_motion_prompt(options)
+    process_codec_prompt(decipher.decode, visual.get_motion, options)
 end
 
 ---@param user_config decipher.Config

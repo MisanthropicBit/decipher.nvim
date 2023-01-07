@@ -3,17 +3,18 @@ local util = require("decipher.util")
 local M = {}
 
 --- If the type describes a motion or not
----@param type string
+---@param type string | nil
 ---@return boolean
 local function is_motion_type(type)
     return type == "block" or type == "char" or type == "line"
 end
 
 --- Operator function for encode/decoding motions
----@param codec_name either the name of the codec to use or the type of motion
----                  performed by the user
----@param decipher A reference to the decipher main module
-function _decipher_motion(motion, codec_name, motion_func)
+---@param motion string | nil either the type of motion or nil for the initial call
+---@param codec_name string either the name of the codec to use or the type of motion
+---                         performed by the user
+---@param motion_func function the motion function to call when the motion is completed
+local function _decipher_motion(motion, codec_name, motion_func)
     -- If we did not receive a motion type, it is a codec name and we set up
     -- the operatorfunc for the g@ motion operator. Otherwise, the user
     -- completed the motion operator and we call decipher.encode_motion
@@ -22,12 +23,12 @@ function _decipher_motion(motion, codec_name, motion_func)
 
         -- Use a global function for the operatorfunc until the global option
         -- supports accepting a lua function: https://github.com/neovim/neovim/issues/14157
-        _G._decipher_operatorfunc = function(motion)
+        _G._decipher_operatorfunc = function(_motion)
             -- Restore the old operatorfunc and remove the global function
             vim.go.operatorfunc = old_operatorfunc
             _G._decipher_operatorfunc = nil
 
-            _decipher_motion(motion, codec_name, motion_func)
+            _decipher_motion(_motion, codec_name, motion_func)
         end
 
         vim.go.operatorfunc = "v:lua._decipher_operatorfunc"
@@ -38,9 +39,9 @@ function _decipher_motion(motion, codec_name, motion_func)
 end
 
 local function make_plug_mapping(mode, name, func, options)
-    local options = vim.tbl_extend("force", { silent = true, noremap = true }, options or {})
+    local merged_options = vim.tbl_extend("force", { silent = true, noremap = true }, options or {})
 
-    vim.keymap.set(mode, "<Plug>(" .. name .. ")", func, options)
+    vim.keymap.set(mode, "<Plug>(" .. name .. ")", func, merged_options)
 end
 
 function M.setup(decipher)
@@ -48,10 +49,16 @@ function M.setup(decipher)
     make_plug_mapping("v", "DecipherEncodePrompt", decipher.encode_selection_prompt)
     make_plug_mapping("v", "DecipherDecodePrompt", decipher.decode_selection_prompt)
 
+    local function motion_func_with_preview(motion_func)
+        return function(codec_name)
+            motion_func(codec_name, { preview = true })
+        end
+    end
+
     for _, codec in ipairs(decipher.codecs()) do
+        local codec_name = util.title_case(codec)
         local plug_encode_name = "DecipherEncode" .. codec_name
         local plug_decode_name = "DecipherDecode" .. codec_name
-        local codec_name = util.title_case(codec)
 
         -- Visual selections
         make_plug_mapping("v", plug_encode_name, function()

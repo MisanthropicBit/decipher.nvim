@@ -12,14 +12,7 @@ local text = require("decipher.text")
 local util = require("decipher.util")
 local visual = require("decipher.visual")
 
----@enum decipher.Codec
-decipher.Codec = {}
-decipher.Codec.BASE64 = 1
-decipher.Codec.BASE85 = 2
-decipher.Codec.URL_BASE64 = 3
-decipher.Codec.URL_BASE85 = 3
-decipher.Codec.ROT13 = 4
-decipher.Codec.ALL = 5
+decipher.codec = codecs.codec
 
 ---@class Options
 ---@field public preview boolean if a preview should be shown or not
@@ -49,7 +42,7 @@ local function handle_codec(codec_name, value, func_key)
     return codec[func_key](value)
 end
 
----@param codec_name string
+---@param codec_name string | codec
 ---@param value string value to encode
 ---@return string | nil the encoded value or nil if encoding failed
 function decipher.encode(codec_name, value)
@@ -96,7 +89,8 @@ local function process_codec(codec_name, codec_func, selection_func, options)
         return
     end
 
-    local handler_func = options.preview == true and open_float_handler or set_text_region_handler
+    local do_preview = (options and options.preview == true) or false
+    local handler_func = do_preview and open_float_handler or set_text_region_handler
 
     handler_func(codec_name, value, selection)
 end
@@ -166,9 +160,11 @@ function decipher.decode_motion_prompt(options)
     process_codec_prompt(decipher.decode, visual.get_motion, options)
 end
 
----@param user_config decipher.Config
+---@param user_config decipher.Config | nil
 function decipher.setup(user_config)
-    config.setup(user_config)
+    if user_config ~= nil then
+        config.setup(user_config)
+    end
 
     if not vim.fn.has("nvim-0.5.0") then
         error.error_message("This plugin only works with Neovim >= v0.5.0", false)

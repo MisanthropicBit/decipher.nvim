@@ -44,7 +44,6 @@ local default_config = {
 local _user_config = default_config
 
 ---@param user_config decipher.Config
----@return decipher.Config
 function config.setup(user_config)
     _user_config = vim.tbl_deep_extend("keep", user_config, default_config)
 end

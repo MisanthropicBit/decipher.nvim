@@ -5,9 +5,9 @@ local visual = {}
 local function get_mark_positions(mark_type)
     local marks = nil
 
-    if mark_type == 'visual' then
+    if mark_type == "visual" then
         marks = vim.fn.mode() == "v" and { "v", "." } or { "'<", "'>" }
-    elseif mark_type == 'motion' then
+    elseif mark_type == "motion" then
         marks = { "'[", "']" }
     else
         error(string.format("Unknown mark type: '%s'", mark_type))
@@ -24,12 +24,12 @@ end
 
 ---@return table
 function visual.get_selection()
-    return get_mark_positions('visual')
+    return get_mark_positions("visual")
 end
 
 ---@return table
 function visual.get_motion()
-    return get_mark_positions('motion')
+    return get_mark_positions("motion")
 end
 
 return visual

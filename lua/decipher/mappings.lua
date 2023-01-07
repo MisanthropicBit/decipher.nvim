@@ -50,42 +50,26 @@ function M.setup(decipher)
     make_plug_mapping("v", "DecipherDecodePrompt", decipher.decode_selection_prompt)
 
     -- Visual selection prompt with preview
-    make_plug_mapping(
-        "v",
-        "DecipherEncodePrompt",
-        function()
-            decipher.encode_selection_prompt({ preview = true })
-        end
-    )
+    make_plug_mapping("v", "DecipherEncodePrompt", function()
+        decipher.encode_selection_prompt({ preview = true })
+    end)
 
-    make_plug_mapping(
-        "v",
-        "DecipherDecodePrompt",
-        function()
-            decipher.decode_selection_prompt({ preview = true })
-        end
-    )
+    make_plug_mapping("v", "DecipherDecodePrompt", function()
+        decipher.decode_selection_prompt({ preview = true })
+    end)
 
     -- Motions with prompt
     make_plug_mapping("n", "DecipherEncodeMotionPrompt", decipher.encode_motion_prompt)
     make_plug_mapping("n", "DecipherDecodeMotionPrompt", decipher.decode_motion_prompt)
 
     -- Motions with prompt and preview
-    make_plug_mapping(
-        "n",
-        "DecipherEncodeMotionPromptPreview",
-        function()
-            decipher.encode_motion_prompt({ preview = true })
-        end
-    )
+    make_plug_mapping("n", "DecipherEncodeMotionPromptPreview", function()
+        decipher.encode_motion_prompt({ preview = true })
+    end)
 
-    make_plug_mapping(
-        "n",
-        "DecipherDecodeMotionPromptPreview",
-        function()
-            decipher.decode_motion_prompt({ preview = true })
-        end
-    )
+    make_plug_mapping("n", "DecipherDecodeMotionPromptPreview", function()
+        decipher.decode_motion_prompt({ preview = true })
+    end)
 
     local function with_preview(func)
         return function(codec_name)
@@ -109,17 +93,9 @@ function M.setup(decipher)
         end)
 
         -- Visual selections with preview
-        make_plug_mapping(
-            "v",
-            plug_encode_name .. "Preview",
-            with_preview(decipher.encode_selection)
-        )
+        make_plug_mapping("v", plug_encode_name .. "Preview", with_preview(decipher.encode_selection))
 
-        make_plug_mapping(
-            "v",
-            plug_decode_name .. "Preview",
-            with_preview(decipher.decode_selection)
-        )
+        make_plug_mapping("v", plug_decode_name .. "Preview", with_preview(decipher.decode_selection))
 
         -- Motions
         make_plug_mapping("n", plug_encode_name .. "Motion", function()

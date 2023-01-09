@@ -181,6 +181,7 @@ function decipher.setup(user_config)
     end
 
     commands.setup(decipher)
+    float.setup_autocommands()
 end
 
 return decipher

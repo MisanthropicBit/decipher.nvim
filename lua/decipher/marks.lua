@@ -1,7 +1,7 @@
 local marks = {}
 
 ---@class Position
----@field lnum number
+---@field row number
 ---@field col number
 
 ---@class Region
@@ -21,12 +21,12 @@ function marks.get_mark_positions(mark_type)
         error(string.format("Unknown mark type: '%s'", mark_type))
     end
 
-    local start_lnum, start_col = unpack(vim.fn.getpos(_marks[1]), 2, 3)
-    local end_lnum, end_col = unpack(vim.fn.getpos(_marks[2]), 2, 3)
+    local start_row, start_col = unpack(vim.fn.getpos(_marks[1]), 2, 3)
+    local end_row, end_col = unpack(vim.fn.getpos(_marks[2]), 2, 3)
 
     return {
-        start = { lnum = start_lnum, col = start_col },
-        ["end"] = { lnum = end_lnum, col = end_col },
+        start = { row = start_row, col = start_col },
+        ["end"] = { row = end_row, col = end_col },
     }
 end
 

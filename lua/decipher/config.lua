@@ -1,9 +1,9 @@
----@class decipher.WindowConfig
+---@class WindowConfig
 ---@field max_width number
 ---@field max_height number
 ---@field padding number
 ---@field border (string | string[])[]
----@field dismiss nil|string
+---@field dismiss? string
 ---@field title boolean
 ---@field title_separator string
 ---@field autoclose boolean
@@ -12,7 +12,7 @@
 
 local config = {}
 
----@class decipher.Config
+---@class Config
 ---@field float decipher.WindowConfig
 local default_config = {
     float = {
@@ -33,17 +33,17 @@ local default_config = {
         title = true,
         title_separator = "─",
         autoclose = true,
-        enter = true,
+        enter = false,
         options = {
             wrap = false,
         },
     },
 }
 
----@type decipher.Config
+---@type Config
 local _user_config = default_config
 
----@param user_config decipher.Config
+---@param user_config Config
 function config.setup(user_config)
     _user_config = vim.tbl_deep_extend("keep", user_config, default_config)
 end

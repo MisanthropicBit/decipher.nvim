@@ -4,12 +4,29 @@
 --   string.format("autocmd CursorMoved <buffer> ++once lua require('goto-preview').dismiss_preview(%d)", preview_window)
 -- )
 
-local M = {}
+local float = {}
 
 local config = require("decipher.config")
 local util = require("decipher.util")
 
 local has_floating_window = vim.fn.has("nvim") and vim.fn.exists("*nvim_win_set_config")
+
+local window_options = {
+    wrap = false,
+    number = false,
+    relativenumber = false,
+    cursorline = false,
+    signcolumn = "no",
+    foldenable = false,
+    spell = false,
+    list = false,
+}
+
+local buffer_options = {
+    buftype = "nofile",
+    bufhidden = "wipe",
+    buflisted = false,
+}
 
 ---@param percentage number
 ---@param value number
@@ -18,9 +35,9 @@ local function from_percentage(percentage, value)
     return math.floor(value * percentage)
 end
 
----@return decipher.Position
+---@return Position
 local function get_global_coordinates()
-    local win_row, win_col = unpack(vim.fn.win_screenpos("."))
+    local win_row, win_col = unpack(vim.fn.win_screenpos(0))
 
     return {
         row = vim.fn.winline() + win_row - 1,
@@ -28,19 +45,15 @@ local function get_global_coordinates()
     }
 end
 
----@class decipher.Position
----@field row number
----@field col number
-
----@class decipher.Float
+---@class Float
 ---@field width number
 ---@field height number
 ---@field title string
 ---@field contents string[]
----@field win_id nil|number Window id
----@field buffer nil|number Buffer id
----@field position decipher.Position Position of the float
----@field window_config nil|decipher.WindowConfig
+---@field win_id? number Window id
+---@field buffer? number Buffer id
+---@field position Position Position of the float
+---@field window_config? WindowConfig
 local Float = {
     width = 0,
     height = 0,
@@ -55,8 +68,8 @@ local Float = {
     window_config = nil,
 }
 
----@param window_config decipher.WindowConfig
----@return decipher.Float
+---@param window_config WindowConfig
+---@return Float
 function Float:new(window_config)
     local win = {}
 
@@ -67,6 +80,9 @@ function Float:new(window_config)
     return win
 end
 
+---@param content_width number
+---@param content_height number
+---@return table
 function Float:create_window_options(content_width, content_height)
     -- TODO: Merge user config with default config on setup so we don't
     -- need fallbacks here
@@ -103,11 +119,11 @@ function Float:create_window_options(content_width, content_height)
     }
 end
 
----@param position decipher.Position Initial position of the float
----@param width number Width of the float
----@param height number Height of the float
----@param padding number Padding of the float
----@return { anchor: string, position: decipher.Position }
+---@param position Position initial position of the float
+---@param width number width of the float
+---@param height number height of the float
+---@param padding number padding of the float
+---@return { anchor: string, position: Position }
 function Float:get_anchored_position(position, width, height, padding)
     local vertical_anchor, horizontal_anchor = "N", "W"
 
@@ -150,12 +166,11 @@ function Float:dimensions(contents)
     }
 end
 
----@param position decipher.Position
+---@param position Position
 function Float:open(position)
     self.position = position
 
     local dimensions = self:dimensions(self.contents)
-
     self.width = dimensions.width
     self.height = dimensions.height
 
@@ -168,48 +183,28 @@ function Float:open(position)
     self.buffer = vim.api.nvim_create_buf(false, true)
     self.win_id = vim.api.nvim_open_win(self.buffer, self.window_config.enter or false, options)
 
-    vim.api.nvim_buf_set_var(self.buffer, "decipher_float", true)
+    vim.api.nvim_win_set_var(self.win_id, "decipher_float", true)
 
-    for name, value in pairs(self.window_config.options) do
-        vim.api.nvim_win_set_option(self.win_id, name, value)
-    end
+    -- local start_lnum = 0
 
-    -- Buffer options
-    vim.api.nvim_win_set_option(self.win_id, "wrap", false)
-    vim.api.nvim_buf_set_option(self.buffer, "buftype", "nofile")
-    vim.api.nvim_buf_set_option(self.buffer, "bufhidden", "wipe")
-    vim.api.nvim_buf_set_option(self.buffer, "buflisted", false)
-
-    -- Window options
-    vim.api.nvim_win_set_option(self.win_id, "number", false)
-    vim.api.nvim_win_set_option(self.win_id, "relativenumber", false)
-    vim.api.nvim_win_set_option(self.win_id, "cursorline", false)
-    vim.api.nvim_win_set_option(self.win_id, "signcolumn", "no")
-    vim.api.nvim_win_set_option(self.win_id, "foldenable", false)
-    vim.api.nvim_win_set_option(self.win_id, "spell", false)
-    vim.api.nvim_win_set_option(self.win_id, "list", false)
-
-    -- local close_func = function()
-    --  self:close()
+    -- if #self.title > 0 then
+    --     start_lnum = 2 + (self.window_config.padding or 0)
     -- end
 
-    -- vim.keymap.set(
-    --     'n',
-    --     self.window_config.dismiss,
-    --     close_func,
-    --     vim.tbl_extend(
-    --         'keep',
-    --         { buffer = self.buffer },
-    --         { silent = true, noremap = true }
-    --     )
-    -- )
+    vim.api.nvim_buf_set_lines(self.buffer, 0, -1, true, self:assemble_contents())
+    self:set_mappings()
+    self:set_options()
 
-    local start_lnum = 0
+    -- vim.api.nvim_create_autocmd({ "InsertEnter", "CursorMoved" }, {
+    --     callback = function()
+    --         self:close()
+    --     end,
+    --     once = true,
+    -- })
+end
 
-    if #self.title > 0 then
-        start_lnum = 2 + (self.window_config.padding or 0)
-    end
-
+-- Assemble the final contents of the float
+function Float:assemble_contents()
     local final_contents = {}
 
     if #self.title > 0 then
@@ -223,17 +218,36 @@ function Float:open(position)
         table.insert(final_contents, line)
     end
 
-    -- print(self.buffer, start_lnum)
-    -- vim.pretty_print(final_contents)
+    return final_contents
+end
 
-    vim.api.nvim_buf_set_lines(self.buffer, 0, -1, true, final_contents)
+-- Set mappings for the float
+function Float:set_mappings()
+    if self.window_config.dismiss then
+        local map_options = { buffer = self.buffer, silent = true, noremap = true }
 
-    vim.api.nvim_create_autocmd({ "InsertEnter", "CursorMoved" }, {
-        callback = function()
+        vim.keymap.set("n", self.window_config.dismiss, function()
             self:close()
-        end,
-        once = true,
-    })
+        end, map_options)
+    end
+end
+
+-- Set window and buffer options for the float
+function Float:set_options()
+    -- Set default window options
+    for option, value in pairs(window_options) do
+        vim.api.nvim_win_set_option(self.win_id, option, value)
+    end
+
+    -- Set default buffer options
+    for option, value in pairs(buffer_options) do
+        vim.api.nvim_buf_set_option(self.buffer, option, value)
+    end
+
+    -- Set use roptions last so they take priority
+    for option, value in pairs(self.window_config.options) do
+        vim.api.nvim_win_set_option(self.win_id, option, value)
+    end
 end
 
 ---@param title string
@@ -249,31 +263,44 @@ function Float:set_contents(contents)
     end
 end
 
+-- Attempt to focus the float. May fail silently if window has already been closed
+---@return boolean
 function Float:focus()
-    vim.api.nvim_set_current_win(self.win_id)
+    local status, _ = pcall(vim.api.nvim_set_current_win, self.win_id)
+
+    return status
 end
 
+-- Attempt to close the float. May fail silently if window has already been closed
 function Float:close()
     pcall(vim.api.nvim_win_close, self.win_id, true)
 end
 
--- Keep track of open floats
+-- Tracks open floating windows
+---@type table<number, Float>
 local floats = {}
 
-function M.close_float(win_id)
-    local cur_win_id = win_id or vim.api.nvim_get_current_win()
-    local float = floats[cur_win_id]
+-- Close a floating window
+---@param win_id? number
+function float.close(win_id)
+    local win_handle = win_id or vim.api.nvim_get_current_win()
+    local status, result = pcall(vim.api.nvim_win_get_var, win_handle, "decipher_float")
 
-    if float ~= nil then
-        pcall(vim.api.nvim_win_close, float.win_id, true)
-        floats[cur_win_id] = nil
+    if status and result == true then
+        pcall(vim.api.nvim_win_close, win_handle, true)
+
+        local _float = floats[win_handle]
+
+        if _float ~= nil then
+            floats[win_handle] = nil
+        end
     end
 end
 
----@param title string|nil
+---@param title? string
 ---@param contents string[]
----@param window_config? decipher.WindowConfig
-function M.open(title, contents, window_config)
+---@param window_config? WindowConfig
+function float.open(title, contents, window_config)
     -- TODO: Close current popup if inside it
 
     local cur_win_id = vim.api.nvim_get_current_win()
@@ -281,13 +308,12 @@ function M.open(title, contents, window_config)
 
     -- Check for existing float in current buffer and focus that instead of
     -- opening a new float
-    print(cur_win_id)
-    vim.pretty_print(vim.tbl_keys(floats))
     if existing_float ~= nil then
-        print(existing_float.buffer)
-        print(existing_float.win_id)
-        existing_float:focus()
-        return
+        if existing_float:focus() then
+            return
+        else
+            float.close(existing_float.win_id)
+        end
     end
 
     local _config = window_config or config.float
@@ -307,13 +333,13 @@ function M.open(title, contents, window_config)
     return win
 end
 
--- function M.setup_autocmds()
---     vim.cmd([[
---         augroup DecipherCleanFloats
---             autocmd!
---             autocmd WinClosed * lua require('decipher').close_float()
---         augroup end
---     ]])
--- end
+function float.setup_autocommands()
+    vim.cmd([[
+        augroup DecipherCleanupFloats
+            autocmd!
+            autocmd WinClosed * lua require("decipher.float").close()
+        augroup end
+    ]])
+end
 
-return M
+return float

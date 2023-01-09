@@ -11,6 +11,7 @@ local mappings = require("decipher.mappings")
 local text = require("decipher.text")
 local util = require("decipher.util")
 local visual = require("decipher.visual")
+local motion = require("decipher.motion")
 
 decipher.codec = codecs.codec
 
@@ -131,13 +132,18 @@ end
 ---@param codec_name string
 ---@param options Options
 function decipher.encode_motion(codec_name, options)
-    process_codec(codec_name, decipher.encode, visual.get_motion, options)
+    -- TODO: Pass process_codec directly motion.process_motion
+    motion.start_motion(function()
+        process_codec(codec_name, decipher.encode, motion.get_motion, options)
+    end)
 end
 
 ---@param codec_name string
 ---@param options Options
 function decipher.decode_motion(codec_name, options)
-    process_codec(codec_name, decipher.decode, visual.get_motion, options)
+    motion.start_motion(function()
+        process_codec(codec_name, decipher.decode, motion.get_motion, options)
+    end)
 end
 
 ---@param options Options
@@ -152,12 +158,16 @@ end
 
 ---@param options Options
 function decipher.encode_motion_prompt(options)
-    process_codec_prompt(decipher.encode, visual.get_motion, options)
+    motion.start_motion(function()
+        process_codec_prompt(decipher.encode, motion.get_motion, options)
+    end)
 end
 
 ---@param options Options
 function decipher.decode_motion_prompt(options)
-    process_codec_prompt(decipher.decode, visual.get_motion, options)
+    motion.start_motion(function()
+        process_codec_prompt(decipher.decode, motion.get_motion, options)
+    end)
 end
 
 ---@param user_config decipher.Config | nil

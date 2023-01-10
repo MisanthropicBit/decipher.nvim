@@ -14,20 +14,22 @@ local motion = require("decipher.motion")
 
 decipher.codec = codecs.codec
 
----@class Options
+---@class decipher.Options
 ---@field public preview boolean if a preview should be shown or not
+
+---@alias decipher.CodecArg string | codec
 
 ---@return string
 function decipher.version()
     return decipher_version
 end
 
----@return string[] A list of the names of supported codecs
+---@return string[] a list of the names of supported codecs
 function decipher.codecs()
     return codecs.supported()
 end
 
----@param codec_name string
+---@param codec_name decipher.CodecArg
 ---@param value string
 ---@param func_key "encode" | "decode"
 ---@return string | nil
@@ -42,21 +44,21 @@ local function handle_codec(codec_name, value, func_key)
     return codec[func_key](value)
 end
 
----@param codec_name string | codec
+---@param codec_name decipher.CodecArg
 ---@param value string value to encode
 ---@return string | nil the encoded value or nil if encoding failed
 function decipher.encode(codec_name, value)
     return handle_codec(codec_name, value, "encode")
 end
 
----@param codec_name string
+---@param codec_name decipher.CodecArg
 ---@param value string value to decode
 ---@return string | nil the decoded value or nil if decoding failed
 function decipher.decode(codec_name, value)
     return handle_codec(codec_name, value, "decode")
 end
 
----@param codec_name string
+---@param codec_name decipher.CodecArg
 ---@param value string
 ---@param selection function
 ---@diagnostic disable-next-line: unused-local
@@ -65,7 +67,7 @@ local function open_float_handler(codec_name, value, selection)
 end
 
 --- Handler for setting a text region to a value
----@param codec_name string
+---@param codec_name decipher.CodecArg
 ---@param value string
 ---@param selection function
 ---@diagnostic disable-next-line: unused-local
@@ -75,10 +77,10 @@ local function set_text_region_handler(codec_name, value, selection)
 end
 
 --- Process a codec action
----@param codec_name string
+---@param codec_name decipher.CodecArg
 ---@param codec_func function
 ---@param selection_func function
----@param options Options
+---@param options decipher.Options
 local function process_codec(codec_name, codec_func, selection_func, options)
     local selection = selection_func()
     local text_value = text.get_region(selection)
@@ -116,20 +118,20 @@ local function process_codec_prompt(codec_func, selection_func, handler_func)
     process_codec(codec_name, codec_func, selection_func, handler_func)
 end
 
----@param codec_name string
----@param options Options
+---@param codec_name decipher.CodecArg
+---@param options decipher.Options
 function decipher.encode_selection(codec_name, options)
     process_codec(codec_name, decipher.encode, visual.get_selection, options)
 end
 
----@param codec_name string
----@param options Options
+---@param codec_name decipher.CodecArg
+---@param options decipher.Options
 function decipher.decode_selection(codec_name, options)
     process_codec(codec_name, decipher.decode, visual.get_selection, options)
 end
 
----@param codec_name string
----@param options Options
+---@param codec_name decipher.CodecArg
+---@param options decipher.Options
 function decipher.encode_motion(codec_name, options)
     -- TODO: Pass process_codec directly motion.process_motion
     motion.start_motion(function()
@@ -137,43 +139,41 @@ function decipher.encode_motion(codec_name, options)
     end)
 end
 
----@param codec_name string
----@param options Options
+---@param codec_name decipher.CodecArg
+---@param options decipher.Options
 function decipher.decode_motion(codec_name, options)
     motion.start_motion(function()
         process_codec(codec_name, decipher.decode, motion.get_motion, options)
     end)
 end
 
----@param options Options
+---@param options decipher.Options
 function decipher.encode_selection_prompt(options)
     process_codec_prompt(decipher.encode, visual.get_selection, options)
 end
 
----@param options Options
+---@param options decipher.Options
 function decipher.decode_selection_prompt(options)
     process_codec_prompt(decipher.decode, visual.get_selection, options)
 end
 
----@param options Options
+---@param options decipher.Options
 function decipher.encode_motion_prompt(options)
     motion.start_motion(function()
         process_codec_prompt(decipher.encode, motion.get_motion, options)
     end)
 end
 
----@param options Options
+---@param options decipher.Options
 function decipher.decode_motion_prompt(options)
     motion.start_motion(function()
         process_codec_prompt(decipher.decode, motion.get_motion, options)
     end)
 end
 
----@param user_config decipher.Config | nil
+---@param user_config? decipher.Config
 function decipher.setup(user_config)
-    if user_config ~= nil then
-        config.setup(user_config)
-    end
+    config.setup(user_config)
 
     if not vim.fn.has("nvim-0.5.0") then
         error.error_message("This plugin only works with Neovim >= v0.5.0", false)

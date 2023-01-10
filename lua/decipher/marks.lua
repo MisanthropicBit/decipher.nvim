@@ -1,15 +1,15 @@
 local marks = {}
 
----@class Position
+---@class decipher.Position
 ---@field row number
 ---@field col number
 
----@class Region
----@field start Position
----@field end Position
+---@class decipher.Region
+---@field start decipher.Position
+---@field end decipher.Position
 
 ---@param mark_type "visual" | "motion"
----@return Region
+---@return decipher.Region
 function marks.get_mark_positions(mark_type)
     local _marks = nil
 

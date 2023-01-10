@@ -35,7 +35,7 @@ local function from_percentage(percentage, value)
     return math.floor(value * percentage)
 end
 
----@return Position
+---@return decipher.Position
 local function get_global_coordinates()
     local win_row, win_col = unpack(vim.fn.win_screenpos(0))
 
@@ -45,15 +45,15 @@ local function get_global_coordinates()
     }
 end
 
----@class Float
+---@class decipher.Float
 ---@field width number
 ---@field height number
 ---@field title string
 ---@field contents string[]
----@field win_id? number Window id
----@field buffer? number Buffer id
----@field position Position Position of the float
----@field window_config? WindowConfig
+---@field win_id? number window id
+---@field buffer? number buffer id
+---@field position decipher.Position position of the float
+---@field window_config? decipher.WindowConfig
 local Float = {
     width = 0,
     height = 0,
@@ -68,8 +68,8 @@ local Float = {
     window_config = nil,
 }
 
----@param window_config WindowConfig
----@return Float
+---@param window_config decipher.WindowConfig
+---@return decipher.Float
 function Float:new(window_config)
     local win = {}
 
@@ -119,11 +119,13 @@ function Float:create_window_options(content_width, content_height)
     }
 end
 
----@param position Position initial position of the float
+---@alias decipher.Anchor "NW" | "SW" | "NE" | "SE"
+
+---@param position decipher.Position initial position of the float
 ---@param width number width of the float
 ---@param height number height of the float
 ---@param padding number padding of the float
----@return { anchor: string, position: Position }
+---@return { anchor: decipher.Anchor, position: decipher.Position }
 function Float:get_anchored_position(position, width, height, padding)
     local vertical_anchor, horizontal_anchor = "N", "W"
 
@@ -166,7 +168,7 @@ function Float:dimensions(contents)
     }
 end
 
----@param position Position
+---@param position decipher.Position
 function Float:open(position)
     self.position = position
 
@@ -204,6 +206,7 @@ function Float:open(position)
 end
 
 -- Assemble the final contents of the float
+---@return string[]
 function Float:assemble_contents()
     local final_contents = {}
 
@@ -277,7 +280,7 @@ function Float:close()
 end
 
 -- Tracks open floating windows
----@type table<number, Float>
+---@type table<number, decipher.Float>
 local floats = {}
 
 -- Close a floating window
@@ -299,7 +302,7 @@ end
 
 ---@param title? string
 ---@param contents string[]
----@param window_config? WindowConfig
+---@param window_config? decipher.WindowConfig
 function float.open(title, contents, window_config)
     -- TODO: Close current popup if inside it
 

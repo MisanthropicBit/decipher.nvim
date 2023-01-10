@@ -1,4 +1,6 @@
----@class WindowConfig
+local config = {}
+
+---@class decipher.WindowConfig
 ---@field max_width number
 ---@field max_height number
 ---@field padding number
@@ -10,10 +12,10 @@
 ---@field enter boolean
 ---@field options table<string, any>
 
-local config = {}
-
----@class Config
+---@class decipher.Config
 ---@field float decipher.WindowConfig
+
+---@type decipher.Config
 local default_config = {
     float = {
         max_height = 20,
@@ -40,12 +42,12 @@ local default_config = {
     },
 }
 
----@type Config
+---@type decipher.Config
 local _user_config = default_config
 
----@param user_config Config
+---@param user_config? decipher.Config
 function config.setup(user_config)
-    _user_config = vim.tbl_deep_extend("keep", user_config, default_config)
+    _user_config = vim.tbl_deep_extend("keep", user_config or {}, default_config)
 end
 
 setmetatable(config, {

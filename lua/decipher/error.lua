@@ -1,6 +1,6 @@
 local error = {}
 
----@param codec_name string | string[][]
+---@param message string | string[][]
 ---@param history boolean
 local function _error_message(message, history)
     local chunks = {}

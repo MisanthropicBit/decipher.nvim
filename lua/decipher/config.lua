@@ -1,8 +1,8 @@
 local config = {}
 
 ---@class decipher.WindowConfig
----@field max_width number
----@field max_height number
+---@field max_width number | "auto"
+---@field max_height number | "auto"
 ---@field padding number
 ---@field border (string | string[])[]
 ---@field dismiss? string
@@ -18,8 +18,8 @@ local config = {}
 ---@type decipher.Config
 local default_config = {
     float = {
-        max_height = 20,
-        max_width = 30,
+        max_height = "auto",
+        max_width = "auto",
         padding = 0,
         border = {
             { "╭", "Keyword" },

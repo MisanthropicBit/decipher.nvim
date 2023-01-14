@@ -7,6 +7,7 @@
 local float = {}
 
 local config = require("decipher.config")
+local error = require("decipher.error")
 local util = require("decipher.util")
 
 local has_floating_window = vim.fn.has("nvim") and vim.fn.exists("*nvim_win_set_config")
@@ -147,81 +148,119 @@ function Float:get_anchored_position(position, width, height, padding)
     }
 end
 
----@param contents? string[]
----@return { width: number, height: number }
-function Float:dimensions(contents)
-    if contents == nil or #contents == 0 then
-        return { width = 0, height = 0 }
+---@return number, number
+function Float:content_dimensions()
+    if self.contents == nil or #self.contents == 0 then
+        return 0, 0
     end
 
-    local width, height = 0, #contents
+    local width, height = 0, #self.contents + (#self.title > 0 and 2 or 0)
 
-    for _, line in ipairs(contents) do
+    for _, line in ipairs(self.contents) do
         width = math.max(width, #line)
     end
 
     local total_padding = self.window_config.padding * 2
 
-    return {
-        width = width + total_padding,
-        height = height + total_padding,
-    }
+    return width + total_padding * 2, height + total_padding
 end
 
 ---@param position decipher.Position
 function Float:open(position)
     self.position = position
+    self.width, self.height = self:content_dimensions()
+    vim.pretty_print(self.width, self.height)
 
-    local dimensions = self:dimensions(self.contents)
-    self.width = dimensions.width
-    self.height = dimensions.height
+    local options = self:create_window_options(self.width, self.height)
+    vim.pretty_print(options.width, options.height)
 
-    if self.width == 0 or self.height == 0 then
-        return
-    end
-
-    local options = self:create_window_options(self.width, self.height + 2)
-
+    local parent_bufnr = vim.api.nvim_get_current_buf()
     self.buffer = vim.api.nvim_create_buf(false, true)
     self.win_id = vim.api.nvim_open_win(self.buffer, self.window_config.enter or false, options)
 
     vim.api.nvim_win_set_var(self.win_id, "decipher_float", true)
-
-    -- local start_lnum = 0
-
-    -- if #self.title > 0 then
-    --     start_lnum = 2 + (self.window_config.padding or 0)
-    -- end
-
     vim.api.nvim_buf_set_lines(self.buffer, 0, -1, true, self:assemble_contents())
     self:set_mappings()
     self:set_options()
 
+    -- We defer execution of the autocmd because a motion moves the cursor if
+    -- the position is not at the start of what the motion ends up encompasses and so
+    -- triggers the CursorMoved event immediately, closing the float
+    vim.defer_fn(function()
+        vim.api.nvim_create_autocmd({ "InsertEnter", "CursorMoved", "CmdlineEnter" }, {
+            callback = function()
+                self:close()
+            end,
+            once = true,
+            buffer = parent_bufnr,
+            desc = [[Closes the decipher floating window when insert mode is entered,
+the cursor is moved, or the user begins typing a command]],
+        })
+    end, 0)
+
+    -- local should_trigger = false
+
+    -- TODO: We need either a type (visual/motion) to know if the autocmd should
+    -- trigger the first time or not, or we need to handle motions via some builtin
+    -- stuff I haven't found yet
+    -- TODO: Float does not close if doing e.g. '10k'
+    -- TODO: Autocmd should trigger immediately if at the start of the region covered
+    -- by the motion since it won't have moved then
+
     -- vim.api.nvim_create_autocmd({ "InsertEnter", "CursorMoved" }, {
     --     callback = function()
-    --         self:close()
+    --         if source == "visual" then
+    --             self:close()
+    --             return true
+    --         elseif source == "motion" then
+    --             local motion_start = motion.get_motion().start
+    --             local _, lnum, col, _ = vim.fn.getpos('.')
+    --             local same_pos = motion_start.row == lnum and motion_start.col == col
+
+    --             vim.pretty_print(motion_start)
+    --             print(lnum, col)
+
+    --             -- The cursor moves with motions after the float is opened so don't
+    --             -- close on the first trigger but on the second
+    --             if same_pos or should_trigger then
+    --                 self:close()
+    --                 return true
+    --             else
+    --                 should_trigger = true
+    --                 return false
+    --             end
+    --         end
     --     end,
-    --     once = true,
+    --     -- once = true,
+    --     buffer = parent_bufnr,
+    --     desc = "Closes the decipher floating window when insert mode is entered or the cursor is moved"
     -- })
 end
 
 -- Assemble the final contents of the float
 ---@return string[]
 function Float:assemble_contents()
-    local final_contents = {}
+    local contents = {}
 
     if #self.title > 0 then
-        final_contents = {
-            self.title,
+        contents = {
+            " " .. self.title,
             string.rep(self.window_config.title_separator, self.width),
         }
     end
 
-    for _, line in ipairs(self.contents) do
-        table.insert(final_contents, line)
+    local padding = ""
+
+    if self.window_config.padding > 0 then
+        table.insert(contents, "")
+        padding = string.rep(" ", self.window_config.padding * 2)
     end
 
-    return final_contents
+    for _, line in ipairs(self.contents) do
+        table.insert(contents, padding .. line)
+    end
+
+    return contents
 end
 
 -- Set mappings for the float
@@ -306,6 +345,11 @@ end
 function float.open(title, contents, window_config)
     -- TODO: Close current popup if inside it
 
+    if has_floating_window ~= 1 then
+        error.error_message("No support for floating windows", true)
+        return
+    end
+
     local cur_win_id = vim.api.nvim_get_current_win()
     local existing_float = floats[cur_win_id]
 
@@ -336,7 +380,7 @@ function float.open(title, contents, window_config)
     return win
 end
 
-function float.setup_autocommands()
+function float.setup()
     vim.cmd([[
         augroup DecipherCleanupFloats
             autocmd!

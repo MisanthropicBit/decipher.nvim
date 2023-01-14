@@ -27,7 +27,10 @@ function M.get(name)
 end
 
 function M.supported()
-    return vim.tbl_keys(codecs_map)
+    local codecs = vim.tbl_keys(codecs_map)
+    table.sort(codecs)
+
+    return codecs
 end
 
 return M

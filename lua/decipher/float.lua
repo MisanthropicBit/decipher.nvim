@@ -132,7 +132,7 @@ function Float:get_anchored_position(position, width, height, padding)
 
     if position.row + height + padding > vim.o.lines - 1 then
         vertical_anchor = "S"
-        position.row = position.row - padding - 1
+        position.row = position.row - padding
     end
 
     if position.col + width + padding <= vim.o.columns then

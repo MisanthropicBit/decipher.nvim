@@ -69,7 +69,7 @@ end
 --- Handler for setting a text region to a value
 ---@param codec_name decipher.CodecArg
 ---@param value string
----@param selection function
+---@param selection decipher.Region
 ---@diagnostic disable-next-line: unused-local
 local function set_text_region_handler(codec_name, value, selection)
     -- Escape the string since you cannot set lines in a buffer if it contains newlines

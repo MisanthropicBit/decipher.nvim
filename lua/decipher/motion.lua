@@ -10,8 +10,8 @@ local function is_motion_type(type)
 end
 
 --- Operator function for encode/decoding motions
----@param maybe_motion string | nil either the type of motion or nil for the initial call
----@param handler function the motion function to call when the motion is completed
+---@param maybe_motion? string either the type of motion or nil for the initial call
+---@param handler fun(): nil the motion function to call when the motion is completed
 local function _decipher_motion(maybe_motion, handler)
     -- If we did not receive a motion type, it is a codec name and we set up
     -- the operatorfunc for the g@ motion operator. Otherwise, the user
@@ -36,7 +36,7 @@ local function _decipher_motion(maybe_motion, handler)
     end
 end
 
----@return Region
+---@return decipher.Region
 function motion.get_motion()
     return marks.get_mark_positions("motion")
 end

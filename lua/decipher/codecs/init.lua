@@ -1,11 +1,11 @@
-local M = {}
+local codecs = {}
 
 local base64 = require("decipher.codecs.base64")
 local base64_url = require("decipher.codecs.base64_url")
 local url = require("decipher.codecs.url")
 
 ---@enum codec
-M.codec = {
+codecs.codec = {
     base64 = "base64",
     base85 = "base85",
     base64_url = "base64-url",
@@ -22,15 +22,17 @@ local codecs_map = {
     ["url"] = url,
 }
 
-function M.get(name)
+function codecs.get(name)
     return codecs_map[name]
 end
 
-function M.supported()
-    local codecs = vim.tbl_keys(codecs_map)
-    table.sort(codecs)
+--- Get a list of supported codecs
+---@return decipher.Codec[]
+function codecs.supported()
+    local _codecs = vim.tbl_keys(codecs_map)
+    table.sort(_codecs)
 
-    return codecs
+    return _codecs
 end
 
-return M
+return codecs

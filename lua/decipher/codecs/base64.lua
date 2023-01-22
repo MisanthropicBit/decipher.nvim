@@ -1,6 +1,6 @@
 local M = {}
 
-local bit = require("bit")
+local bits = require("decipher.bits")
 
 -- Create a codec from an encoding table and a padding character
 function M.make_base64_codec(encoding_table, pad_char)
@@ -93,10 +93,6 @@ local function combined_octets(value, i)
     return bit.bor(bit.lshift(value1, 16), bit.lshift(value2 or 0, 8), value3 or 0)
 end
 
-local function get_bits(value, rshift)
-    return bit.band(bit.rshift(value, rshift), 0x3f)
-end
-
 function M.encode_with(value, base64_codec)
     if value == nil then
         return value
@@ -111,10 +107,10 @@ function M.encode_with(value, base64_codec)
         result = string.format(
             "%s%s%s%s%s",
             result,
-            encoding_table[get_bits(octets, 18)],
-            encoding_table[get_bits(octets, 12)],
-            encoding_table[get_bits(octets, 6)],
-            encoding_table[bit.band(octets, 0x3f)]
+            encoding_table[bits.get_bits(octets, 18, 0x3f)],
+            encoding_table[bits.get_bits(octets, 12, 0x3f)],
+            encoding_table[bits.get_bits(octets, 6, 0x3f)],
+            encoding_table[bits.band(octets, 0x3f)]
         )
     end
 
@@ -125,9 +121,9 @@ function M.encode_with(value, base64_codec)
         result = string.format(
             "%s%s%s%s%s",
             result,
-            encoding_table[get_bits(octets, 18)],
-            encoding_table[get_bits(octets, 12)],
-            last == 1 and pad_char or encoding_table[get_bits(octets, 6)],
+            encoding_table[bits.get_bits(octets, 18, 0x3f)],
+            encoding_table[bits.get_bits(octets, 12, 0x3f)],
+            last == 1 and pad_char or encoding_table[bits.get_bits(octets, 6, 0x3f)],
             pad_char
         )
     end
@@ -152,15 +148,15 @@ function M.decode_with(value, base64_codec)
         local value3, value4 = value:sub(i + 2, i + 2), value:sub(i + 3, i + 3)
         local last = value3 == pad_char and 3 or value4 == pad_char and 2 or 1
 
-        local joined = bit.bor(
-            bit.lshift(decoding_table[value:sub(i, i)] or 0, 18),
-            bit.lshift(decoding_table[value:sub(i + 1, i + 1)] or 0, 12),
-            bit.lshift(decoding_table[value3] or 0, 6),
+        local joined = bits.bor(
+            bits.lshift(decoding_table[value:sub(i, i)] or 0, 18),
+            bits.lshift(decoding_table[value:sub(i + 1, i + 1)] or 0, 12),
+            bits.lshift(decoding_table[value3] or 0, 6),
             decoding_table[value4] or 0
         )
 
         for j = 3, last, -1 do
-            result = string.format("%s%s", result, string.char(bit.band(bit.rshift(joined, (j - 1) * 8), 0xff)))
+            result = string.format("%s%s", result, string.char(bits.band(bits.rshift(joined, (j - 1) * 8), 0xff)))
         end
     end
 

@@ -8,7 +8,7 @@ local commands = require("decipher.commands")
 local error = require("decipher.error")
 local float = require("decipher.float")
 local text = require("decipher.text")
-local util = require("decipher.util")
+local str_utils = require("decipher.util.string")
 local visual = require("decipher.visual")
 local motion = require("decipher.motion")
 
@@ -73,7 +73,7 @@ end
 ---@diagnostic disable-next-line: unused-local
 local function set_text_region_handler(codec_name, value, selection)
     -- Escape the string since you cannot set lines in a buffer if it contains newlines
-    text.set_region(selection, util.escape_newlines(value))
+    text.set_region(selection, str_utils.escape_newlines(value))
 end
 
 --- Process a codec action

@@ -8,7 +8,7 @@ local float = {}
 
 local config = require("decipher.config")
 local error = require("decipher.error")
-local util = require("decipher.util")
+local str_utils = require("decipher.util.string")
 
 local has_floating_window = vim.fn.has("nvim") and vim.fn.exists("*nvim_win_set_config")
 
@@ -360,7 +360,7 @@ function float.open(title, contents, window_config)
 
     -- Escape the string since you cannot set lines in a buffer if it
     -- contains newlines
-    win:set_contents(vim.tbl_map(util.escape_newlines, contents))
+    win:set_contents(vim.tbl_map(str_utils.escape_newlines, contents))
     win:open(get_global_coordinates())
 
     floats[cur_win_id] = win

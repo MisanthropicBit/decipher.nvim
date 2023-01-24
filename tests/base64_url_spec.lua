@@ -1,4 +1,5 @@
 local base64_url = require("decipher.codecs.base64_url")
+local test_utils = require("decipher.util.test")
 
 describe("codecs.base64_url", function()
     local test_cases = {
@@ -13,12 +14,12 @@ describe("codecs.base64_url", function()
     -- end)
 
     it("base64 url-decodes strings", function()
-        for input, output in pairs(test_cases) do
-            assert.are.same(base64_url.decode(output), input)
-        end
+        test_utils.test_decode(test_cases, base64_url.decode)
     end)
 
-    it("handles nil", function()
-        assert.is._nil(base64_url.decode(nil))
+    it("handles nil values", function()
+        assert.has_error(function()
+            base64_url.decode(nil)
+        end, "Cannot decode nil value")
     end)
 end)

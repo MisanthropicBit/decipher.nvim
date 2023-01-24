@@ -1,4 +1,5 @@
 local base64 = require("decipher.codecs.base64")
+local test_utils = require("decipher.util.test")
 
 describe("codecs.base64", function()
     local test_cases = {
@@ -9,22 +10,19 @@ describe("codecs.base64", function()
         ["light wo"] = "bGlnaHQgd28=",
         ["light w"] = "bGlnaHQgdw==",
         [""] = "",
+        ["works with unicode like ✔"] = "d29ya3Mgd2l0aCB1bmljb2RlIGxpa2Ug4pyU",
         ["line1\nline2"] = "bGluZTEKbGluZTI=",
     }
 
     it("encodes strings into base64", function()
-        for input, output in pairs(test_cases) do
-            assert.are.same(base64.encode(input), output)
-        end
+        test_utils.test_encode(test_cases, base64.encode)
     end)
 
     it("decodes base64-encoded strings", function()
-        for input, output in pairs(test_cases) do
-            assert.are.same(base64.decode(output), input)
-        end
+        test_utils.test_decode(test_cases, base64.decode)
     end)
 
-    local base64_url = base64.make_base64_codec({
+    local base64_url_safe = base64.make_base64_codec({
         [0] = "A",
         [1] = "B",
         [2] = "C",
@@ -92,14 +90,24 @@ describe("codecs.base64", function()
     }, "=")
 
     it("encodes strings into base64 with custom codec", function()
-        for input, output in pairs(test_cases) do
-            assert.are.same(base64.encode_with(input, base64_url), output)
-        end
+        test_utils.test_encode(test_cases, function(value)
+            return base64.encode_with(value, base64_url_safe)
+        end)
     end)
 
     it("decodes strings into base64 with custom codec", function()
-        for input, output in pairs(test_cases) do
-            assert.are.same(base64.decode_with(output, base64_url), input)
-        end
+        test_utils.test_decode(test_cases, function(value)
+            return base64.decode_with(value, base64_url_safe)
+        end)
+    end)
+
+    it("handles nil values", function()
+        assert.has_error(function()
+            base64.encode(nil)
+        end, "Cannot encode nil value")
+
+        assert.has_error(function()
+            base64.decode(nil)
+        end, "Cannot decode nil value")
     end)
 end)

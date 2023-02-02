@@ -204,11 +204,16 @@ end
 
 ---@param value string
 ---@param i number
----@param decoding_table decipher.DecodingTable
+---@param spec decipher.CodecSpec
 ---@return number
-local function decoding_table_lookup(value, i, decoding_table)
+local function decoding_table_lookup(value, i, spec)
     local char = value:sub(i, i)
-    local decoded = decoding_table[char]
+
+    if char == spec.pad_char then
+        return 0
+    end
+
+    local decoded = spec.decoding_table[char]
 
     if decoded == nil then
         error(string.format("Invalid character '%s' at byte position %d in base64 string", char, i))
@@ -226,7 +231,6 @@ function base64.decode_with(value, base64_codec)
         error("Cannot decode nil value")
     end
 
-    local decoding_table = base64_codec.decoding_table
     local pad_char = base64_codec.pad_char
     local result = ""
 
@@ -234,10 +238,10 @@ function base64.decode_with(value, base64_codec)
         local value3, value4 = value:sub(i + 2, i + 2), value:sub(i + 3, i + 3)
         local last = value3 == pad_char and 3 or value4 == pad_char and 2 or 1
 
-        local decoded1 = decoding_table_lookup(value, i, decoding_table)
-        local decoded2 = decoding_table_lookup(value, i + 1, decoding_table)
-        local decoded3 = decoding_table_lookup(value, i + 2, decoding_table)
-        local decoded4 = decoding_table_lookup(value, i + 3, decoding_table)
+        local decoded1 = decoding_table_lookup(value, i, base64_codec)
+        local decoded2 = decoding_table_lookup(value, i + 1, base64_codec)
+        local decoded3 = decoding_table_lookup(value, i + 2, base64_codec)
+        local decoded4 = decoding_table_lookup(value, i + 3, base64_codec)
 
         local joined = bits.bor(
             bits.lshift(decoded1, 18),
@@ -264,7 +268,7 @@ end
 --- Get a codec for url- and filename-safe base64
 ---@return decipher.CodecSpec
 function base64.url_safe()
-    return util.make_codec(rfc4648_base64_url_safe_encoding_table, "=")
+    return util.make_codec(rfc4648_base64_url_safe_encoding_table, "=", base64)
 end
 
 return base64

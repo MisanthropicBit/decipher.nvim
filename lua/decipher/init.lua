@@ -17,7 +17,7 @@ decipher.codec = codecs.codec
 ---@class decipher.Options
 ---@field public preview boolean if a preview should be shown or not
 
----@alias decipher.CodecArg string | codec
+---@alias decipher.CodecArg string | decipher.Codec
 
 ---@return string
 function decipher.version()

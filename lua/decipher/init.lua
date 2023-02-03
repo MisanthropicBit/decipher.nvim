@@ -37,7 +37,6 @@ local function handle_codec(codec_name, value, func_key)
     local codec = codecs.get(codec_name)
 
     if codec == nil then
-        error.error_message_codec(codec_name)
         return nil
     end
 
@@ -59,42 +58,52 @@ function decipher.decode(codec_name, value)
 end
 
 ---@param codec_name decipher.CodecArg
----@param value string
+---@param status boolean
+---@param value string?
 ---@param selection function
 ---@diagnostic disable-next-line: unused-local
-local function open_float_handler(codec_name, value, selection)
+local function open_float_handler(codec_name, status, value, selection)
+    if status and value == nil then
+        value = "Codec not found"
+    end
+
     float.open(codec_name, { value }, config.float)
 end
 
 --- Handler for setting a text region to a value
 ---@param codec_name decipher.CodecArg
----@param value string
+---@param status boolean
+---@param value string?
 ---@param selection decipher.Region
 ---@diagnostic disable-next-line: unused-local
-local function set_text_region_handler(codec_name, value, selection)
+local function set_text_region_handler(codec_name, status, value, selection)
+    if not status then
+        error.error_message(string.format("%s: %s", codec_name, value), true)
+        return
+    end
+
+    if value == nil then
+        error.error_message_codec(codec_name)
+        return
+    end
+
     -- Escape the string since you cannot set lines in a buffer if it contains newlines
     text.set_region(selection, str_utils.escape_newlines(value))
 end
 
 --- Process a codec action
 ---@param codec_name decipher.CodecArg
----@param codec_func function
----@param selection_func function
+---@param codec_func fun(string): string
+---@param selection_func fun(): decipher.Region
 ---@param options decipher.Options
 local function process_codec(codec_name, codec_func, selection_func, options)
     local selection = selection_func()
     local text_value = text.get_region(selection)
-    local value = codec_func(codec_name, text_value)
-
-    if value == nil then
-        error.error_message(string.format("Failed to decode selection as '%s'", codec_name), false)
-        return
-    end
-
+    local status, value = pcall(codec_func, codec_name, text_value)
     local do_preview = (options and options.preview == true) or false
     local handler_func = do_preview and open_float_handler or set_text_region_handler
 
-    handler_func(codec_name, value, selection)
+    handler_func(codec_name, status, value, selection)
 end
 
 --- Prompt for a codec to use

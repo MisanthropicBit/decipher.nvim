@@ -159,7 +159,7 @@ end
 ---@return string
 function base64.encode_with(value, base64_codec)
     if value == nil then
-        error("Cannot encode nil value")
+        error("Cannot encode nil value", 0)
     end
 
     local encoding_table = base64_codec.encoding_table
@@ -216,7 +216,7 @@ local function decoding_table_lookup(value, i, spec)
     local decoded = spec.decoding_table[char]
 
     if decoded == nil then
-        error(string.format("Invalid character '%s' at byte position %d in base64 string", char, i))
+        error(string.format("Invalid character '%s' at byte position %d in base64 string", char, i), 0)
     end
 
     return decoded
@@ -228,7 +228,7 @@ end
 ---@return string
 function base64.decode_with(value, base64_codec)
     if value == nil then
-        error("Cannot decode nil value")
+        error("Cannot decode nil value", 0)
     end
 
     local pad_char = base64_codec.pad_char

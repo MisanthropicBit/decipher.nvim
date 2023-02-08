@@ -1,11 +1,15 @@
 local codecs = {}
 
+local base32 = require("decipher.codecs.base32")
 local base64 = require("decipher.codecs.base64")
 local base64_url = require("decipher.codecs.base64_url")
 local url = require("decipher.codecs.url")
 
 ---@enum decipher.Codec
 codecs.codec = {
+    base32 = "base32",
+    zbase32 = "zbase32",
+    crockford = "crockford",
     base64 = "base64",
     base85 = "base85",
     base64_url = "base64-url",
@@ -25,6 +29,9 @@ codecs.codec = {
 
 
 local codecs_map = {
+    ["base32"] = base32,
+    ["zbase32"] = base32.zbase32(),
+    ["crockford"] = base32.crockford(),
     ["base64"] = base64,
     ["base64-url"] = base64_url,
     ["url"] = url,

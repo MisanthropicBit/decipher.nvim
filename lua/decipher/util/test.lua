@@ -6,7 +6,10 @@ local test = {}
 ---@param encode_func fun(string): string?
 function test.test_encode(test_cases, encode_func)
     for input, output in pairs(test_cases) do
-        assert.are.equal(encode_func(input), output)
+        local encoded = encode_func(input)
+
+        assert.are.equal(#encoded, #output)
+        assert.are.equal(encoded, output)
     end
 end
 
@@ -16,7 +19,10 @@ end
 ---@param decode_func fun(string): string?
 function test.test_decode(test_cases, decode_func)
     for input, output in pairs(test_cases) do
-        assert.are.equal(decode_func(output), input)
+        local decoded = decode_func(output)
+
+        assert.are.equal(#decoded, #input)
+        assert.are.equal(decoded, input)
     end
 end
 

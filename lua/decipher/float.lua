@@ -9,6 +9,7 @@ local float = {}
 local config = require("decipher.config")
 local errors = require("decipher.errors")
 local str_utils = require("decipher.util.string")
+local text = require("decipher.text")
 
 local has_floating_window = vim.fn.has("nvim") and vim.fn.exists("*nvim_win_set_config")
 
@@ -51,7 +52,9 @@ end
 ---@field height number
 ---@field title string
 ---@field contents string[]
+---@field selection decipher.Region
 ---@field win_id? number window id
+---@field parent_bufnr? number
 ---@field buffer? number buffer id
 ---@field position decipher.Position position of the float
 ---@field window_config? decipher.WindowConfig
@@ -60,7 +63,12 @@ local Float = {
     height = 0,
     title = "",
     contents = {},
+    selection = {
+        ["start"] = { row = -1, col = -1 },
+        ["end"] = { row = -1, col = -1 },
+    },
     win_id = nil,
+    parent_bufnr = nil,
     buffer = nil,
     position = {
         row = 0,
@@ -196,8 +204,7 @@ function Float:open(position)
     self.position = position
 
     local options = self:create_window_options(self.width, self.height)
-    local parent_bufnr = vim.api.nvim_get_current_buf()
-
+    self.parent_bufnr = vim.api.nvim_get_current_buf()
     self.buffer = vim.api.nvim_create_buf(false, true)
     self.win_id = vim.api.nvim_open_win(self.buffer, self.window_config.enter or false, options)
 
@@ -216,7 +223,7 @@ function Float:open(position)
                     self:close()
                 end,
                 once = true,
-                buffer = parent_bufnr,
+                buffer = self.parent_bufnr,
                 desc = [[Closes the decipher floating window when insert mode is entered,
     the cursor is moved]],
             })
@@ -256,6 +263,10 @@ function Float:set_mappings()
         vim.keymap.set("n", self.window_config.dismiss, function()
             self:close()
         end, map_options)
+
+        vim.keymap.set("n", self.window_config.apply, function()
+            self:apply_codec()
+        end, map_options)
     end
 end
 
@@ -290,6 +301,19 @@ function Float:set_contents(contents)
         self.contents = contents
         self.width, self.height = self:content_dimensions()
     end
+end
+
+-- Set the selected region for a visual selection or motion
+---@param selection decipher.Region
+function Float:set_selection(selection)
+    self.selection = selection
+end
+
+-- Apply the encoding or decoding in a preview to the selection that triggered
+-- the preview
+function Float:apply_codec()
+    text.set_region(self.parent_bufnr, self.selection, str_utils.escape_newlines(self.contents[1]))
+    self:close()
 end
 
 -- Attempt to focus the float. May fail silently if window has already been closed
@@ -330,7 +354,7 @@ end
 ---@param title? string
 ---@param contents string[]
 ---@param window_config? decipher.WindowConfig
-function float.open(title, contents, window_config)
+function float.open(title, contents, window_config, selection)
     -- TODO: Close current popup if inside it
 
     if has_floating_window ~= 1 then
@@ -361,6 +385,7 @@ function float.open(title, contents, window_config)
     -- Escape the string since you cannot set lines in a buffer if it
     -- contains newlines
     win:set_contents(vim.tbl_map(str_utils.escape_newlines, contents))
+    win:set_selection(selection)
     win:open(get_global_coordinates())
 
     floats[cur_win_id] = win

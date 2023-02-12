@@ -60,14 +60,13 @@ end
 ---@param codec_name decipher.CodecArg
 ---@param status boolean
 ---@param value string?
----@param selection function
----@diagnostic disable-next-line: unused-local
+---@param selection decipher.Region
 local function open_float_handler(codec_name, status, value, selection)
     if status and value == nil then
         value = "Codec not found"
     end
 
-    float.open(codec_name, { value }, config.float)
+    float.open(codec_name, { value }, config.float, selection)
 end
 
 --- Handler for setting a text region to a value

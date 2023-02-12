@@ -12,12 +12,13 @@ function text.get_region(selection)
     )[1]
 end
 
+---@param bufnr number
 ---@param selection decipher.Region
----@param value string[]
-function text.set_region(selection, value)
+---@param value string
+function text.set_region(bufnr, selection, value)
     -- TODO: Use lockmarks here if selection is on a single line
     vim.api.nvim_buf_set_text(
-        0,
+        bufnr,
         selection.start.row - 1,
         selection.start.col - 1,
         selection["end"].row - 1,

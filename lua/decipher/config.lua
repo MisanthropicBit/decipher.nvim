@@ -6,6 +6,7 @@ local config = {}
 ---@field padding number
 ---@field border (string | string[])[]
 ---@field dismiss? string
+---@field apply? string
 ---@field title boolean
 ---@field title_separator string
 ---@field autoclose boolean
@@ -32,6 +33,7 @@ local default_config = {
             { "│", "Keyword" },
         },
         dismiss = "q",
+        apply = "a",
         title = true,
         title_separator = "─",
         autoclose = true,

@@ -11,11 +11,14 @@ codecs.codec = {
     zbase32 = "zbase32",
     crockford = "crockford",
     base64 = "base64",
-    base85 = "base85",
     base64_url = "base64-url",
-    base85_url = "base85-url",
-    rot13 = "rot13",
-    all = "all",
+    base64_url_safe = "base64-url-safe",
+    url = "url",
+    -- base85 = "base85",
+    -- base64_url = "base64-url",
+    -- base85_url = "base85-url",
+    -- rot13 = "rot13",
+    -- all = "all",
 }
 
 ---@alias decipher.EncodingTable table<number, string>
@@ -23,6 +26,7 @@ codecs.codec = {
 
 --- Simple spec for defining codecs based on tables like base64
 ---@class decipher.CodecSpec
+---@field name string
 ---@field encoding_table decipher.EncodingTable
 ---@field decoding_table decipher.DecodingTable
 ---@field pad_char string
@@ -32,6 +36,7 @@ local codecs_map = {
     ["base32"] = base32,
     ["zbase32"] = base32.zbase32(),
     ["crockford"] = base32.crockford(),
+    ["base64-url-safe"] = base64.url_safe(),
     ["base64"] = base64,
     ["base64-url"] = base64_url,
     ["url"] = url,

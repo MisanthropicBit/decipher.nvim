@@ -141,7 +141,7 @@ local rfc4648_base64_url_safe_encoding_table = {
     [63] = "_",
 }
 
-local default_base64_codec = util.make_codec(rfc4648_default_encoding_table, "=", base64)
+local default_base64_codec = util.make_codec("base64", rfc4648_default_encoding_table, "=", base64)
 
 --- Combine three octets/bytes from value at index i into an integer
 ---@param value string
@@ -202,26 +202,6 @@ function base64.encode(value)
     return default_base64_codec.encode(value)
 end
 
----@param value string
----@param i number
----@param spec decipher.CodecSpec
----@return number
-local function decoding_table_lookup(value, i, spec)
-    local char = value:sub(i, i)
-
-    if char == spec.pad_char then
-        return 0
-    end
-
-    local decoded = spec.decoding_table[char]
-
-    if decoded == nil then
-        error(string.format("Invalid character '%s' at byte position %d in base64 string", char, i), 0)
-    end
-
-    return decoded
-end
-
 --- Decode a base64-encoded string with a given codec spec
 ---@param value string
 ---@param base64_codec decipher.CodecSpec
@@ -238,10 +218,10 @@ function base64.decode_with(value, base64_codec)
         local value3, value4 = value:sub(i + 2, i + 2), value:sub(i + 3, i + 3)
         local last = value3 == pad_char and 3 or value4 == pad_char and 2 or 1
 
-        local decoded1 = decoding_table_lookup(value, i, base64_codec)
-        local decoded2 = decoding_table_lookup(value, i + 1, base64_codec)
-        local decoded3 = decoding_table_lookup(value, i + 2, base64_codec)
-        local decoded4 = decoding_table_lookup(value, i + 3, base64_codec)
+        local decoded1 = util.decoding_table_lookup(value, i, base64_codec)
+        local decoded2 = util.decoding_table_lookup(value, i + 1, base64_codec)
+        local decoded3 = util.decoding_table_lookup(value, i + 2, base64_codec)
+        local decoded4 = util.decoding_table_lookup(value, i + 3, base64_codec)
 
         local joined = bits.bor(
             bits.lshift(decoded1, 18),
@@ -266,9 +246,9 @@ function base64.decode(value)
 end
 
 --- Get a codec for url- and filename-safe base64
----@return decipher.CodecSpec
+---@return decipher.Codec
 function base64.url_safe()
-    return util.make_codec(rfc4648_base64_url_safe_encoding_table, "=", base64)
+    return util.make_codec("base64", rfc4648_base64_url_safe_encoding_table, "=", base64)
 end
 
 return base64

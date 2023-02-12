@@ -35,14 +35,14 @@ describe("codecs.base32", function()
     it("throws an error if the length of the base32-encoded string is not a multiple of 8", function()
         assert.has_error(function()
             base32.decode("NRUWO2DUEB3W64")
-        end, "Incorrectly padded base32-encoded string")
+        end, "base32-encoded string is not a multiple of 8")
     end)
 
     describe("codecs.base32.zbase32", function()
         local zbase32 = base32.zbase32()
 
         local test_cases = {
-            ["many hands make light work."] = "piosh6jypbosh3durbssn45frbsg135eqoo8q551pczy====",
+            ["Many hands make light work."] = "jiosh6jypbosh3durbssn45frbsg135eqoo8q551pczy====",
             ["light work."] = "ptwsq4dwrb5s6humfa======",
             ["light work"] = "ptwsq4dwrb5s6hum",
             ["light wor"] = "ptwsq4dwrb5s6ho=",
@@ -66,15 +66,15 @@ describe("codecs.base32", function()
         local crockford = base32.crockford()
 
         local test_cases = {
-            -- ["many hands make light work."] = "9NGPWY90D1GPWS3K41PP2TV541P6JSV8EGG7EVVJDCQ0====",
+            ["Many hands make light work."] = "9NGPWY90D1GPWS3K41PP2TV541P6JSV8EGG7EVVJDCQ0====",
             ["light work."] = "DHMPET3M41VPYWKB5R======",
-            ["light work"] = "DHMPET3M41VPYWKB5R======",
-            ["light wor"] = "DHMPET3M41VPYWKB5R======",
-            ["light wo"] = "DHMPET3M41VPYWKB5R======",
+            ["light work"] = "DHMPET3M41VPYWKB",
+            ["light wor"] = "DHMPET3M41VPYWG=",
+            ["light wo"] = "DHMPET3M41VPY===",
             ["light w"] = "DHMPET3M41VG====",
             [""] = "",
-            -- ["line1\nline2"] = "nruw4zjrbjwgs3tfgi======",
-            -- ["works with unicode like ✔"] = "q7zzr45urb5s17derb4sh4mdp71gkedcpfiske8nu1ky====",
+            ["line1\nline2"] = "DHMPWS9H19P6JVK568======",
+            ["works with unicode like ✔"] = "EXQQ4TVK41VPJX3841TPWTB3DXJ6A83CD5NPA872KJA0====",
         }
 
         it("encodes strings into crockford", function()

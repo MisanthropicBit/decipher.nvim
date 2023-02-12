@@ -1,4 +1,4 @@
-local error = {}
+local errors = {}
 
 ---@param message string | string[][]
 ---@param history boolean
@@ -22,16 +22,16 @@ end
 
 ---@param chunks string | string[][]
 ---@param history boolean
-function error.error_message(chunks, history)
+function errors.error_message(chunks, history)
     _error_message(chunks, history)
 end
 
 ---@param codec_name string
-function error.error_message_codec(codec_name)
-    error.error_message({
+function errors.error_message_codec(codec_name)
+    errors.error_message({
         { " " .. "Codec not found:" },
         { " " .. string.format("%s", codec_name), "WarningMsg" },
     }, true)
 end
 
-return error
+return errors

@@ -109,7 +109,7 @@ local crockfold_encoding_table = {
     [31] = "Z",
 }
 
-local default_base32_codec = util.make_codec(rfc4648_encoding_table, "=", base32)
+local default_base32_codec = util.make_codec("base32", rfc4648_encoding_table, "=", base32)
 
 --- Encode a string as base32 with a given codec spec
 ---@param value string
@@ -169,14 +169,12 @@ function base32.decode_with(value, base32_codec)
     end
 
     if #value % 8 ~= 0 then
-        error("Incorrectly padded base32-encoded string", 0)
+        error("base32-encoded string is not a multiple of 8", 0)
     end
 
-    local decoding_table = base32_codec.decoding_table
     local pad_char = base32_codec.pad_char
     local result, bit_buffer, bit_count = "", 0, 0
 
-    -- NRUWO2
     for i = 1, #value do
         local char = string.char(value:byte(i))
 
@@ -184,7 +182,7 @@ function base32.decode_with(value, base32_codec)
             break
         end
 
-        local index = decoding_table[char]
+        local index = util.decoding_table_lookup(value, i, base32_codec)
         bit_buffer = bits.left_pack(bit_buffer, 5, index)
         bit_count = bit_count + 5
 
@@ -194,28 +192,6 @@ function base32.decode_with(value, base32_codec)
             bit_count = bit_count - 8
         end
     end
-
-    -- if bit_count > 0 then
-    --     local char = bits.band(bits.lshift(bit_buffer, 8 - bit_count), 0xff)
-
-    --     result = string.format("%s%s", result, char)
-    -- end
-
-    -- for i = 1, #value, 4 do
-    --     local value3, value4 = value:sub(i + 2, i + 2), value:sub(i + 3, i + 3)
-    --     local last = value3 == pad_char and 3 or value4 == pad_char and 2 or 1
-
-    --     local joined = bits.bor(
-    --         bits.lshift(decoding_table[value:sub(i, i)] or 0, 18),
-    --         bits.lshift(decoding_table[value:sub(i + 1, i + 1)] or 0, 12),
-    --         bits.lshift(decoding_table[value3] or 0, 6),
-    --         decoding_table[value4] or 0
-    --     )
-
-    --     for j = 3, last, -1 do
-    --         result = string.format("%s%s", result, string.char(bits.band(bits.rshift(joined, (j - 1) * 8), 0xff)))
-    --     end
-    -- end
 
     return result
 end
@@ -230,13 +206,13 @@ end
 --- Get a codec for the zbase32 variant of base32
 ---@return decipher.Codec
 function base32.zbase32()
-    return util.make_codec(zbase32_encoding_table, "=", base32)
+    return util.make_codec("zbase32", zbase32_encoding_table, "=", base32)
 end
 
 --- Get a codec for the crockford variant of base32
 ---@return decipher.Codec
 function base32.crockford()
-    return util.make_codec(crockfold_encoding_table, "=", base32)
+    return util.make_codec("crockford", crockfold_encoding_table, "=", base32)
 end
 
 return base32

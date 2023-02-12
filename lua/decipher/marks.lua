@@ -18,7 +18,7 @@ function marks.get_mark_positions(mark_type)
     elseif mark_type == "motion" then
         _marks = { "'[", "']" }
     else
-        error(string.format("Unknown mark type: '%s'", mark_type))
+        error(string.format("Unknown mark type: '%s'", mark_type), 0)
     end
 
     local start_row, start_col = unpack(vim.fn.getpos(_marks[1]), 2, 3)

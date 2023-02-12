@@ -5,7 +5,7 @@ local decipher_version = "1.0.0"
 local config = require("decipher.config")
 local codecs = require("decipher.codecs")
 local commands = require("decipher.commands")
-local error = require("decipher.error")
+local errors = require("decipher.errors")
 local float = require("decipher.float")
 local text = require("decipher.text")
 local str_utils = require("decipher.util.string")
@@ -37,7 +37,7 @@ local function handle_codec(codec_name, value, func_key)
     local codec = codecs.get(codec_name)
 
     if codec == nil then
-        return nil
+        error(string.format("Codec '%s' not found", codec_name), 0)
     end
 
     return codec[func_key](value)
@@ -78,17 +78,17 @@ end
 ---@diagnostic disable-next-line: unused-local
 local function set_text_region_handler(codec_name, status, value, selection)
     if not status then
-        error.error_message(string.format("%s: %s", codec_name, value), true)
+        errors.error_message(string.format("%s: %s", codec_name, value), true)
         return
     end
 
     if value == nil then
-        error.error_message_codec(codec_name)
+        errors.error_message_codec(codec_name)
         return
     end
 
     -- Escape the string since you cannot set lines in a buffer if it contains newlines
-    text.set_region(selection, str_utils.escape_newlines(value))
+    text.set_region(0, selection, str_utils.escape_newlines(value))
 end
 
 --- Process a codec action
@@ -185,7 +185,7 @@ function decipher.setup(user_config)
     config.setup(user_config)
 
     if not vim.fn.has("nvim-0.5.0") then
-        error.error_message("This plugin only works with Neovim >= v0.5.0", false)
+        errors.error_message("This plugin only works with Neovim >= v0.5.0", false)
         return
     end
 

@@ -10,7 +10,15 @@ describe("decipher", function()
         local codecs = decipher.codecs()
         table.sort(codecs)
 
-        assert.are.same(codecs, { "base64", "base64-url", "url" })
+        assert.are.same(codecs, {
+            "base32",
+            "base64",
+            "base64-url",
+            "base64-url-safe",
+            "crockford",
+            "url",
+            "zbase32",
+        })
     end)
 
     it("prints an error if the neovim version is not supported", function()
@@ -27,21 +35,18 @@ describe("decipher", function()
     end)
 
     it("encodes a string using a codec", function()
-        local encoded = decipher.encode("base64", "light work")
-
-        assert.are.same(encoded, "bGlnaHQgd29yaw==")
+        assert.are.same(decipher.encode("base64", "light work"), "bGlnaHQgd29yaw==")
+        assert.are.same(decipher.encode(decipher.codec.base64, "light work"), "bGlnaHQgd29yaw==")
     end)
 
-    it("issues an error and returns nil for an unknown/unsupported codec", function()
-        stub(vim.api, "nvim_echo")
+    it("decodes a string using a codec", function()
+        assert.are.same(decipher.decode("base64", "bGlnaHQgd29yaw=="), "light work")
+        assert.are.same(decipher.decode(decipher.codec.base64, "bGlnaHQgd29yaw=="), "light work")
+    end)
 
-        local encoded = decipher.encode("nope", "test")
-        assert.is._nil(encoded)
-
-        assert.stub(vim.api.nvim_echo).was_called_with({
-            { "[decipher]:", "WarningMsg" },
-            { " Codec not found:" },
-            { " nope", "WarningMsg" },
-        }, true, {})
+    it("issues an error for an unknown/unsupported codec", function()
+        assert.has_error(function()
+            decipher.encode("nope", "test")
+        end, "Codec 'nope' not found")
     end)
 end)

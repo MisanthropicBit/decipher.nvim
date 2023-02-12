@@ -7,7 +7,7 @@
 local float = {}
 
 local config = require("decipher.config")
-local error = require("decipher.error")
+local errors = require("decipher.errors")
 local str_utils = require("decipher.util.string")
 
 local has_floating_window = vim.fn.has("nvim") and vim.fn.exists("*nvim_win_set_config")
@@ -334,7 +334,7 @@ function float.open(title, contents, window_config)
     -- TODO: Close current popup if inside it
 
     if has_floating_window ~= 1 then
-        error.error_message("No support for floating windows", true)
+        errors.error_message("No support for floating windows", true)
         return
     end
 

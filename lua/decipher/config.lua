@@ -1,5 +1,7 @@
 local config = {}
 
+local codecs = require("decipher.codecs")
+
 ---@class decipher.WindowConfig
 ---@field max_width number | "auto"
 ---@field max_height number | "auto"
@@ -14,10 +16,12 @@ local config = {}
 ---@field options table<string, any>
 
 ---@class decipher.Config
+---@field active_codecs decipher.Codec[] | "all"
 ---@field float decipher.WindowConfig
 
 ---@type decipher.Config
 local default_config = {
+    active_codecs = "all",
     float = {
         max_height = "auto",
         max_width = "auto",
@@ -50,6 +54,10 @@ local _user_config = default_config
 ---@param user_config? decipher.Config
 function config.setup(user_config)
     _user_config = vim.tbl_deep_extend("keep", user_config or {}, default_config)
+
+    if _user_config.active_codecs == "all" then
+        _user_config.active_codecs = codecs.supported()
+    end
 end
 
 setmetatable(config, {

@@ -6,11 +6,8 @@ describe("decipher", function()
         assert.are.same(decipher.version(), "1.0.0")
     end)
 
-    it("gets a list of supported codecs", function()
-        local codecs = decipher.codecs()
-        table.sort(codecs)
-
-        assert.are.same(codecs, {
+    it("gets a sorted list of supported codecs", function()
+        assert.are.same(decipher.codecs(), {
             "base32",
             "base64",
             "base64-url",
@@ -18,6 +15,15 @@ describe("decipher", function()
             "crockford",
             "url",
             "zbase32",
+        })
+    end)
+
+    it("gets a sorted list of active codecs", function()
+        decipher.setup({ active_codecs = { "crockford", "base64" } })
+
+        assert.are.same(decipher.active_codecs(), {
+            "base64",
+            "crockford",
         })
     end)
 

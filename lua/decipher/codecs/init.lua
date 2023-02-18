@@ -5,7 +5,7 @@ local base64 = require("decipher.codecs.base64")
 local base64_url = require("decipher.codecs.base64_url")
 local url = require("decipher.codecs.url")
 
----@enum decipher.Codec
+---@enum decipher.Codecs
 codecs.codec = {
     base32 = "base32",
     zbase32 = "zbase32",
@@ -14,11 +14,6 @@ codecs.codec = {
     base64_url = "base64-url",
     base64_url_safe = "base64-url-safe",
     url = "url",
-    -- base85 = "base85",
-    -- base64_url = "base64-url",
-    -- base85_url = "base85-url",
-    -- rot13 = "rot13",
-    -- all = "all",
 }
 
 ---@alias decipher.EncodingTable table<number, string>
@@ -31,7 +26,12 @@ codecs.codec = {
 ---@field decoding_table decipher.DecodingTable
 ---@field pad_char string
 
+---@class decipher.Codec
+---@field name string
+---@field encode fun(string): string
+---@field decode fun(string): string
 
+---@type table<string, decipher.Codec>
 local codecs_map = {
     ["base32"] = base32,
     ["zbase32"] = base32.zbase32(),
@@ -42,12 +42,14 @@ local codecs_map = {
     ["url"] = url,
 }
 
+---@param name decipher.CodecArg
+---@return decipher.Codec
 function codecs.get(name)
     return codecs_map[name]
 end
 
 --- Get a list of supported codecs
----@return decipher.Codec[]
+---@return decipher.Codecs[]
 function codecs.supported()
     local _codecs = vim.tbl_keys(codecs_map)
     table.sort(_codecs)

@@ -24,13 +24,13 @@ function decipher.version()
     return decipher_version
 end
 
----@return string[] a list of the names of supported codecs
-function decipher.codecs()
+---@return decipher.Codecs[] a list of the names of supported codecs
+function decipher.supported_codecs()
     return codecs.supported()
 end
 
 --- Get a list of currently active codecs
----@return decipher.Codec[]
+---@return decipher.Codecs[]
 function decipher.active_codecs()
     local _codecs = vim.tbl_values(config.active_codecs)
     table.sort(_codecs)
@@ -66,7 +66,7 @@ function decipher.decode(codec_name, value)
     return handle_codec(codec_name, value, "decode")
 end
 
----@param codec_name decipher.CodecArg
+---@param codec_name string
 ---@param status boolean
 ---@param value string?
 ---@param selection decipher.Region
@@ -79,7 +79,7 @@ local function open_float_handler(codec_name, status, value, selection)
 end
 
 --- Handler for setting a text region to a value
----@param codec_name decipher.CodecArg
+---@param codec_name string
 ---@param status boolean
 ---@param value string?
 ---@param selection decipher.Region
@@ -111,7 +111,7 @@ local function process_codec(codec_name, codec_func, selection_func, options)
     local do_preview = (options and options.preview == true) or false
     local handler_func = do_preview and open_float_handler or set_text_region_handler
 
-    handler_func(codec_name, status, value, selection)
+    handler_func(string.format("%s", codec_name), status, value, selection)
 end
 
 --- Prompt for a codec to use

@@ -7,7 +7,7 @@ describe("decipher", function()
     end)
 
     it("gets a sorted list of supported codecs", function()
-        assert.are.same(decipher.codecs(), {
+        assert.are.same(decipher.supported_codecs(), {
             "base32",
             "base64",
             "base64-url",

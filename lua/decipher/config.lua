@@ -16,7 +16,7 @@ local codecs = require("decipher.codecs")
 ---@field options table<string, any>
 
 ---@class decipher.Config
----@field active_codecs decipher.Codec[] | "all"
+---@field active_codecs (string | decipher.Codecs)[] | "all"
 ---@field float decipher.WindowConfig
 
 ---@type decipher.Config

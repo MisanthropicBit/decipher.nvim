@@ -1,4 +1,5 @@
 local url = require("decipher.codecs.url")
+local test_utils = require("decipher.util.test")
 
 describe("codecs.url", function()
     local test_cases = {
@@ -7,18 +8,15 @@ describe("codecs.url", function()
     }
 
     it("url-encodes strings", function()
-        for input, output in pairs(test_cases) do
-            assert.are.same(url.encode(input), output)
-        end
+        test_utils.test_encode(test_cases, url.encode)
     end)
 
     it("url-decodes strings", function()
-        for input, output in pairs(test_cases) do
-            assert.are.same(url.decode(output), input)
-        end
+        test_utils.test_decode(test_cases, url.decode)
     end)
 
     it("handles nil", function()
+        assert.is._nil(url.encode(nil))
         assert.is._nil(url.decode(nil))
     end)
 end)

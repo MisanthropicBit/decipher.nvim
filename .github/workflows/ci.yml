@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: JohnnyMorganz/stylua-action@v1
+      - uses: JohnnyMorganz/stylua-action@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          version: latest
+          version: v0.11.2
           args: --check lua/ tests/
 
   tests:

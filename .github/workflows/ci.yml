@@ -14,7 +14,7 @@ jobs:
       - uses: JohnnyMorganz/stylua-action@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          version: v0.11.2
+          version: v0.16.1
           args: --check lua/ tests/
 
   tests:

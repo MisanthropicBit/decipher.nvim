@@ -223,12 +223,8 @@ function base64.decode_with(value, base64_codec)
         local decoded3 = util.decoding_table_lookup(value, i + 2, base64_codec)
         local decoded4 = util.decoding_table_lookup(value, i + 3, base64_codec)
 
-        local joined = bits.bor(
-            bits.lshift(decoded1, 18),
-            bits.lshift(decoded2, 12),
-            bits.lshift(decoded3, 6),
-            decoded4
-        )
+        local joined =
+            bits.bor(bits.lshift(decoded1, 18), bits.lshift(decoded2, 12), bits.lshift(decoded3, 6), decoded4)
 
         for j = 3, last, -1 do
             result = string.format("%s%s", result, string.char(bits.band(bits.rshift(joined, (j - 1) * 8), 0xff)))

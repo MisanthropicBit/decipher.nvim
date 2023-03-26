@@ -1,6 +1,6 @@
 local motion = {}
 
-local marks = require("decipher.marks")
+local selection = require("decipher.selection")
 
 --- If the type describes a motion or not
 ---@param type string | nil
@@ -38,7 +38,7 @@ end
 
 ---@return decipher.Region
 function motion.get_motion()
-    return marks.get_mark_positions("motion")
+    return selection.get_motion_selection()
 end
 
 ---@param handler fun(): nil

@@ -9,7 +9,7 @@ local float = {}
 local config = require("decipher.config")
 local errors = require("decipher.errors")
 local str_utils = require("decipher.util.string")
-local text = require("decipher.text")
+local selection = require("decipher.selection")
 
 local has_floating_window = vim.fn.has("nvim") and vim.fn.exists("*nvim_win_set_config")
 
@@ -42,7 +42,7 @@ local function get_global_coordinates()
     local win_row, win_col = unpack(vim.fn.win_screenpos(0))
 
     return {
-        row = vim.fn.winline() + win_row - 1,
+        lnum = vim.fn.winline() + win_row - 1,
         col = vim.fn.wincol() + win_col - 1,
     }
 end
@@ -52,7 +52,8 @@ end
 ---@field height number
 ---@field title string
 ---@field contents string[]
----@field selection decipher.Region
+---@field selection_type decipher.SelectionType
+---@field parent_selection decipher.Region
 ---@field win_id? number window id
 ---@field parent_bufnr? number
 ---@field buffer? number buffer id
@@ -64,14 +65,14 @@ local Float = {
     title = "",
     contents = {},
     selection = {
-        ["start"] = { row = -1, col = -1 },
-        ["end"] = { row = -1, col = -1 },
+        ["start"] = { lnum = -1, col = -1 },
+        ["end"] = { lnum = -1, col = -1 },
     },
     win_id = nil,
     parent_bufnr = nil,
     buffer = nil,
     position = {
-        row = 0,
+        lnum = 0,
         col = 0,
     },
     window_config = nil,
@@ -143,7 +144,7 @@ function Float:create_window_options(content_width, content_height)
 
     return {
         relative = "editor",
-        row = anchored.position.row,
+        row = anchored.position.lnum,
         col = anchored.position.col,
         anchor = anchored.anchor,
         width = width,
@@ -166,9 +167,9 @@ end
 function Float:get_anchored_position(position, width, height, padding)
     local vertical_anchor, horizontal_anchor = "N", "W"
 
-    if position.row + height + padding > vim.o.lines - 1 then
+    if position.lnum + height + padding > vim.o.lines - 1 then
         vertical_anchor = "S"
-        position.row = position.row - padding
+        position.lnum = position.lnum - padding
     end
 
     if position.col + width + padding <= vim.o.columns then
@@ -304,15 +305,17 @@ function Float:set_contents(contents)
 end
 
 -- Set the selected region for a visual selection or motion
----@param selection decipher.Region
-function Float:set_selection(selection)
-    self.selection = selection
+---@param parent_selection decipher.Region selection orginially made in the
+--                                         float's parent buffer
+function Float:set_selection(selection_type, parent_selection)
+    self.selection_type = selection_type
+    self.parent_selection = parent_selection
 end
 
 -- Apply the encoding or decoding in a preview to the selection that triggered
 -- the preview
 function Float:apply_codec()
-    text.set_region(self.parent_bufnr, self.selection, str_utils.escape_newlines(self.contents[1]))
+    selection.set_text_from_selection(self.parent_bufnr, self.selection_type, self.parent_selection, self.contents)
     self:close()
 end
 
@@ -354,7 +357,9 @@ end
 ---@param title? string
 ---@param contents string[]
 ---@param window_config? decipher.WindowConfig
-function float.open(title, contents, window_config, selection)
+---@param selection_type decipher.SelectionType
+---@param _selection decipher.Region
+function float.open(title, contents, window_config, selection_type, _selection)
     -- TODO: Close current popup if inside it
 
     if has_floating_window ~= 1 then
@@ -384,8 +389,8 @@ function float.open(title, contents, window_config, selection)
 
     -- Escape the string since you cannot set lines in a buffer if it
     -- contains newlines
-    win:set_contents(vim.tbl_map(str_utils.escape_newlines, contents))
-    win:set_selection(selection)
+    win:set_contents(str_utils.escape_newlines(contents))
+    win:set_selection(selection_type, _selection)
     win:open(get_global_coordinates())
 
     floats[cur_win_id] = win

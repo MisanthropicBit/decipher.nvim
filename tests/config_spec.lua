@@ -1,6 +1,6 @@
 local config = require("decipher.config")
 
-describe("decipher.config", function()
+describe("config", function()
     it("throws an error on invalid configs", function()
         local wrong_configs = {
             { float = { padding = "nope" } },

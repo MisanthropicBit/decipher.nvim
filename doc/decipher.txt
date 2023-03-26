@@ -2,9 +2,9 @@
 
 ==============================================================================
 
-█▀▀▄ █▀▀▀ █▀▀▀
-█  █ ██   █
-█▄▄▀ █▄▄▄ █▄▄▄
+           █▀▀▄ █▀▀▀ █▀▀▀ █ █▀▀▄ █  █ █▀▀▀ █▀▀▄   █▄ █ █  █ █ █▄ ▄█
+           █  █ ██   █    █ █▄▄█ ████ ██   █▄▄█   █▀▄█ █  █ █ █ ▀ █
+           █▄▄▀ █▄▄▄ █▄▄▄ █ █    █  █ █▄▄▄ █ █  ▄ █ ▀█ ▀▄▄▀ █ █   █
 
                                Version 1.0.0
 
@@ -14,47 +14,178 @@ codecs like base64.
 ==============================================================================
 decipher                                                              *decipher*
 
-                                   `decipher`
+                               `decipher.nvim`
 
   Setup ....................................................... |decipher.setup|
+  Functions ............................................... |decipher.functions|
   Commands ................................................. |decipher.commands|
   Mappings ................................................. |decipher.mappings|
   Motions ................................................... |decipher.motions|
+  Highlights ............................................. |decipher.highlights|
   Codecs ..................................................... |decipher.codecs|
   FAQ ........................................................... |decipher.faq|
 
 ==============================================================================
 Setup                                                           *decipher.setup*
 
-There are currently no configuration options.
+Below decipher is set up through `decipher.setup({ ... })` with default values.
+>lua
+    require('decipher').setup({
+        active_codecs = "all",
+        float = {
+            max_height = "auto",
+            max_width = "auto",
+            padding = 0,
+            border = {
+                { "╭", "FloatBorder" },
+                { "─", "FloatBorder" },
+                { "╮", "FloatBorder" },
+                { "│", "FloatBorder" },
+                { "╯", "FloatBorder" },
+                { "─", "FloatBorder" },
+                { "╰", "FloatBorder" },
+                { "│", "FloatBorder" },
+            },
+            dismiss = "q",
+            apply = "a",
+            title = true,
+            title_separator = "─",
+            autoclose = true,
+            enter = false,
+            options = {
+                wrap = false,
+            },
+        },
+    })
+<
+decipher.Config                                                *decipher.Config*
+
+    Fields: ~
+        {active_codecs} `"all" | (string | decipher.Codecs)[]`
+            A list of the codecs that should be active or "all" for all
+            codecs. This only affects the codecs you can choose from when
+            selecting a codec via the UI.
+
+        {float} `decipher.WindowConfig`
+
+decipher.WindowConfig                                    *decipher.WindowConfig*
+
+    Fields: ~
+        {max_width} `number | "auto"`
+            Maximum width of the preview floating window.
+
+        {max_height} `number | "auto"`
+            Maximum height of the preview floating window.
+
+        {padding} `number`
+            Padding around the preview contents in the floating window.
+
+        {border} (`string | string[]`)[]
+            Border around the preview floating window.
+
+        {dismiss} `string`
+            Key to press to dismiss the preview floating window when inside
+            it. Used as the left-hand side in a normal map defintion.
+
+        {apply} `string`
+            Key to press to apply the encoding or decoding of the previewed
+            text in the preview floating window when inside it. Used as the
+            left-hand side in a normal map defintion.
+
+        {title} `boolean`
+            Whether or not to show a title in the preview floating window or
+            not. If enabled, displays the codec name.
+
+        {title_separator} `string`
+            The title separator string (a single character) between the title
+            and the previewed contents in the preview floating window.
+            Not used if the |title| is disabled.
+
+        {autoclose} `boolean`
+            Autoclose the preview floating window if insert mode is
+            entered or the cursor is moved.
+
+        {enter} `boolean`
+            Automatically enter the preview floating window when opened.
+
+        {options} `table<string, any>`
+            Buffer-local options to set for the preview floating window.
+
+==============================================================================
+Functions                                                   *decipher.functions*
+
+*decipher.setup* (config: decipher.ConfigSchema)
+  Setup global configuration for decipher.
 
 ==============================================================================
 Commands                                                     *decipher.commands*
 
+*DecipherDecode*
+  Description
+
+*DecipherEncode*
+  Description
+
+*DecipherDecodePrompt*
+  Description
+
+*DecipherEncodePrompt*
+  Description
+
+*DecipherDecodeSelection*
+  Description
+
+*DecipherEncodeSelection*
+  Description
+
+*DecipherPreviewSelection*
+  Description
+
+*DecipherVersion*                                                *DecipherVersion*
+  Echoes the current version.
 
 ==============================================================================
 Mappings                                                     *decipher.mappings*
 
+No mappings are provided by default.
 
 ==============================================================================
 Motions                                                       *decipher.motions*
 
-The following <Plug> mappings are provided.
+Decipher can encode and decode across a motion.
+>lua
+    local decipher = require('decipher')
 
-* <Plug>(DecipherEncodeCodecMotion)
-* <Plug>(DecipherDecodeCodecMotion)
+    vim.keymap.set(
+        'n',
+        '<leader>d',
+        function()
+            decipher.decode_motion('base64', { preview = true })
+        end,
+        { noremap = true, silent = true }
+    )
 
-Where 'Codec' should be replaced with a titlecase codec name e.g.
-<Plug>(DecipherEncodeBase64Motion).
+==============================================================================
+Highlights                                                 *decipher.highlights*
+
+*DecipherFloatTitle*
+  Highlight group for the title of the floating window preview.
+
+*DecipherFloatContents*
+  Highlight group for the contents of the floating window preview.
 
 ==============================================================================
 Codecs                                                         *decipher.codecs*
 
 Currently supported codecs:
 
+* base32
+* zbase32: Variant of base32 with a different alphabet.
+* crockford: Variant of base32 with a different alphabet.
 * base64
+* base64-url: Combination of base64 and url codecs.
+* base64-url-safe: Base64-variant that is safe to include in urls.
 * url
-* base64-url
 
 ==============================================================================
 FAQ                                                               *decipher.faq*

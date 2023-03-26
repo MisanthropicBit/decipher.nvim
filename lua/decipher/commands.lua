@@ -1,5 +1,6 @@
 local M = {}
 
+---@diagnostic disable-next-line:deprecated
 local unpack = unpack or table.unpack
 
 local function user_command(name, func, options)

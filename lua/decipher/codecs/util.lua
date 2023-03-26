@@ -1,10 +1,10 @@
-local util = {}
+local codecs_util = {}
 
 ---@param value string
 ---@param i number
 ---@param spec decipher.CodecSpec
 ---@return number
-function util.decoding_table_lookup(value, i, spec)
+function codecs_util.decoding_table_lookup(value, i, spec)
     local char = value:sub(i, i)
 
     if char == spec.pad_char then
@@ -46,7 +46,7 @@ end
 ---@param pad_char string
 ---@param module any
 ---@return decipher.Codec
-function util.make_codec(name, encoding_table, pad_char, module)
+function codecs_util.make_codec(name, encoding_table, pad_char, module)
     local spec = make_codec_spec(name, encoding_table, pad_char)
 
     return {
@@ -60,4 +60,4 @@ function util.make_codec(name, encoding_table, pad_char, module)
     }
 end
 
-return util
+return codecs_util

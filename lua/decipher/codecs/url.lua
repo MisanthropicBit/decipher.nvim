@@ -1,6 +1,6 @@
-local M = {}
+local url = {}
 
-local bit = require("bit")
+local bits = require("decipher.bits")
 
 -- stylua: ignore
 local reserved = {
@@ -24,11 +24,11 @@ local reserved = {
 
 local function url_encode_byte(list, byte)
     table.insert(list, "%")
-    table.insert(list, string.format("%x", bit.rshift(byte, 4)))
-    table.insert(list, string.format("%x", bit.band(byte, 0xf)):upper())
+    table.insert(list, string.format("%x", bits.rshift(byte, 4)))
+    table.insert(list, string.format("%x", bits.band(byte, 0xf)):upper())
 end
 
-function M.encode(value)
+function url.encode(value)
     if value == nil then
         return value
     end
@@ -59,7 +59,7 @@ function M.encode(value)
     return table.concat(result)
 end
 
-function M.decode(value)
+function url.decode(value)
     if value == nil then
         return value
     end
@@ -82,7 +82,7 @@ function M.decode(value)
                 local v1 = tonumber(value:sub(i + 1, i + 1), 16)
                 local v2 = tonumber(value:sub(i + 2, i + 2), 16)
 
-                table.insert(result, string.char(bit.bor(bit.lshift(v1, 4), v2)))
+                table.insert(result, string.char(bits.bor(bits.lshift(v1, 4), v2)))
                 i = i + 3
             end
         else
@@ -107,4 +107,4 @@ end
 --     end
 -- end
 
-return M
+return url

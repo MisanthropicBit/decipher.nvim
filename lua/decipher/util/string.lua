@@ -1,11 +1,13 @@
-local util = {}
+local string_util = {}
 
----@param text string
----@return string
-function util.escape_newlines(text)
-    local sub, _ = text:gsub("\n", [[\n]])
+---@param lines string[]
+---@return string[]
+function string_util.escape_newlines(lines)
+    return vim.tbl_map(function(line)
+        local sub, _ = line:gsub("\n", [[\n]])
 
-    return sub
+        return sub
+    end, lines)
 end
 
-return util
+return string_util

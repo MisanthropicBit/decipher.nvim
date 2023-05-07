@@ -3,7 +3,6 @@ local decipher = {}
 local decipher_version = "1.0.0"
 
 local codecs = require("decipher.codecs")
-local commands = require("decipher.commands")
 local config = require("decipher.config")
 local errors = require("decipher.errors")
 local float = require("decipher.float")
@@ -209,7 +208,6 @@ function decipher.setup(user_config)
         return
     end
 
-    commands.setup(decipher)
     float.setup()
 end
 

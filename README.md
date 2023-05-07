@@ -17,6 +17,55 @@
 A small plugin that provides ways to encode and decode text using various codecs
 like base64.
 
+## Installing
+
+Use whatever package manager you use to install.
+
+* **vim-plug**
+
+    ```vim
+    Plug 'MisanthropicBit/decipher.nvim'
+    ```
+
+## Setup
+
+Setup decipher using `decipher.setup`. The options below are the default values.
+Refer to the [docs](docs//decipher.txt) for more help.
+
+```lua
+require('decipher').setup({
+    active_codecs = "all", -- Set all codecs as active and useable
+    float = { -- Floating window options
+        max_width = "auto", -- Auto-adjust width
+        max_height = "auto", -- Auto-adjust height
+        padding = 0, -- Zero padding (does not apply to title if any)
+        border = { -- Floating window border
+            { "╭", "FloatBorder" },
+            { "─", "FloatBorder" },
+            { "╮", "FloatBorder" },
+            { "│", "FloatBorder" },
+            { "╯", "FloatBorder" },
+            { "─", "FloatBorder" },
+            { "╰", "FloatBorder" },
+            { "│", "FloatBorder" },
+        },
+        dismiss = "q", -- Key to press to dismiss the floating window
+        apply = "a", -- Key to press to apply the encoding/decoding
+        title = true, -- Display a title with the codec name
+        title_separator = "─", -- Separator between title and result
+        autoclose = true, -- Autoclose floating window if insert
+                            -- mode is activated or the cursor is moved
+        enter = false, -- Automatically enter the floating window if
+                        -- opened
+        options = { -- Options to apply to the floating window contents
+            wrap = false,
+        },
+    },
+})
+```
+
+## Supported Codecs
+
 <details>
 <summary>Legend</summary>
 

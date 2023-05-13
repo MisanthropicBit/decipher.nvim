@@ -59,9 +59,11 @@ Below decipher is set up through `decipher.setup({ ... })` with default values.
             },
         },
     })
-<
-decipher.Config                                                *decipher.Config*
 
+==============================================================================
+Types                                                           *decipher.types*
+<
+                                                               *decipher.Config*
     Fields:  
         {active_codecs} `"all" | (string | decipher.Codecs)[]`
             A list of the codecs that should be active or "all" for all
@@ -70,8 +72,7 @@ decipher.Config                                                *decipher.Config*
 
         {float} `decipher.WindowConfig`
 
-decipher.WindowConfig                                    *decipher.WindowConfig*
-
+                                                         *decipher.WindowConfig*
     Fields:  
         {max_width} `number | "auto"`
             Maximum width of the preview floating window.
@@ -112,12 +113,16 @@ decipher.WindowConfig                                    *decipher.WindowConfig*
 
         {options} `table<string, any>`
             Buffer-local options to set for the preview floating window.
-==============================================================================
-Types                                                           *decipher.types*
 
                                                               *decipher.Options*
-Fields 
-{preview} `(boolean)` If true, show a preview of encoding/decoding instead.
+    Fields:
+        {preview} `(boolean)` If true, show a preview of encoding/decoding
+        instead.
+
+                                                             *decipher.CodecArg*
+    {string | decipher.Codecs}
+        General type for functions that accept codecs as arguments. Either a
+        string (e.g. 'base64') or or a an enum (e.g. decipher.codec.base64).
 
 ==============================================================================
 Functions                                                   *decipher.functions*
@@ -125,72 +130,93 @@ Functions                                                   *decipher.functions*
 Any functions not listed here that may be accessed via the decipher module are
 not considered public and are subject to change.
 
-decipher.setup({config})                                        *decipher.setup*
+setup({config})                                                 *decipher.setup*
     Setup global configuration for decipher. See |decipher-setup|.
 
-decipher.version()                                            *decipher.version*
+    Parameters:  
+      • {config}  (decipher.Config) Setup configuration table
+
+version()                                                     *decipher.version*
     Returns the current version as a string.
 
-decipher.supported_codecs()                          *decipher.supported_codecs*
+supported_codecs()                                   *decipher.supported_codecs*
     Returns a list of currently supported codecs.
 
-decipher.active_codecs()                                *decipher.active_codecs*
+active_codecs()                                         *decipher.active_codecs*
     Returns a list of currently active codecs as per |active_codecs| in
     `decipher.Config`.
 
-decipher.encode({codec_name}, {value})                         *decipher.encode*
+encode({codec_name}, {value})                                  *decipher.encode*
     Encode a value using a codec.
 
-decipher.decode({codec_name}, {value})                         *decipher.decode*
+    Parameters:  
+      • {codec_name} (`decipher.CodecArg`) Setup configuration table
+      • {value}      (`string`) Value to encode
+
+decode({codec_name}, {value})                                  *decipher.decode*
     Decode a value using a codec.
 
-decipher.encode_selection({codec_name}, {options})   *decipher.encode_selection*
+encode_selection({codec_name}, {options})            *decipher.encode_selection*
     Encode a visual selection using a codec.
 
     Parameters:  
-      • {codec_name} (`decipher.CodecArg`)
-      • {options}    (`decipher.Options`)
+      • {codec_name} (`decipher.CodecArg`) Codec to use for encoding
+      • {options}    (`decipher.Options`) Options to use
 
-decipher.decode_selection({codec_name}, {options})   *decipher.decode_selection*
+decode_selection({codec_name}, {options})            *decipher.decode_selection*
     Decode a visual selection using a codec.
 
     Parameters:  
-      • {codec_name} (`decipher.CodecArg`)
-      • {options}    (`decipher.Options`)
+      • {codec_name} (`decipher.CodecArg`) Codec to use for decoding
+      • {options}    (`decipher.Options`) Options to use
 
-decipher.encode_motion({codec_name}, {options})         *decipher.encode_motion*
+encode_motion({codec_name}, {options})                  *decipher.encode_motion*
     Encode using a motion and a codec.
 
     Parameters:  
-      • {codec_name} (`decipher.CodecArg`)
-      • {options}    (`decipher.Options`)
+      • {codec_name} (`decipher.CodecArg`) Codec to use for encoding
+      • {options}    (`decipher.Options`) Options to use
 
-decipher.decode_motion({codec_name}, {options})         *decipher.decode_motion*
+decode_motion({codec_name}, {options})                  *decipher.decode_motion*
     Decode using a motion and a codec.
 
     Parameters:  
-      • {codec_name} (`decipher.CodecArg`)
-      • {options}    (`decipher.Options`)
+      • {codec_name} (`decipher.CodecArg`) Codec to use for decoding
+      • {options}    (`decipher.Options`) Options to use
 
-decipher.encode_selection_prompt({options})   *decipher.encode_selection_prompt*
+encode_selection_prompt({options})            *decipher.encode_selection_prompt*
     Encode a visual selection using a codec. Prompts with a list of the active
     codecs.
 
     Parameters:  
-      • {options} (`decipher.Options`)
+      • {options} (`decipher.Options`) Options to use
 
-decipher.decode_selection_prompt({options})   *decipher.decode_selection_prompt*
+decode_selection_prompt({options})            *decipher.decode_selection_prompt*
     Decode a visual selection using a codec. Prompts with a list of the active
     codecs.
 
     Parameters:  
-      • {options} (`decipher.Options`)
+      • {options} (`decipher.Options`) Options to use
 
 ==============================================================================
 Mappings                                                     *decipher.mappings*
 
 No mappings are provided by default except for those for floating windows. See
-options {dismiss} and {apply} in *decipher.WindowConfig*.
+options {dismiss} and {apply} in *decipher.WindowConfig*. Mappings can easily
+be set up via the lua api.
+
+>lua
+    local decipher = require('decipher')
+
+    vim.keymap.set(
+        'n',
+        '<leader>de',
+        function()
+            decipher.encode_selection('crockford')
+        end,
+        { noremap = true, silent = true }
+    )
+ 
 
 ==============================================================================
 Motions                                                       *decipher.motions*

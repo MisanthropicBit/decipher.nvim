@@ -35,7 +35,7 @@ Below decipher is set up through `decipher.setup({ ... })` with default values.
         float = { -- Floating window options
             max_width = "auto", -- Auto-adjust width
             max_height = "auto", -- Auto-adjust height
-            padding = 0, -- Zero padding (does not apply to title if any)
+            padding = 0, -- Zero padding
             border = { -- Floating window border
                 { "╭", "FloatBorder" },
                 { "─", "FloatBorder" },
@@ -46,10 +46,13 @@ Below decipher is set up through `decipher.setup({ ... })` with default values.
                 { "╰", "FloatBorder" },
                 { "│", "FloatBorder" },
             },
-            dismiss = "q", -- Key to press to dismiss the floating window
-            apply = "a", -- Key to press to apply the encoding/decoding
+            mappings = {
+                close = "q", -- Key to press to close the floating window
+                apply = "a", -- Key to press to apply the encoding/decoding
+                help = "?", -- Toggle help
+            },
             title = true, -- Display a title with the codec name
-            title_separator = "─", -- Separator between title and result
+            title_pos = "left" -- Position of the title
             autoclose = true, -- Autoclose floating window if insert
                               -- mode is activated or the cursor is moved
             enter = false, -- Automatically enter the floating window if
@@ -86,23 +89,27 @@ Types                                                           *decipher.types*
         {border} (`string | string[]`)[]
             Border around the preview floating window.
 
-        {dismiss} `string`
-            Key to press to dismiss the preview floating window when inside
-            it. Used as the left-hand side in a normal map defintion.
+        {mappings} `table`
+            Mappings for the floating window preview. Used as the left-hand
+            side in a normal map defintion.
 
-        {apply} `string`
-            Key to press to apply the encoding or decoding of the previewed
-            text in the preview floating window when inside it. Used as the
-            left-hand side in a normal map defintion.
+            {close} `string`
+                Key to press to close the floating window.
+
+            {apply} `string`
+                Key to press to apply the encoding or decoding of the
+                previewed text in the preview floating window.
+
+            {help} `string`
+                Toggle help.
 
         {title} `boolean`
             Whether or not to show a title in the preview floating window or
             not. If enabled, displays the codec name.
 
-        {title_separator} `string`
-            The title separator string (a single character) between the title
-            and the previewed contents in the preview floating window.
-            Not used if the |title| is disabled.
+        {title_pos} "left" | "center" | "right"
+            Same as the config argument for |nvim_open_win|. Either "left",
+            "center", or "right". Not used if the title is disabled.
 
         {autoclose} `boolean`
             Autoclose the preview floating window if insert mode is
@@ -202,8 +209,8 @@ decode_selection_prompt({options})            *decipher.decode_selection_prompt*
 Mappings                                                     *decipher.mappings*
 
 No mappings are provided by default except for those for floating windows. See
-options {dismiss} and {apply} in *decipher.WindowConfig*. Mappings can easily
-be set up via the lua api.
+the `float.mappings` option in *decipher.WindowConfig*. Mappings can easily be
+set up via the lua api.
 
 >lua
     local decipher = require('decipher')

@@ -49,14 +49,17 @@ require('decipher').setup({
             { "╰", "FloatBorder" },
             { "│", "FloatBorder" },
         },
-        dismiss = "q", -- Key to press to dismiss the floating window
-        apply = "a", -- Key to press to apply the encoding/decoding
+        mappings = {
+            close = "q", -- Key to press to close the floating window
+            apply = "a", -- Key to press to apply the encoding/decoding
+            help = "?", -- Toggle help
+        },
         title = true, -- Display a title with the codec name
-        title_separator = "─", -- Separator between title and result
+        title_pos = "left" -- Position of the title
         autoclose = true, -- Autoclose floating window if insert
-                            -- mode is activated or the cursor is moved
+                          -- mode is activated or the cursor is moved
         enter = false, -- Automatically enter the floating window if
-                        -- opened
+                       -- opened
         options = { -- Options to apply to the floating window contents
             wrap = false,
         },

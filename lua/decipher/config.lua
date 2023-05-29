@@ -2,22 +2,27 @@ local config = {}
 
 local codecs = require("decipher.codecs")
 
----@class decipher.WindowConfig
----@field max_width number | "auto"
----@field max_height number | "auto"
----@field padding number
----@field border (string | string[])[]
----@field dismiss? string
+---@class decipher.WindowMappings
+---@field close? string
 ---@field apply? string
----@field title boolean
----@field title_separator string
----@field autoclose boolean
----@field enter boolean
----@field options table<string, any>
+---@field help? string
+
+---@class decipher.WindowConfig
+---@field max_width? number | "auto"
+---@field max_height? number | "auto"
+---@field padding? number
+---@field border? (string | string[])[]
+---@field mappings? decipher.WindowMappings
+---@field title? boolean
+---@field title_pos? 'left' | 'center' | 'right'
+---@field autoclose? boolean
+---@field enter? boolean
+---@field options? table<string, any>
 
 ---@class decipher.Config
----@field active_codecs (string | decipher.Codecs)[] | "all"
----@field float decipher.WindowConfig
+---@field active_codecs? (string | decipher.Codecs)[] | "all"
+---@field user_codecs? decipher.Codec[]
+---@field float? decipher.WindowConfig
 
 ---@type decipher.Config
 local default_config = {
@@ -36,15 +41,16 @@ local default_config = {
             { "╰", "FloatBorder" },
             { "│", "FloatBorder" },
         },
-        dismiss = "q",
-        apply = "a",
+        mappings = {
+            close = "q",
+            apply = "a",
+            help = "?",
+        },
         title = true,
-        title_separator = "─",
+        title_pos = "left",
         autoclose = true,
         enter = false,
-        options = {
-            wrap = false,
-        },
+        options = {},
     },
 }
 
@@ -93,10 +99,12 @@ local function validate_config(_config)
         ["float.max_height"] = { _config.float.max_height, validate_dimension, "valid dimension" },
         ["float.padding"] = { _config.float.padding, "number" },
         ["float.border"] = { _config.float.border, validate_border, "valid border" },
-        ["float.dismiss"] = { _config.float.dismiss, "string" },
-        ["float.apply"] = { _config.float.apply, "string" },
+        ["float.mappings"] = { _config.float.mappings, "table" },
+        ["float.mappings.close"] = { _config.float.mappings.close, "string" },
+        ["float.mappings.apply"] = { _config.float.mappings.apply, "string" },
+        ["float.mappings.help"] = { _config.float.mappings.help, "string" },
         ["float.title"] = { _config.float.title, "boolean" },
-        ["float.title_separator"] = { _config.float.title_separator, "string" },
+        ["float.title_pos"] = { _config.float.title_pos, "string" },
         ["float.autoclose"] = { _config.float.autoclose, "boolean" },
         ["float.enter"] = { _config.float.enter, "boolean" },
         ["float.options"] = { _config.float.options, "table" },

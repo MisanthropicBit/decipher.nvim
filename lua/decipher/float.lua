@@ -1,5 +1,3 @@
--- USE: nvim_win_set_config({window},
--- USE: nvim_win_set_option({window},
 -- vim.api.nvim_command(
 --   string.format("autocmd CursorMoved <buffer> ++once lua require('goto-preview').dismiss_preview(%d)", preview_window)
 -- )
@@ -11,8 +9,10 @@ local errors = require("decipher.errors")
 local str_utils = require("decipher.util.string")
 local selection = require("decipher.selection")
 
+---@type boolean
 local has_floating_window = vim.fn.has("nvim") and vim.fn.exists("*nvim_win_set_config")
 
+---@type table<string, any>
 local window_options = {
     wrap = false,
     number = false,
@@ -24,10 +24,12 @@ local window_options = {
     list = false,
 }
 
+---@type table<string, any>
 local buffer_options = {
     buftype = "nofile",
     bufhidden = "wipe",
     buflisted = false,
+    modifiable = false,
 }
 
 ---@param percentage number
@@ -47,23 +49,59 @@ local function get_global_coordinates()
     }
 end
 
----@class decipher.Float
----@field width number
----@field height number
+---Pad the given lines
+---@param lines string[]
+---@param padding number
+---@param padchar string
+---@return string[], number, number
+local function pad_lines(lines, padding, padchar)
+    local padded = {}
+    local width = 0
+
+    for _ = 1, padding do
+        table.insert(padded, "")
+    end
+
+    local padstr = padding > 0 and padchar:rep(padding) or ""
+
+    for _, line in ipairs(lines) do
+        local padded_line = padstr .. line .. padstr
+
+        table.insert(padded, padded_line)
+        width = math.max(width, #padded_line)
+    end
+
+    for _ = 1, padding do
+        table.insert(padded, "")
+    end
+
+    return padded, width, #padded
+end
+
+---@class decipher.Page
 ---@field title string
 ---@field contents string[]
----@field selection_type decipher.SelectionType
----@field parent_selection decipher.Region
----@field win_id? number window id
----@field parent_bufnr? number
----@field buffer? number buffer id
+---@field rendered string[]
+---@field width number
+---@field height number
+
+---@class decipher.Float
+---@field width number Width of the float
+---@field height number Height of the float
+---@field pages table<string, string[]> Table of pages by name
+---@field selection_type decipher.SelectionType -- Type of selection that triggered this float to open
+---@field parent_selection decipher.Region -- Region selected in the parent buffer
+---@field win_id? number Window id
+---@field parent_bufnr? number Parent buffer number
+---@field buffer? number Buffer id
 ---@field position decipher.Position position of the float
 ---@field window_config? decipher.WindowConfig
+---@field help_visible boolean If the help page is visible or not
 local Float = {
     width = 0,
     height = 0,
-    title = "",
-    contents = {},
+    border = nil,
+    pages = {},
     selection = {
         ["start"] = { lnum = -1, col = -1 },
         ["end"] = { lnum = -1, col = -1 },
@@ -76,6 +114,7 @@ local Float = {
         col = 0,
     },
     window_config = nil,
+    help_visible = false,
 }
 
 ---@private
@@ -116,46 +155,6 @@ function Float:compute_max_dimensions()
     return max_width, max_height
 end
 
----@private
----@param content_width number
----@param content_height number
----@return table
-function Float:create_window_options(content_width, content_height)
-    local max_width, max_height = self:compute_max_dimensions()
-    local total_padding = self.window_config.padding * 2
-
-    -- Adjust window dimenions with padding and title
-    local width = content_width + total_padding * 2
-    local height = content_height + total_padding
-
-    if #self.title ~= nil and #self.title > 0 then
-        height = height + 2
-    end
-
-    if max_width ~= "auto" then
-        width = math.min(width, max_width)
-    end
-
-    if max_height ~= "auto" then
-        height = math.min(height, max_height)
-    end
-
-    local anchored = self:get_anchored_position(self.position, width, height, self.window_config.padding)
-
-    return {
-        relative = "editor",
-        row = anchored.position.lnum,
-        col = anchored.position.col,
-        anchor = anchored.anchor,
-        width = width,
-        height = height,
-        style = "minimal",
-        border = self.window_config.border,
-        noautocmd = true,
-        focusable = true,
-    }
-end
-
 ---@alias decipher.Anchor "NW" | "SW" | "NE" | "SE"
 
 ---@private
@@ -169,14 +168,10 @@ function Float:get_anchored_position(position, width, height, padding)
 
     if position.lnum + height + padding > vim.o.lines - 1 then
         vertical_anchor = "S"
-        position.lnum = position.lnum - padding
     end
 
-    if position.col + width + padding <= vim.o.columns then
-        position.col = position.col - 1
-    else
+    if position.col + width + padding >= vim.o.columns then
         horizontal_anchor = "E"
-        position.col = position.col - padding
     end
 
     return {
@@ -185,32 +180,27 @@ function Float:get_anchored_position(position, width, height, padding)
     }
 end
 
----@return number, number
-function Float:content_dimensions()
-    if self.contents == nil or #self.contents == 0 then
-        return 0, 0
-    end
-
-    local width, height = 0, #self.contents
-
-    for _, line in ipairs(self.contents) do
-        width = math.max(width, #line)
-    end
-
-    return width, height
-end
-
 ---@param position decipher.Position
 function Float:open(position)
-    self.position = position
+    local minimum_window_options = {
+        style = "minimal",
+        relative = "editor",
+        width = 1,
+        height = 1,
+        row = 1,
+        col = 1,
+        border = self.window_config.border,
+        noautocmd = true,
+        focusable = true,
+    }
 
-    local options = self:create_window_options(self.width, self.height)
+    self.position = position
     self.parent_bufnr = vim.api.nvim_get_current_buf()
     self.buffer = vim.api.nvim_create_buf(false, true)
-    self.win_id = vim.api.nvim_open_win(self.buffer, self.window_config.enter or false, options)
+    self.win_id = vim.api.nvim_open_win(self.buffer, self.window_config.enter or false, minimum_window_options)
 
     vim.api.nvim_win_set_var(self.win_id, "decipher_float", true)
-    self:show_contents(options.width)
+    self:render_page("contents")
     self:set_mappings()
     self:set_options()
 
@@ -225,48 +215,70 @@ function Float:open(position)
                 end,
                 once = true,
                 buffer = self.parent_bufnr,
-                desc = [[Closes the decipher floating window when insert mode is entered,
-    the cursor is moved]],
+                desc = "Closes the decipher floating window when insert mode is entered or the cursor is moved",
             })
         end, 0)
     end
 end
 
--- Show the contents of the float
+-- Render a page of the float
 ---@private
----@param win_width number
-function Float:show_contents(win_width)
-    local contents = {}
+---@param name string
+function Float:render_page(name)
+    local page = self.pages[name]
 
-    if self.title ~= nil and #self.title > 0 then
-        contents = { " " .. self.title, string.rep(self.window_config.title_separator, win_width) }
+    local contents, width, height = pad_lines(page.contents, self.window_config.padding, " ")
+    local max_width, max_height = self:compute_max_dimensions()
+
+    if max_width ~= "auto" then
+        width = math.min(width, max_width)
     end
 
-    for _ = 1, self.window_config.padding do
-        table.insert(contents, "")
+    if max_height ~= "auto" then
+        height = math.min(height, max_height)
     end
 
-    local prepadding = self.window_config.padding > 0 and string.rep(" ", self.window_config.padding * 2) or ""
-
-    for _, line in ipairs(self.contents) do
-        table.insert(contents, prepadding .. line)
-    end
-
+    -- Temporarily make the buffer modifiable so we can render the page
+    vim.api.nvim_buf_set_option(self.buffer, "modifiable", true)
     vim.api.nvim_buf_set_lines(self.buffer, 0, -1, true, contents)
+    vim.api.nvim_buf_set_option(self.buffer, "modifiable", false)
+
+    local anchored = self:get_anchored_position(self.position, width, height, self.window_config.padding)
+
+    vim.api.nvim_win_set_config(self.win_id, {
+        title = self.window_config.title and page.title or nil,
+        title_pos = self.window_config.title_pos or "left",
+        relative = "editor",
+        row = anchored.position.lnum,
+        col = anchored.position.col,
+        anchor = anchored.anchor,
+        width = width,
+        height = height,
+    })
 end
 
 ---@private
 -- Set mappings for the float
 function Float:set_mappings()
-    if self.window_config.dismiss then
+    if self.window_config.mappings then
         local map_options = { buffer = self.buffer, silent = true, noremap = true }
 
-        vim.keymap.set("n", self.window_config.dismiss, function()
+        local close = self.window_config.mappings.close or "q"
+
+        vim.keymap.set("n", close, function()
             self:close()
         end, map_options)
 
-        vim.keymap.set("n", self.window_config.apply, function()
+        local apply = self.window_config.mappings.apply or "a"
+
+        vim.keymap.set("n", apply, function()
             self:apply_codec()
+        end, map_options)
+
+        local help = self.window_config.mappings.help or "?"
+
+        vim.keymap.set("n", help, function()
+            self:toggle_help()
         end, map_options)
     end
 end
@@ -284,23 +296,25 @@ function Float:set_options()
         vim.api.nvim_buf_set_option(self.buffer, option, value)
     end
 
-    -- Set use roptions last so they take priority
+    -- Set user options last so they take priority
     for option, value in pairs(self.window_config.options) do
         vim.api.nvim_win_set_option(self.win_id, option, value)
     end
 end
 
----@param title string
-function Float:set_title(title)
-    self.title = title
-end
+---@param name string
+---@param options string[]
+function Float:set_page(name, options)
+    if self.pages[name] == nil then
+        self.pages[name] = {}
+    end
 
----@param contents string[]
-function Float:set_contents(contents)
-    -- TODO: Pad contents
-    if contents ~= nil and #contents > 0 then
-        self.contents = contents
-        self.width, self.height = self:content_dimensions()
+    if options.title ~= nil and #options.title > 0 then
+        self.pages[name].title = options.title
+    end
+
+    if options.contents ~= nil and #options.contents > 0 then
+        self.pages[name].contents = options.contents
     end
 end
 
@@ -315,8 +329,37 @@ end
 -- Apply the encoding or decoding in a preview to the selection that triggered
 -- the preview
 function Float:apply_codec()
-    selection.set_text_from_selection(self.parent_bufnr, self.selection_type, self.parent_selection, self.contents)
+    selection.set_text_from_selection(
+        self.parent_bufnr,
+        self.selection_type,
+        self.parent_selection,
+        self.pages["contents"].contents
+    )
     self:close()
+end
+
+---Toggle help
+function Float:toggle_help()
+    self.help_visible = not self.help_visible
+
+    if self.help_visible then
+        if self.pages["help"] == nil then
+            local format = "%s - %s"
+
+            self:set_page("help", {
+                title = "Help",
+                contents = {
+                    format:format(self.window_config.mappings.close, "Close the floating window"),
+                    format:format(self.window_config.mappings.apply, "Apply the encoding/decoding"),
+                    format:format(self.window_config.mappings.help, "Toggle this help"),
+                },
+            })
+        end
+
+        self:render_page("help")
+    else
+        self:render_page("contents")
+    end
 end
 
 -- Attempt to focus the float. May fail silently if window has already been closed
@@ -327,17 +370,17 @@ function Float:focus()
     return status
 end
 
+---Attempt to close the float. May fail silently if window has already been closed
 ---@private
--- Attempt to close the float. May fail silently if window has already been closed
 function Float:close()
     pcall(vim.api.nvim_win_close, self.win_id, true)
 end
 
--- Tracks open floating windows
+---Tracks open floating windows
 ---@type table<number, decipher.Float>
 local floats = {}
 
--- Close a floating window
+---Close a floating window
 ---@param win_id? number
 function float.close(win_id)
     local win_handle = win_id or vim.api.nvim_get_current_win()
@@ -360,8 +403,6 @@ end
 ---@param selection_type decipher.SelectionType
 ---@param _selection decipher.Region
 function float.open(title, contents, window_config, selection_type, _selection)
-    -- TODO: Close current popup if inside it
-
     if has_floating_window ~= 1 then
         errors.error_message("No support for floating windows", true)
         return
@@ -383,13 +424,12 @@ function float.open(title, contents, window_config, selection_type, _selection)
     local _config = window_config or config.float
     local win = Float:new(_config)
 
-    if _config.title and title ~= nil then
-        win:set_title(title)
-    end
-
     -- Escape the string since you cannot set lines in a buffer if it
     -- contains newlines
-    win:set_contents(str_utils.escape_newlines(contents))
+    win:set_page("contents", {
+        title = title,
+        contents = str_utils.escape_newlines(contents),
+    })
     win:set_selection(selection_type, _selection)
     win:open(get_global_coordinates())
 

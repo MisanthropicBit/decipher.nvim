@@ -14,7 +14,7 @@ describe("codecs.url", function()
     end)
 
     it("decodes both lower- and upper-case hex digits", function()
-        local input ="http://www.test.com/?symbol=€"
+        local input = "http://www.test.com/?symbol=€"
         local decoded_lower = url.decode("http://www.test.com/?symbol%3d%e2%82%ac")
         local decoded_upper = url.decode("http://www.test.com/?symbol%3D%E2%82%AC")
 

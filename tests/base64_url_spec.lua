@@ -3,7 +3,7 @@ local test_utils = require("decipher.util.test")
 
 describe("codecs.base64_url", function()
     local test_cases = {
-        ["this is=a test@"] = "dGhpcytpcyUzRGErdGVzdCU0MA==",
+        ["this is=a test@!"] = "dGhpcyBpcz1hIHRlc3RAIQ%3d%3d",
     }
 
     -- TODO

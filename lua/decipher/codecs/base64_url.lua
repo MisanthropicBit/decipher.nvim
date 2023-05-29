@@ -8,7 +8,7 @@ local url = require("decipher.codecs.url")
 -- end
 
 function M.decode(value)
-    return url.decode(base64.decode(value))
+    return base64.decode(url.decode(value))
 end
 
 return M

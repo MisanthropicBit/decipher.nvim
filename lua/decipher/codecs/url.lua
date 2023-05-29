@@ -22,15 +22,21 @@ local reserved = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 }
 
+---Url-encode a single byte and insert it into list
+---@param list string[]
+---@param byte integer
 local function url_encode_byte(list, byte)
     table.insert(list, "%")
     table.insert(list, string.format("%x", bits.rshift(byte, 4)))
-    table.insert(list, string.format("%x", bits.band(byte, 0xf)):upper())
+    table.insert(list, string.format("%x", bits.band(byte, 0xf)))
 end
 
+---Url-encode a string
+---@param value string
+---@return string
 function url.encode(value)
     if value == nil then
-        return value
+        error("Cannot encode nil value", 0)
     end
 
     local result = {}
@@ -38,7 +44,6 @@ function url.encode(value)
     for i = 1, #value do
         local char = value:sub(i, i)
         local byte1, byte2, byte3, byte4 = char:byte(1, -1)
-        -- print(byte1, byte2, byte3, byte4)
         local utf8_len = 1
 
         if utf8_len <= 1 then
@@ -50,18 +55,22 @@ function url.encode(value)
                 url_encode_byte(result, byte1)
             end
         else
-            table.foreach({ byte1, byte2, byte3, byte4 }, function(byte)
-                url_encode_byte(result, byte)
-            end)
+            url_encode_byte(result, byte1)
+            url_encode_byte(result, byte2)
+            url_encode_byte(result, byte3)
+            url_encode_byte(result, byte4)
         end
     end
 
     return table.concat(result)
 end
 
+---Url-decode a string
+---@param value string
+---@return string
 function url.decode(value)
     if value == nil then
-        return value
+        error("Cannot decode nil value", 0)
     end
 
     local result = {}

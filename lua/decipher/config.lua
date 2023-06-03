@@ -8,8 +8,6 @@ local codecs = require("decipher.codecs")
 ---@field help? string
 
 ---@class decipher.WindowConfig
----@field max_width? number | "auto"
----@field max_height? number | "auto"
 ---@field padding? number
 ---@field border? (string | string[])[]
 ---@field mappings? decipher.WindowMappings
@@ -28,8 +26,6 @@ local codecs = require("decipher.codecs")
 local default_config = {
     active_codecs = "all",
     float = {
-        max_height = "auto",
-        max_width = "auto",
         padding = 0,
         border = {
             { "╭", "FloatBorder" },
@@ -95,8 +91,6 @@ end
 local function validate_config(_config)
     vim.validate({
         active_codecs = { _config.active_codecs, validate_codecs, "valid codecs" },
-        ["float.max_width"] = { _config.float.max_width, validate_dimension, "valid dimension" },
-        ["float.max_height"] = { _config.float.max_height, validate_dimension, "valid dimension" },
         ["float.padding"] = { _config.float.padding, "number" },
         ["float.border"] = { _config.float.border, validate_border, "valid border" },
         ["float.mappings"] = { _config.float.mappings, "table" },

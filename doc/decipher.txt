@@ -33,8 +33,6 @@ Below decipher is set up through `decipher.setup({ ... })` with default values.
     require('decipher').setup({
         active_codecs = "all", -- Set all codecs as active and useable
         float = { -- Floating window options
-            max_width = "auto", -- Auto-adjust width
-            max_height = "auto", -- Auto-adjust height
             padding = 0, -- Zero padding
             border = { -- Floating window border
                 { "╭", "FloatBorder" },
@@ -77,12 +75,6 @@ Types                                                           *decipher.types*
 
                                                          *decipher.WindowConfig*
     Fields:  
-        {max_width} `number | "auto"`
-            Maximum width of the preview floating window.
-
-        {max_height} `number | "auto"`
-            Maximum height of the preview floating window.
-
         {padding} `number`
             Padding around the preview contents in the floating window.
 

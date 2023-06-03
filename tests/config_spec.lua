@@ -4,9 +4,6 @@ describe("config", function()
     it("throws an error on invalid configs", function()
         local wrong_configs = {
             { float = { padding = "nope" } },
-            { float = { max_height = "nah" } },
-            { float = { max_width = true } },
-            { float = { max_width = true } },
             { float = { border = true } },
             { float = { border = "triple" } },
             { float = { mappings = { close = 1 } } },
@@ -45,8 +42,6 @@ describe("config", function()
         config.setup({
             active_codecs = { "base64", "base32" },
             float = {
-                max_height = 100,
-                max_width = "auto",
                 padding = 1,
                 border = {
                     { "╭", "Keyword" },

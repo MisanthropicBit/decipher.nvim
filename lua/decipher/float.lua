@@ -12,6 +12,10 @@ local selection = require("decipher.selection")
 ---@type boolean
 local has_floating_window = vim.fn.has("nvim") and vim.fn.exists("*nvim_win_set_config")
 
+-- As percentages of the window's dimensions
+local default_max_width = 0.8
+local default_max_height = 0.7
+
 ---@type table<string, any>
 local window_options = {
     wrap = false,
@@ -133,8 +137,8 @@ end
 ---@private
 ---@return number, number
 function Float:compute_max_dimensions()
-    local max_width = self.window_config.max_width
-    local max_height = self.window_config.max_height
+    local max_width = default_max_width
+    local max_height = default_max_height
 
     if max_width ~= "auto" then
         if 0 < max_width and max_width < 1 then

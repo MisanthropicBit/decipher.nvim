@@ -36,8 +36,6 @@ Refer to the [docs](docs//decipher.txt) for more help.
 require('decipher').setup({
     active_codecs = "all", -- Set all codecs as active and useable
     float = { -- Floating window options
-        max_width = "auto", -- Auto-adjust width
-        max_height = "auto", -- Auto-adjust height
         padding = 0, -- Zero padding (does not apply to title if any)
         border = { -- Floating window border
             { "╭", "FloatBorder" },

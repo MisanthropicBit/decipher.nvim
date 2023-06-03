@@ -6,13 +6,6 @@ describe("codecs.base64_url", function()
         ["this is=a test@!"] = "dGhpcyBpcz1hIHRlc3RAIQ%3d%3d",
     }
 
-    -- TODO
-    -- it('base64 url-encodes strings', function()
-    --     for input, output in pairs(test_cases) do
-    --         assert.are.same(base64_url.encode(input), output)
-    --     end
-    -- end)
-
     it("base64 url-decodes strings", function()
         test_utils.test_decode(test_cases, base64_url.decode)
     end)

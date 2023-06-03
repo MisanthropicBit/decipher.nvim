@@ -4,6 +4,8 @@ local test_utils = require("decipher.util.test")
 describe("codecs.base64_url", function()
     local test_cases = {
         ["this is=a test@!"] = "dGhpcyBpcz1hIHRlc3RAIQ%3d%3d",
+        ["line1\nline2"] = "bGluZTEKbGluZTI%3d",
+        [""] = "",
     }
 
     it("base64 url-decodes strings", function()

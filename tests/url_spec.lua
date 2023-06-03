@@ -7,6 +7,7 @@ describe("codecs.url", function()
         ["this_should_not_be_encoded"] = "this_should_not_be_encoded",
         ["http://www.test.com/?symbol=€"] = "http://www.test.com/?symbol%3d%e2%82%ac",
         ["http://www.test.com/?symbol=🥲"] = "http://www.test.com/?symbol%3d%f0%9f%a5%b2",
+        [""] = "",
     }
 
     it("url-decodes strings", function()

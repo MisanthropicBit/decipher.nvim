@@ -1,2 +1,5 @@
 doc/tags
 .test_output.tmp
+tables.txt
+lua/decipher/job.lua
+lua/decipher/codecs/base85.lua

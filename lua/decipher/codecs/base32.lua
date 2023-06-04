@@ -132,7 +132,7 @@ function base32.encode_with(value, base32_codec)
         while bit_count >= 5 do
             local index = bits.get_bits(bit_buffer, bit_count - 5, 0x1f)
 
-            result = string.format("%s%s", result, encoding_table[index])
+            result = ("%s%s"):format(result, encoding_table[index])
             bit_count = bit_count - 5
         end
     end
@@ -141,12 +141,12 @@ function base32.encode_with(value, base32_codec)
     if bit_count > 0 then
         local index = bits.band(bits.lshift(bit_buffer, 5 - bit_count), 0x1f)
 
-        result = string.format("%s%s", result, encoding_table[index])
+        result = ("%s%s"):format(result, encoding_table[index])
     end
 
     -- Pad until the result is a multiple of 8
     while #result % 8 ~= 0 do
-        result = string.format("%s%s", result, "=") -- encoding_table.padding)
+        result = ("%s%s"):format(result, "=") -- encoding_table.padding)
     end
 
     return result
@@ -188,7 +188,7 @@ function base32.decode_with(value, base32_codec)
 
         while bit_count >= 8 do
             local char8 = bits.get_bits(bit_buffer, bit_count - 8, 0xff)
-            result = string.format("%s%s", result, string.char(char8))
+            result = ("%s%s"):format(result, string.char(char8))
             bit_count = bit_count - 8
         end
     end

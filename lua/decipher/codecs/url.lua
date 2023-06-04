@@ -27,8 +27,8 @@ local reserved = {
 ---@param byte integer
 local function url_encode_byte(list, byte)
     table.insert(list, "%")
-    table.insert(list, string.format("%x", bits.rshift(byte, 4)))
-    table.insert(list, string.format("%x", bits.band(byte, 0xf)))
+    table.insert(list, ("%x"):format(bits.rshift(byte, 4)))
+    table.insert(list, ("%x"):format(bits.band(byte, 0xf)))
 end
 
 ---Url-encode a string
@@ -107,7 +107,7 @@ end
 --     if type(str) ~= "number" then
 --         str = str:gsub("\r?\n", "\r\n")
 --         str = str:gsub("([^%w%-%.%_%~ ])", function(c)
---             return string.format("%%%02X", c:byte())
+--             return ("%%%02X"):format(c:byte())
 --         end)
 --         str = str:gsub(" ", "+")
 --         return str

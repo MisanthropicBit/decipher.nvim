@@ -62,7 +62,7 @@ local function validate_codecs(arg)
     elseif type(arg) == "table" then
         for idx, value in ipairs(arg) do
             if codecs.get(value) == nil then
-                return false, string.format("Invalid codec '%s' at index %d in config.active_codecs", value, idx)
+                return false, ("Invalid codec '%s' at index %d in config.active_codecs"):format(value, idx)
             end
         end
 

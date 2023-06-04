@@ -12,7 +12,7 @@ local function _error_message(message, history)
             table.insert(chunks, v)
         end
     else
-        error(string.format("Unsupported error message type '%s'", type(message)))
+        error(("Unsupported error message type '%s'"):format(type(message)))
     end
 
     table.insert(chunks, 1, { "[decipher]:", "WarningMsg" })
@@ -30,7 +30,7 @@ end
 function errors.error_message_codec(codec_name)
     errors.error_message({
         { " " .. "Codec not found:" },
-        { " " .. string.format("%s", codec_name), "WarningMsg" },
+        { " " .. ("%s"):format(codec_name), "WarningMsg" },
     }, true)
 end
 

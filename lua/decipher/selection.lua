@@ -27,7 +27,7 @@ function selection.get_selection(type)
     elseif type == "motion" then
         _marks = { "'[", "']" }
     else
-        error(string.format("Unknown mark type: '%s'", type), 0)
+        error(("Unknown mark type: '%s'"):format(type), 0)
     end
 
     local start_lnum, start_col = unpack(vim.fn.getpos(_marks[1]), 2, 3)

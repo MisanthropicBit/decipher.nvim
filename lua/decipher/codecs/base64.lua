@@ -168,8 +168,7 @@ function base64.encode_with(value, base64_codec)
     for i = 1, size - last, 3 do
         local octets = combined_octets(value, i)
 
-        result = string.format(
-            "%s%s%s%s%s",
+        result = ("%s%s%s%s%s"):format(
             result,
             encoding_table[bits.get_bits(octets, 18, 0x3f)],
             encoding_table[bits.get_bits(octets, 12, 0x3f)],
@@ -182,8 +181,7 @@ function base64.encode_with(value, base64_codec)
         local pad_char = base64_codec.pad_char
         local octets = combined_octets(value, size - last + 1)
 
-        result = string.format(
-            "%s%s%s%s%s",
+        result = ("%s%s%s%s%s"):format(
             result,
             encoding_table[bits.get_bits(octets, 18, 0x3f)],
             encoding_table[bits.get_bits(octets, 12, 0x3f)],
@@ -227,7 +225,7 @@ function base64.decode_with(value, base64_codec)
             bits.bor(bits.lshift(decoded1, 18), bits.lshift(decoded2, 12), bits.lshift(decoded3, 6), decoded4)
 
         for j = 3, last, -1 do
-            result = string.format("%s%s", result, string.char(bits.band(bits.rshift(joined, (j - 1) * 8), 0xff)))
+            result = ("%s%s"):format(result, string.char(bits.band(bits.rshift(joined, (j - 1) * 8), 0xff)))
         end
     end
 

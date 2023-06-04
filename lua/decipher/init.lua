@@ -44,7 +44,7 @@ local function handle_codec(codec_name, value, func_key)
     local codec = codecs.get(codec_name)
 
     if codec == nil then
-        error(string.format("Codec '%s' not found", codec_name), 0)
+        error(("Codec '%s' not found"):format(codec_name), 0)
     end
 
     return codec[func_key](value)
@@ -87,7 +87,7 @@ end
 ---@diagnostic disable-next-line:unused-local
 local function set_text_region_handler(codec_name, status, value, selection_type)
     if not status then
-        errors.error_message(string.format("%s: %s", codec_name, value), true)
+        errors.error_message(("%s: %s"):format(codec_name, value), true)
         return
     end
 
@@ -112,7 +112,7 @@ local function process_codec(codec_name, codec_func, selection_type, options)
     local do_preview = (options and options.preview == true) or false
 
     -- Handle enums, nil etc. passed at runtime
-    local _codec_name = string.format("%s", codec_name)
+    local _codec_name = ("%s"):format(codec_name)
 
     if do_preview then
         open_float_handler(_codec_name, status, value, selection_type)

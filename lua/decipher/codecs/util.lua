@@ -14,7 +14,7 @@ function codecs_util.decoding_table_lookup(value, i, spec)
     local decoded = spec.decoding_table[char]
 
     if decoded == nil then
-        error(string.format("Invalid character '%s' at byte position %d in %s string", char, i, spec.name), 0)
+        error(("Invalid character '%s' at byte position %d in %s string"):format(char, i, spec.name), 0)
     end
 
     return decoded

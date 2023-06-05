@@ -75,19 +75,20 @@ require('decipher').setup({
 <details>
 <summary>Legend</summary>
 
-* ✔ = supported
+* ✅ = supported
+* ❌ = not supported
 * 🗓️ = planned
 </details>
 
 | Codec            | Encoding  | Decoding  |
 | :--------------- | :-------: | :-------: |
-| base32           | ✔         | ✔         |
-| zbase32          | ✔         | ✔         |
-| crockford        | ✔         | ✔         |
-| base64           | ✔         | ✔         |
-| base64-url¹      | ✗         | ✔         |
-| base64-url-safe² | ✔         | ✔         |
-| url              | ✗         | ✔         |
+| base32           | ✅        | ✅         |
+| zbase32          | ✅        | ✅         |
+| crockford        | ✅        | ✅         |
+| base64           | ✅        | ✅         |
+| base64-url¹      | ❌        | ✅         |
+| base64-url-safe² | ✅        | ✅         |
+| url              | ❌        | ✅         |
 
 ¹ Combination of base64 and url codecs.
 

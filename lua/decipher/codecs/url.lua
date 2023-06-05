@@ -43,22 +43,14 @@ function url.encode(value)
 
     for i = 1, #value do
         local char = value:sub(i, i)
-        local byte1, byte2, byte3, byte4 = char:byte(1, -1)
-        local utf8_len = 1
+        local byte = char:byte(1, 1)
 
-        if utf8_len <= 1 then
-            if reserved[byte1 + 1] == 0 then
-                table.insert(result, char)
-            elseif char == " " then
-                table.insert(result, "+")
-            else
-                url_encode_byte(result, byte1)
-            end
+        if reserved[byte + 1] == 0 then
+            table.insert(result, char)
+        elseif char == " " then
+            table.insert(result, "+")
         else
-            url_encode_byte(result, byte1)
-            url_encode_byte(result, byte2)
-            url_encode_byte(result, byte3)
-            url_encode_byte(result, byte4)
+            url_encode_byte(result, byte)
         end
     end
 
@@ -78,42 +70,23 @@ function url.decode(value)
 
     while i <= #value do
         local char = value:sub(i, i)
-        local utf8_len = 1
 
-        if utf8_len <= 1 then
-            if char == "+" then
-                table.insert(result, " ")
-                i = i + 1
-            elseif char ~= "%" then
-                table.insert(result, char)
-                i = i + 1
-            else
-                local v1 = tonumber(value:sub(i + 1, i + 1), 16)
-                local v2 = tonumber(value:sub(i + 2, i + 2), 16)
-
-                table.insert(result, string.char(bits.bor(bits.lshift(v1, 4), v2)))
-                i = i + 3
-            end
-        else
+        if char == "+" then
+            table.insert(result, " ")
+            i = i + 1
+        elseif char ~= "%" then
             table.insert(result, char)
             i = i + 1
+        else
+            local v1 = tonumber(value:sub(i + 1, i + 1), 16)
+            local v2 = tonumber(value:sub(i + 2, i + 2), 16)
+
+            table.insert(result, string.char(bits.bor(bits.lshift(v1, 4), v2)))
+            i = i + 3
         end
     end
 
     return table.concat(result)
 end
-
--- local function url_encode = function(str)
---     if type(str) ~= "number" then
---         str = str:gsub("\r?\n", "\r\n")
---         str = str:gsub("([^%w%-%.%_%~ ])", function(c)
---             return ("%%%02X"):format(c:byte())
---         end)
---         str = str:gsub(" ", "+")
---         return str
---     else
---         return str
---     end
--- end
 
 return url

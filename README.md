@@ -19,18 +19,23 @@ like base64.
 
 ## Installing
 
-Use whatever package manager you use to install.
+* **[vim-plug](https://github.com/junegunn/vim-plug)**
 
-* **vim-plug**
+```vim
+Plug 'MisanthropicBit/decipher.nvim'
+```
 
-    ```vim
-    Plug 'MisanthropicBit/decipher.nvim'
-    ```
+* **[packer.nvim](https://github.com/wbthomason/packer.nvim)**
+
+```lua
+use 'MisanthropicBit/decipher.nvim'
+```
 
 ## Setup
 
-Setup decipher using `decipher.setup`. The options below are the default values.
-Refer to the [docs](docs//decipher.txt) for more help.
+Setup decipher using `decipher.setup` unless you are content with the defaults.
+The options below are the default values. Refer to the
+[docs](doc/decipher.txt) for more help.
 
 ```lua
 require('decipher').setup({

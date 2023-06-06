@@ -1,16 +1,14 @@
--- vim.api.nvim_command(
---   string.format("autocmd CursorMoved <buffer> ++once lua require('goto-preview').dismiss_preview(%d)", preview_window)
--- )
-
 local float = {}
 
 local config = require("decipher.config")
 local errors = require("decipher.errors")
-local str_utils = require("decipher.util.string")
+local util = require("decipher.util")
 local selection = require("decipher.selection")
 
 ---@type boolean
 local has_floating_window = vim.fn.has("nvim") and vim.fn.exists("*nvim_win_set_config")
+
+local decipher_float_var_name = "decipher_float"
 
 -- As percentages of the window's dimensions
 local default_max_width = 0.8
@@ -92,7 +90,7 @@ end
 ---@class decipher.Float
 ---@field width number Width of the float
 ---@field height number Height of the float
----@field pages table<string, string[]> Table of pages by name
+---@field pages table<string, decipher.Page> Table of pages by name
 ---@field selection_type decipher.SelectionType -- Type of selection that triggered this float to open
 ---@field parent_selection decipher.Region -- Region selected in the parent buffer
 ---@field win_id? number Window id
@@ -203,8 +201,8 @@ function Float:open(position)
     self.buffer = vim.api.nvim_create_buf(false, true)
     self.win_id = vim.api.nvim_open_win(self.buffer, self.window_config.enter or false, minimum_window_options)
 
-    vim.api.nvim_win_set_var(self.win_id, "decipher_float", true)
-    self:render_page("contents")
+    vim.api.nvim_win_set_var(self.win_id, decipher_float_var_name, true)
+    self:render_page("main")
     self:set_mappings()
     self:set_options()
 
@@ -249,8 +247,14 @@ function Float:render_page(name)
 
     local anchored = self:get_anchored_position(self.position, width, height, self.window_config.padding)
 
+    local title = self.window_config.title and page.title or nil
+
+    if title then
+        title = " " .. title .. " "
+    end
+
     vim.api.nvim_win_set_config(self.win_id, {
-        title = self.window_config.title and page.title or nil,
+        title = title,
         title_pos = self.window_config.title_pos or "left",
         relative = "editor",
         row = anchored.position.lnum,
@@ -267,23 +271,24 @@ function Float:set_mappings()
     if self.window_config.mappings then
         local map_options = { buffer = self.buffer, silent = true, noremap = true }
 
-        local close = self.window_config.mappings.close or "q"
+        local function set_keymap(key, func)
+            local lhs = self.window_config.mappings[key]
 
-        vim.keymap.set("n", close, function()
+            vim.keymap.set("n", lhs, func, map_options)
+        end
+
+        set_keymap("close", function()
             self:close()
-        end, map_options)
-
-        local apply = self.window_config.mappings.apply or "a"
-
-        vim.keymap.set("n", apply, function()
+        end)
+        set_keymap("apply", function()
             self:apply_codec()
-        end, map_options)
-
-        local help = self.window_config.mappings.help or "?"
-
-        vim.keymap.set("n", help, function()
+        end)
+        set_keymap("help", function()
             self:toggle_help()
-        end, map_options)
+        end)
+        set_keymap("jsonpp", function()
+            self:toggle_json_pretty_print()
+        end)
     end
 end
 
@@ -307,7 +312,7 @@ function Float:set_options()
 end
 
 ---@param name string
----@param options string[]
+---@param options { title?: string, contents?: string[] }
 function Float:set_page(name, options)
     if self.pages[name] == nil then
         self.pages[name] = {}
@@ -324,7 +329,7 @@ end
 
 -- Set the selected region for a visual selection or motion
 ---@param parent_selection decipher.Region selection orginially made in the
---                                         float's parent buffer
+--                          float's parent buffer
 function Float:set_selection(selection_type, parent_selection)
     self.selection_type = selection_type
     self.parent_selection = parent_selection
@@ -337,7 +342,7 @@ function Float:apply_codec()
         self.parent_bufnr,
         self.selection_type,
         self.parent_selection,
-        self.pages["contents"].contents
+        self.pages["main"].contents
     )
     self:close()
 end
@@ -355,6 +360,7 @@ function Float:toggle_help()
                 contents = {
                     format:format(self.window_config.mappings.close, "Close the floating window"),
                     format:format(self.window_config.mappings.apply, "Apply the encoding/decoding"),
+                    format:format(self.window_config.mappings.jsonpp, "Prettily format contents as json"),
                     format:format(self.window_config.mappings.help, "Toggle this help"),
                 },
             })
@@ -362,7 +368,38 @@ function Float:toggle_help()
 
         self:render_page("help")
     else
-        self:render_page("contents")
+        self:render_page("main")
+    end
+end
+
+---Toggle json pretty printing
+function Float:toggle_json_pretty_print()
+    self.jsonpp_visible = not self.jsonpp_visible
+
+    if self.jsonpp_visible then
+        if self.pages["jsonpp"] == nil then
+            local page = self.pages["main"]
+            local success, result = pcall(vim.json.decode, table.concat(page.contents))
+
+            if not success then
+                errors.error_message("Cannot decode as json: " .. result, true)
+                self.jsonpp_visible = false
+                return
+            end
+
+            local pretty = util.json.pretty_print(result, { sort_keys = true })
+
+            self:set_page("jsonpp", {
+                title = page.title .. " (json pretty-print)",
+                contents = vim.fn.split(pretty, "\n"),
+            })
+        end
+
+        vim.bo.filetype = "json"
+        self:render_page("jsonpp")
+    else
+        vim.bo.filetype = ""
+        self:render_page("main")
     end
 end
 
@@ -375,7 +412,6 @@ function Float:focus()
 end
 
 ---Attempt to close the float. May fail silently if window has already been closed
----@private
 function Float:close()
     pcall(vim.api.nvim_win_close, self.win_id, true)
 end
@@ -387,16 +423,15 @@ local floats = {}
 ---Close a floating window
 ---@param win_id? number
 function float.close(win_id)
-    local win_handle = win_id or vim.api.nvim_get_current_win()
-    local status, result = pcall(vim.api.nvim_win_get_var, win_handle, "decipher_float")
+    local parent_win_handle = win_id or vim.api.nvim_get_current_win()
+    local _float = floats[parent_win_handle]
 
-    if status and result == true then
-        pcall(vim.api.nvim_win_close, win_handle, true)
+    if _float ~= nil then
+        local status, result = pcall(vim.api.nvim_win_get_var, _float.win_id, decipher_float_var_name)
+        floats[parent_win_handle] = nil
 
-        local _float = floats[win_handle]
-
-        if _float ~= nil then
-            floats[win_handle] = nil
+        if status and result == true then
+            _float:close()
         end
     end
 end
@@ -409,7 +444,7 @@ end
 function float.open(title, contents, window_config, selection_type, _selection)
     if has_floating_window ~= 1 then
         errors.error_message("No support for floating windows", true)
-        return
+        return nil
     end
 
     local cur_win_id = vim.api.nvim_get_current_win()
@@ -419,7 +454,7 @@ function float.open(title, contents, window_config, selection_type, _selection)
     -- opening a new float
     if existing_float ~= nil then
         if existing_float:focus() then
-            return
+            return existing_float
         else
             float.close(existing_float.win_id)
         end
@@ -430,9 +465,9 @@ function float.open(title, contents, window_config, selection_type, _selection)
 
     -- Escape the string since you cannot set lines in a buffer if it
     -- contains newlines
-    win:set_page("contents", {
+    win:set_page("main", {
         title = title,
-        contents = str_utils.escape_newlines(contents),
+        contents = util.str.escape_newlines(contents),
     })
     win:set_selection(selection_type, _selection)
     win:open(get_global_coordinates())

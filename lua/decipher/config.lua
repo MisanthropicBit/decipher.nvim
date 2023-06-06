@@ -5,6 +5,7 @@ local codecs = require("decipher.codecs")
 ---@class decipher.WindowMappings
 ---@field close? string
 ---@field apply? string
+---@field jsonpp? string
 ---@field help? string
 
 ---@class decipher.WindowConfig
@@ -40,6 +41,7 @@ local default_config = {
         mappings = {
             close = "q",
             apply = "a",
+            jsonpp = "J",
             help = "?",
         },
         title = true,
@@ -96,6 +98,7 @@ local function validate_config(_config)
         ["float.mappings"] = { _config.float.mappings, "table" },
         ["float.mappings.close"] = { _config.float.mappings.close, "string" },
         ["float.mappings.apply"] = { _config.float.mappings.apply, "string" },
+        ["float.mappings.jsonpp"] = { _config.float.mappings.jsonpp, "string" },
         ["float.mappings.help"] = { _config.float.mappings.help, "string" },
         ["float.title"] = { _config.float.title, "boolean" },
         ["float.title_pos"] = { _config.float.title_pos, "string" },

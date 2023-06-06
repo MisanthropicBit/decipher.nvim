@@ -47,6 +47,7 @@ Below decipher is set up through `decipher.setup({ ... })` with default values.
             mappings = {
                 close = "q", -- Key to press to close the floating window
                 apply = "a", -- Key to press to apply the encoding/decoding
+                jsonpp = "J", -- Key to prettily format contents as json if possbile
                 help = "?", -- Toggle help
             },
             title = true, -- Display a title with the codec name
@@ -91,6 +92,12 @@ Types                                                           *decipher.types*
             {apply} `string`
                 Key to press to apply the encoding or decoding of the
                 previewed text in the preview floating window.
+
+            {jsonpp} `string`
+                Key to prettily format the floating window contents as json if
+                possbile. Note that since lua table keys do have any
+                deterministic order, the prettified contents might have a
+                different order of keys.
 
             {help} `string`
                 Toggle help.

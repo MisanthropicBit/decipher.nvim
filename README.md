@@ -55,6 +55,7 @@ require('decipher').setup({
         mappings = {
             close = "q", -- Key to press to close the floating window
             apply = "a", -- Key to press to apply the encoding/decoding
+            jsonpp = "J", -- Key to prettily format contents as json if possbile
             help = "?", -- Toggle help
         },
         title = true, -- Display a title with the codec name

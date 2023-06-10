@@ -9,6 +9,9 @@ local selection = require("decipher.selection")
 ---@type boolean
 local has_floating_window = vim.fn.has("nvim") and vim.fn.exists("*nvim_win_set_config")
 
+---@type boolean
+local has_title = vim.fn.has("nvim-0.9")
+
 local decipher_float_var_name = "decipher_float"
 
 -- As percentages of the window's dimensions
@@ -223,7 +226,7 @@ end
 ---@param name string
 ---@return boolean
 function Float:render_page(name)
-    -- TODO: We could also create separate buffers for each page instead
+    -- NOTE: We could also create separate buffers for each page instead
     local page = self:get_page(name)
     local success = page:setup()
 
@@ -249,12 +252,20 @@ function Float:render_page(name)
     vim.api.nvim_buf_set_option(self.buffer, "modifiable", false)
 
     local anchored = self:get_anchored_position(self.position, width, height, self.window_config.padding)
+
+    ---@type string | string[][] | nil
     local title = self.window_config.title and page.title or nil
     local title_pos = nil
 
-    if title then
-        title = " " .. title .. " "
-        title_pos = self.window_config.title_pos or "left"
+    if has_title then
+        if title then
+            title = {
+                { " " .. title .. " ", "DecipherFloatTitle" },
+            }
+            title_pos = self.window_config.title_pos or "left"
+        end
+    else
+        errors.warn_message("'title' option requires nvim 0.9+")
     end
 
     local win_config = {

@@ -16,6 +16,18 @@ local function is_visual_mode(mode)
     return vim.tbl_contains({ "v", "V", block_visual_mode }, mode)
 end
 
+local function get_mode(bufnr)
+    return vim.api.nvim_buf_call(bufnr, function()
+        return vim.fn.mode()
+    end)
+end
+
+local function get_visualmode(bufnr)
+    return vim.api.nvim_buf_call(bufnr, function()
+        return vim.fn.visualmode()
+    end)
+end
+
 ---@param type decipher.SelectionType
 ---@return decipher.Region
 function selection.get_selection(type)
@@ -50,11 +62,11 @@ end
 ---@param bufnr number
 ---@return string[]
 local function get_visual_text(bufnr)
-    local mode = vim.fn.mode()
+    local mode = get_mode(bufnr)
 
     if not is_visual_mode(mode) then
         -- If there was no current visual mode, get the previous mode instead
-        mode = vim.fn.visualmode()
+        mode = get_visualmode(bufnr)
     end
 
     local region = selection.get_selection("visual")
@@ -92,6 +104,8 @@ local function get_visual_text(bufnr)
         end, lines)
         ---@diagnostic disable-next-line:missing-return
     end
+
+    return {}
 end
 
 ---@param bufnr number
@@ -124,7 +138,7 @@ end
 ---@param bufnr number
 ---@param value string[]
 local function set_visual_text(bufnr, region, value)
-    local vmode = vim.fn.visualmode()
+    local vmode = get_visualmode(bufnr)
 
     if vmode == "V" then
         -- Line-wise selection

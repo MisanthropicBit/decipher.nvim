@@ -57,10 +57,10 @@ describe("util", function()
 
         it("formats tables", function()
             local test = {
-                hide = true,
-                level = 1,
                 msg = "hello",
+                level = 1,
                 values = { 1, 2, 3 },
+                hide = true,
             }
 
             local result = util.json.pretty_print(test, { sort_keys = true })
@@ -70,6 +70,39 @@ describe("util", function()
                 [[{
   "hide": true,
   "level": 1,
+  "msg": "hello",
+  "values": [
+    1,
+    2,
+    3
+  ]
+}]]
+            )
+        end)
+
+        it("formats tables with more than one level", function()
+            local test = {
+                msg = "hello",
+                levels = {
+                    b = 2,
+                    c = 3,
+                    a = 1,
+                },
+                values = { 1, 2, 3 },
+                hide = true,
+            }
+
+            local result = util.json.pretty_print(test, { sort_keys = true })
+
+            assert.are.same(
+                result,
+                [[{
+  "hide": true,
+  "levels": {
+    "a": 1,
+    "b": 2,
+    "c": 3
+  },
   "msg": "hello",
   "values": [
     1,

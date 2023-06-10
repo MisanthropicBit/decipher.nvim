@@ -2,6 +2,34 @@
 
 local json = {}
 
+---Return an iterator over a table's keys in sorted order
+---@param tbl table
+---@return function
+---@return table
+---@return string
+local function sorted_pairs(tbl)
+    local keys = {}
+
+    for key in pairs(tbl) do
+        table.insert(keys, key)
+    end
+
+    -- NOTE: Unfortunately this is not a stable sort
+    table.sort(keys)
+
+    local idx = 0
+
+    local iter = function(invariant, _)
+        idx = idx + 1
+
+        if keys[idx] ~= nil then
+            return keys[idx], invariant[keys[idx]]
+        end
+    end
+
+    return iter, tbl, ""
+end
+
 ---@class JsonPrettyPrintOptions
 ---@field indent? integer
 ---@field sort_keys? boolean
@@ -99,10 +127,9 @@ local function format_table_as_object(value, buffer)
 
     buffer:add("{\n")
     buffer:indent()
-    local i = 1
 
-    -- NOTE: Unfortunately vim.spairs is not a stable sort
-    local iter = buffer._options.sort_keys and vim.spairs or pairs
+    local i = 1
+    local iter = buffer._options.sort_keys and sorted_pairs or pairs
 
     -- This might be incorrect for more than two levels because the
     -- table to iterate over is always the same

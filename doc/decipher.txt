@@ -245,10 +245,8 @@ decipher to decode a text object using base64 using a preview floating window.
 Highlights                                                 *decipher.highlights*
 
 *DecipherFloatTitle*
-  Highlight group for the title of the floating window preview.
-
-*DecipherFloatContents*
-  Highlight group for the contents of the floating window preview.
+  Highlight group for the title of the floating window preview. Defaults to
+  *Title*.
 
 ==============================================================================
 Codecs                                                         *decipher.codecs*

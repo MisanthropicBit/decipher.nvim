@@ -488,6 +488,10 @@ function float.open(title, contents, window_config, selection_type, _selection)
     return win
 end
 
+local function define_highlights()
+    vim.cmd([[hi default link DecipherFloatTitle Title]])
+end
+
 function float.setup()
     vim.cmd([[
         augroup DecipherCleanupFloats
@@ -495,6 +499,16 @@ function float.setup()
             autocmd WinClosed * lua require("decipher.ui.float").close()
         augroup end
     ]])
+
+    local augroup = vim.api.nvim_create_augroup("DecipherColorSchemeRefresh", {})
+
+    vim.api.nvim_create_autocmd("ColorScheme", {
+        callback = define_highlights,
+        group = augroup,
+        desc = "Refresh decipher highlights when colorscheme changes",
+    })
+
+    define_highlights()
 end
 
 return float

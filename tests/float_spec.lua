@@ -32,8 +32,11 @@ describe("ui.float", function()
 
             assert.are._not.same(_float.buffer, vim.api.nvim_win_get_buf(0))
             assert.are.same(vim.api.nvim_win_get_var(_float.win_id, "decipher_float"), true)
-            assert.are.same(window_config.title[1][1], " title ")
-            assert.are.same(window_config.title_pos, "left")
+            if vim.fn.has("nvim-0.9") == 1 then
+                assert.are.same(window_config.title[1][1], " title ")
+                assert.are.same(window_config.title_pos, "left")
+            end
+
             assert.are.same(window_config.width, 8)
             assert.are.same(window_config.height, 1)
             assert.are.same(window_config.focusable, true)

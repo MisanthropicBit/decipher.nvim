@@ -7,10 +7,10 @@ local util = require("decipher.util")
 local selection = require("decipher.selection")
 
 ---@type boolean
-local has_floating_window = vim.fn.has("nvim") and vim.fn.exists("*nvim_win_set_config")
+local has_floating_window = vim.fn.has("nvim") == 1 and vim.fn.exists("*nvim_win_set_config") == 1
 
 ---@type boolean
-local has_title = vim.fn.has("nvim-0.9")
+local has_title = vim.fn.has("nvim-0.9") == 1
 
 local decipher_float_var_name = "decipher_float"
 

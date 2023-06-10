@@ -452,7 +452,6 @@ function float.open(title, contents, window_config, selection_type, _selection)
     win:add_page("help", {
         title = "Help",
         setup = function(parent)
-            vim.print(parent.window_config)
             local mappings = parent.window_config.mappings
 
             return {

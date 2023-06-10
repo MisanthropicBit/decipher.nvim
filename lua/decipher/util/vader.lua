@@ -57,18 +57,20 @@ function vader.given(...)
 
     -- TODO: Add custom formatter here?
     vim.api.nvim_buf_call(bufnr, function()
-        callback(bufnr)
+        callback({ bufnr = bufnr, win_id = vim.api.nvim_get_current_win() })
     end)
 end
 
 --- Run normal mode commands without mappings
 ---@param input string
-function vader.normal(input)
-    vim.cmd(vim.api.nvim_replace_termcodes("normal! " .. input, true, false, true))
+---@param use_mappings? boolean
+function vader.normal(input, use_mappings)
+    local bang = use_mappings and "!" or ""
+    vim.cmd(vim.api.nvim_replace_termcodes("normal" .. bang .. " " .. input, true, false, true))
 end
 
-function vader.expect(contents)
-    local actual_contents = vim.api.nvim_buf_get_lines(0, 0, -1, true)
+function vader.expect(contents, bufnr)
+    local actual_contents = vim.api.nvim_buf_get_lines(bufnr or 0, 0, -1, true)
 
     luassert.are.same(actual_contents, contents)
 end

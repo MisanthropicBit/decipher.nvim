@@ -111,6 +111,12 @@ end
 ---@type decipher.Config
 local _user_config = default_config
 
+---Use in testing
+---@private
+function config._default_config()
+    return default_config
+end
+
 ---@param user_config? decipher.Config
 function config.setup(user_config)
     _user_config = vim.tbl_deep_extend("keep", user_config or {}, default_config)

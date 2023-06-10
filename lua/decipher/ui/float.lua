@@ -270,10 +270,11 @@ function Float:render_page(name)
             win_config.title_pos = self.window_config.title_pos
         end
     else
-        errors.warn_message("'title' option requires nvim 0.9+")
+        if self.window_config.title then
+            errors.warn_message("'title' option requires nvim 0.9+")
+        end
     end
 
-    -- TODO: Check that title is supported
     vim.api.nvim_win_set_config(self.win_id, win_config)
 
     self.curpage = name

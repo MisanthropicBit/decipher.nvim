@@ -253,24 +253,7 @@ function Float:render_page(name)
 
     local anchored = self:get_anchored_position(self.position, width, height, self.window_config.padding)
 
-    ---@type string | string[][] | nil
-    local title = self.window_config.title and page.title or nil
-    local title_pos = nil
-
-    if has_title then
-        if title then
-            title = {
-                { " " .. title .. " ", "DecipherFloatTitle" },
-            }
-            title_pos = self.window_config.title_pos or "left"
-        end
-    else
-        errors.warn_message("'title' option requires nvim 0.9+")
-    end
-
     local win_config = {
-        title = title,
-        title_pos = title_pos,
         relative = "editor",
         row = anchored.position.lnum,
         col = anchored.position.col,
@@ -278,6 +261,17 @@ function Float:render_page(name)
         width = width,
         height = height,
     }
+
+    if has_title then
+        if self.window_config.title then
+            win_config.title = {
+                { " " .. page.title .. " ", "DecipherFloatTitle" },
+            }
+            win_config.title_pos = self.window_config.title_pos
+        end
+    else
+        errors.warn_message("'title' option requires nvim 0.9+")
+    end
 
     -- TODO: Check that title is supported
     vim.api.nvim_win_set_config(self.win_id, win_config)

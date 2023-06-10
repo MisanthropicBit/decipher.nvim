@@ -414,7 +414,7 @@ end
 ---@param selection_type decipher.SelectionType
 ---@param _selection decipher.Region
 function float.open(title, contents, window_config, selection_type, _selection)
-    if has_floating_window ~= 1 then
+    if not has_floating_window then
         errors.error_message("No support for floating windows", true)
         return nil
     end

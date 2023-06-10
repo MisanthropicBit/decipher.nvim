@@ -370,12 +370,13 @@ end
 ---Switch between a given page and the main page
 ---@param page_name string page name to toggle between
 function Float:switch_to_page(page_name)
+    local old_page = self.curpage
     local target_page = self.curpage == page_name and "main" or page_name
 
     local success = self:render_page(target_page)
 
     if success then
-        self:get_page(page_name):posthook()
+        self:get_page(old_page):posthook()
     end
 end
 

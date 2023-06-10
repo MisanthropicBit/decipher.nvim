@@ -35,7 +35,7 @@ describe("decipher", function()
 
         assert.stub(vim.fn.has).was_called_with("nvim-0.5.0")
         assert.stub(vim.api.nvim_echo).was_called_with({
-            { "[decipher]:", "WarningMsg" },
+            { "[decipher]:", "ErrorMsg" },
             { " This plugin only works with Neovim >= v0.5.0" },
         }, false, {})
     end)

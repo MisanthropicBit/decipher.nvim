@@ -5,10 +5,10 @@ local decipher_version = "1.0.0"
 local codecs = require("decipher.codecs")
 local config = require("decipher.config")
 local errors = require("decipher.errors")
-local float = require("decipher.float")
 local motion = require("decipher.motion")
 local selection = require("decipher.selection")
 local str_utils = require("decipher.util.string")
+local ui = require("decipher.ui")
 
 decipher.codec = codecs.codec
 
@@ -76,7 +76,7 @@ local function open_float_handler(codec_name, status, value, selection_type)
     -- preview window later on
     local _selection = selection.get_selection(selection_type)
 
-    float.open(codec_name, { value }, config.float, selection_type, _selection)
+    ui.float.open(codec_name, { value }, config.float, selection_type, _selection)
 end
 
 --- Handler for setting a text region to a value
@@ -208,7 +208,7 @@ function decipher.setup(user_config)
         return
     end
 
-    float.setup()
+    ui.float.setup()
 end
 
 return decipher

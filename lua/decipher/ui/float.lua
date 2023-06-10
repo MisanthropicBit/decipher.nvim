@@ -2,6 +2,7 @@ local float = {}
 
 local config = require("decipher.config")
 local errors = require("decipher.errors")
+local Page = require("decipher.ui.page")
 local util = require("decipher.util")
 local selection = require("decipher.selection")
 
@@ -32,6 +33,7 @@ local buffer_options = {
     bufhidden = "wipe",
     buflisted = false,
     modifiable = false,
+    filetype = "decipher_float",
 }
 
 ---@param percentage number
@@ -51,7 +53,7 @@ local function get_global_coordinates()
     }
 end
 
----Pad the given lines
+---Pad an array of given lines
 ---@param lines string[]
 ---@param padding number
 ---@param padchar string
@@ -80,16 +82,10 @@ local function pad_lines(lines, padding, padchar)
     return padded, width, #padded
 end
 
----@class decipher.Page
----@field title string
----@field contents string[]
----@field rendered string[]
----@field width number
----@field height number
-
 ---@class decipher.Float
 ---@field width number Width of the float
 ---@field height number Height of the float
+---@field curpage string Name of the current page
 ---@field pages table<string, decipher.Page> Table of pages by name
 ---@field selection_type decipher.SelectionType -- Type of selection that triggered this float to open
 ---@field parent_selection decipher.Region -- Region selected in the parent buffer
@@ -98,11 +94,11 @@ end
 ---@field buffer? number Buffer id
 ---@field position decipher.Position position of the float
 ---@field window_config? decipher.WindowConfig
----@field help_visible boolean If the help page is visible or not
 local Float = {
     width = 0,
     height = 0,
     border = nil,
+    curpage = "",
     pages = {},
     selection = {
         ["start"] = { lnum = -1, col = -1 },
@@ -116,7 +112,6 @@ local Float = {
         col = 0,
     },
     window_config = nil,
-    help_visible = false,
 }
 
 ---@private
@@ -182,7 +177,7 @@ function Float:get_anchored_position(position, width, height, padding)
     }
 end
 
----@param position decipher.Position
+---@param position? decipher.Position
 function Float:open(position)
     local minimum_window_options = {
         style = "minimal",
@@ -196,7 +191,7 @@ function Float:open(position)
         focusable = true,
     }
 
-    self.position = position
+    self.position = position or get_global_coordinates()
     self.parent_bufnr = vim.api.nvim_get_current_buf()
     self.buffer = vim.api.nvim_create_buf(false, true)
     self.win_id = vim.api.nvim_open_win(self.buffer, self.window_config.enter or false, minimum_window_options)
@@ -226,14 +221,22 @@ end
 -- Render a page of the float
 ---@private
 ---@param name string
+---@return boolean
 function Float:render_page(name)
-    local page = self.pages[name]
+    -- TODO: We could also create separate buffers for each page instead
+    local page = self:get_page(name)
+    local success = page:setup()
+
+    if not success then
+        return false
+    end
 
     local contents, width, height = pad_lines(page.contents, self.window_config.padding, " ")
     local max_width, max_height = self:compute_max_dimensions()
 
     if max_width ~= "auto" then
-        width = math.min(width, max_width)
+        local title_width = page.title and #page.title + 2 or 0
+        width = math.max(title_width, math.min(width, max_width))
     end
 
     if max_height ~= "auto" then
@@ -246,23 +249,31 @@ function Float:render_page(name)
     vim.api.nvim_buf_set_option(self.buffer, "modifiable", false)
 
     local anchored = self:get_anchored_position(self.position, width, height, self.window_config.padding)
-
     local title = self.window_config.title and page.title or nil
+    local title_pos = nil
 
     if title then
         title = " " .. title .. " "
+        title_pos = self.window_config.title_pos or "left"
     end
 
-    vim.api.nvim_win_set_config(self.win_id, {
+    local win_config = {
         title = title,
-        title_pos = self.window_config.title_pos or "left",
+        title_pos = title_pos,
         relative = "editor",
         row = anchored.position.lnum,
         col = anchored.position.col,
         anchor = anchored.anchor,
         width = width,
         height = height,
-    })
+    }
+
+    -- TODO: Check that title is supported
+    vim.api.nvim_win_set_config(self.win_id, win_config)
+
+    self.curpage = name
+
+    return true
 end
 
 ---@private
@@ -284,10 +295,10 @@ function Float:set_mappings()
             self:apply_codec()
         end)
         set_keymap("help", function()
-            self:toggle_help()
+            self:switch_to_page("help")
         end)
         set_keymap("jsonpp", function()
-            self:toggle_json_pretty_print()
+            self:switch_to_page("jsonpp")
         end)
     end
 end
@@ -312,19 +323,14 @@ function Float:set_options()
 end
 
 ---@param name string
----@param options { title?: string, contents?: string[] }
-function Float:set_page(name, options)
-    if self.pages[name] == nil then
-        self.pages[name] = {}
-    end
+function Float:get_page(name)
+    return self.pages[name]
+end
 
-    if options.title ~= nil and #options.title > 0 then
-        self.pages[name].title = options.title
-    end
-
-    if options.contents ~= nil and #options.contents > 0 then
-        self.pages[name].contents = options.contents
-    end
+---@param name string
+---@param options decipher.Page?
+function Float:add_page(name, options)
+    self.pages[name] = Page:new(self, options)
 end
 
 -- Set the selected region for a visual selection or motion
@@ -338,68 +344,27 @@ end
 -- Apply the encoding or decoding in a preview to the selection that triggered
 -- the preview
 function Float:apply_codec()
-    selection.set_text_from_selection(
-        self.parent_bufnr,
-        self.selection_type,
-        self.parent_selection,
-        self.pages["main"].contents
-    )
-    self:close()
-end
+    if self.selection_type and self.parent_selection then
+        selection.set_text_from_selection(
+            self.parent_bufnr,
+            self.selection_type,
+            self.parent_selection,
+            self:get_page("main").contents
+        )
 
----Toggle help
-function Float:toggle_help()
-    self.help_visible = not self.help_visible
-
-    if self.help_visible then
-        if self.pages["help"] == nil then
-            local format = "%s - %s"
-
-            self:set_page("help", {
-                title = "Help",
-                contents = {
-                    format:format(self.window_config.mappings.close, "Close the floating window"),
-                    format:format(self.window_config.mappings.apply, "Apply the encoding/decoding"),
-                    format:format(self.window_config.mappings.jsonpp, "Prettily format contents as json"),
-                    format:format(self.window_config.mappings.help, "Toggle this help"),
-                },
-            })
-        end
-
-        self:render_page("help")
-    else
-        self:render_page("main")
+        self:close()
     end
 end
 
----Toggle json pretty printing
-function Float:toggle_json_pretty_print()
-    self.jsonpp_visible = not self.jsonpp_visible
+---Switch between a given page and the main page
+---@param page_name string page name to toggle between
+function Float:switch_to_page(page_name)
+    local target_page = self.curpage == page_name and "main" or page_name
 
-    if self.jsonpp_visible then
-        if self.pages["jsonpp"] == nil then
-            local page = self.pages["main"]
-            local success, result = pcall(vim.json.decode, table.concat(page.contents))
+    local success = self:render_page(target_page)
 
-            if not success then
-                errors.error_message("Cannot decode as json: " .. result, true)
-                self.jsonpp_visible = false
-                return
-            end
-
-            local pretty = util.json.pretty_print(result, { sort_keys = true })
-
-            self:set_page("jsonpp", {
-                title = page.title .. " (json pretty-print)",
-                contents = vim.fn.split(pretty, "\n"),
-            })
-        end
-
-        vim.bo.filetype = "json"
-        self:render_page("jsonpp")
-    else
-        vim.bo.filetype = ""
-        self:render_page("main")
+    if success then
+        self:get_page(page_name):posthook()
     end
 end
 
@@ -463,14 +428,54 @@ function float.open(title, contents, window_config, selection_type, _selection)
     local _config = window_config or config.float
     local win = Float:new(_config)
 
-    -- Escape the string since you cannot set lines in a buffer if it
-    -- contains newlines
-    win:set_page("main", {
+    win:add_page("main", {
         title = title,
+        -- Escape the string since you cannot set lines in a buffer if it
+        -- contains newlines
         contents = util.str.escape_newlines(contents),
     })
+
+    local help_format = "%s - %s"
+
+    win:add_page("help", {
+        title = "Help",
+        setup = function(parent)
+            vim.print(parent.window_config)
+            local mappings = parent.window_config.mappings
+
+            return {
+                help_format:format(mappings.close, "Close the floating window"),
+                help_format:format(mappings.apply, "Apply the encoding/decoding"),
+                help_format:format(mappings.jsonpp, "Prettily format contents as json"),
+                help_format:format(mappings.help, "Toggle this help"),
+            }
+        end,
+    })
+
+    win:add_page("jsonpp", {
+        setup = function(parent, page)
+            local main_page = parent.pages["main"]
+            local success, result = pcall(vim.json.decode, table.concat(main_page.contents))
+
+            if not success then
+                errors.error_message("Cannot decode as json: " .. result, true)
+                return nil
+            end
+
+            local pretty = util.json.pretty_print(result, { sort_keys = true })
+
+            page.title = main_page.title .. " (json pretty-print)"
+            vim.bo[parent.buffer].filetype = "json"
+
+            return vim.fn.split(pretty, "\n")
+        end,
+        posthook = function(parent)
+            vim.bo[parent.buffer].filetype = nil
+        end,
+    })
+
     win:set_selection(selection_type, _selection)
-    win:open(get_global_coordinates())
+    win:open()
 
     floats[cur_win_id] = win
 
@@ -481,7 +486,7 @@ function float.setup()
     vim.cmd([[
         augroup DecipherCleanupFloats
             autocmd!
-            autocmd WinClosed * lua require("decipher.float").close()
+            autocmd WinClosed * lua require("decipher.ui.float").close()
         augroup end
     ]])
 end

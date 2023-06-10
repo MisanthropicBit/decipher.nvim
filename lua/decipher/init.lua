@@ -161,7 +161,6 @@ end
 ---@param codec_name decipher.CodecArg
 ---@param options decipher.Options
 function decipher.encode_motion(codec_name, options)
-    -- TODO: Pass process_codec directly to motion.process_motion
     motion.start_motion(function()
         process_codec(codec_name, decipher.encode, "motion", options)
     end)

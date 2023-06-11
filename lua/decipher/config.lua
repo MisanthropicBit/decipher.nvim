@@ -10,7 +10,7 @@ local codecs = require("decipher.codecs")
 
 ---@class decipher.WindowConfig
 ---@field padding? number
----@field border? (string | string[])[]
+---@field border? string | string[] | string[][]
 ---@field mappings? decipher.WindowMappings
 ---@field title? boolean
 ---@field title_pos? 'left' | 'center' | 'right'
@@ -20,7 +20,6 @@ local codecs = require("decipher.codecs")
 
 ---@class decipher.Config
 ---@field active_codecs? (string | decipher.Codecs)[] | "all"
----@field user_codecs? decipher.Codec[]
 ---@field float? decipher.WindowConfig
 
 ---@type decipher.Config

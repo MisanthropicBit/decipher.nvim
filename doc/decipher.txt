@@ -6,10 +6,10 @@
            █  █ ██   █    █ █▄▄█ ████ ██   █▄▄█   █▀▄█ █  █ █ █ ▀ █
            █▄▄▀ █▄▄▄ █▄▄▄ █ █    █  █ █▄▄▄ █ █  ▄ █ ▀█ ▀▄▄▀ █ █   █
 
-                               Version 1.0.0
+                               Version 0.1.0
 
-A small plugin that provides ways to encode and decode text using various
-codecs like base64.
+A plugin that provides ways to encode and decode text using various codecs
+like base64.
 
 ==============================================================================
 decipher                                                              *decipher*
@@ -24,13 +24,16 @@ decipher                                                              *decipher*
   Highlights ............................................. |decipher.highlights|
   Codecs ..................................................... |decipher.codecs|
   FAQ ........................................................... |decipher.faq|
+  License ................................................... |decipher.license|
 
 ==============================================================================
 Setup                                                           *decipher-setup*
 
-Below decipher is set up through `decipher.setup({ ... })` with default values.
+Decipher is set up using `decipher.setup({ ... })`. The below values are the
+defaults. It is not required to call `setup` in which case the defaults will
+be used.
 >lua
-    require('decipher').setup({
+    require("decipher").setup({
         active_codecs = "all", -- Set all codecs as active and useable
         float = { -- Floating window options
             padding = 0, -- Zero padding
@@ -56,9 +59,7 @@ Below decipher is set up through `decipher.setup({ ... })` with default values.
                               -- mode is activated or the cursor is moved
             enter = false, -- Automatically enter the floating window if
                            -- opened
-            options = { -- Options to apply to the floating window contents
-                wrap = false,
-            },
+            options = {}, -- Options to apply to the floating window contents
         },
     })
 
@@ -77,10 +78,10 @@ Types                                                           *decipher.types*
                                                          *decipher.WindowConfig*
     Fields:  
         {padding} `number`
-            Padding around the preview contents in the floating window.
+            Padding around the contents in the floating window preview.
 
         {border} (`string | string[]`)[]
-            Border around the preview floating window.
+            Border around the floating window preview.
 
         {mappings} `table`
             Mappings for the floating window preview. Used as the left-hand
@@ -90,45 +91,46 @@ Types                                                           *decipher.types*
                 Key to press to close the floating window.
 
             {apply} `string`
-                Key to press to apply the encoding or decoding of the
-                previewed text in the preview floating window.
+                Key to press to apply the encoded/decoded contents of the text
+                in the floating window preview.
 
             {jsonpp} `string`
-                Key to prettily format the floating window contents as json if
-                possbile. Note that since lua table keys do have any
-                deterministic order, the prettified contents might have a
-                different order of keys.
+                Key to prettily format the contents in the floating window
+                preview as json if possbile. Note that since lua table keys do
+                not have any deterministic order, the prettified contents
+                might have a different order of keys than the original
+                contents.
 
             {help} `string`
                 Toggle help.
 
         {title} `boolean`
-            Whether or not to show a title in the preview floating window or
-            not. If enabled, displays the codec name.
+            Whether or not to show a title in the floating window preview or
+            not. This option requires at least nvim 0.9.
 
         {title_pos} "left" | "center" | "right"
             Same as the config argument for |nvim_open_win|. Either "left",
             "center", or "right". Not used if the title is disabled.
 
         {autoclose} `boolean`
-            Autoclose the preview floating window if insert mode is
-            entered or the cursor is moved.
+            Autoclose the floating window preview if insert mode is entered or
+            the cursor is moved.
 
         {enter} `boolean`
-            Automatically enter the preview floating window when opened.
+            Automatically enter the floating window preview when opened.
 
         {options} `table<string, any>`
-            Buffer-local options to set for the preview floating window.
+            Buffer-local options to set for the floating window preview.
 
                                                               *decipher.Options*
     Fields:
         {preview} `(boolean)` If true, show a preview of encoding/decoding
-        instead.
+        instead of encoding/decoding in place.
 
                                                              *decipher.CodecArg*
     {string | decipher.Codecs}
         General type for functions that accept codecs as arguments. Either a
-        string (e.g. 'base64') or or a an enum (e.g. decipher.codec.base64).
+        string (e.g. "base64") or or a an enum (e.g. decipher.codec.base64).
 
 ==============================================================================
 Functions                                                   *decipher.functions*
@@ -137,10 +139,10 @@ Any functions not listed here that may be accessed via the decipher module are
 not considered public and are subject to change.
 
 setup({config})                                                 *decipher.setup*
-    Setup global configuration for decipher. See |decipher-setup|.
+    Setup global configuration for decipher. See |decipher.setup|.
 
     Parameters:  
-      • {config}  (decipher.Config) Setup configuration table
+      • {config} (decipher.Config) Setup configuration table
 
 version()                                                     *decipher.version*
     Returns the current version as a string.
@@ -212,13 +214,13 @@ the `float.mappings` option in *decipher.WindowConfig*. Mappings can easily be
 set up via the lua api.
 
 >lua
-    local decipher = require('decipher')
+    local decipher = require("decipher")
 
     vim.keymap.set(
-        'n',
-        '<leader>de',
+        "n",
+        "<leader>de",
         function()
-            decipher.encode_selection('crockford')
+            decipher.encode_selection("crockford")
         end,
         { noremap = true, silent = true }
     )
@@ -228,15 +230,15 @@ set up via the lua api.
 Motions                                                       *decipher.motions*
 
 Decipher can encode and decode across a motion. The following lua code sets up
-decipher to decode a text object using base64 using a preview floating window.
+decipher to decode a text object using base64 using a floating window preview.
 >lua
-    local decipher = require('decipher')
+    local decipher = require("decipher")
 
     vim.keymap.set(
-        'n',
-        '<leader>d',
+        "n",
+        "<leader>d",
         function()
-            decipher.decode_motion('base64', { preview = true })
+            decipher.decode_motion("base64", { preview = true })
         end,
         { noremap = true, silent = true }
     )
@@ -263,6 +265,8 @@ Currently supported codecs:
 
 ==============================================================================
 FAQ                                                               *decipher.faq*
+
+Nothing yet.
 
 ==============================================================================
 License                                                       *decipher.license*

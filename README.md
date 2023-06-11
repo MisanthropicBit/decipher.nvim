@@ -3,7 +3,7 @@
   <h1>decipher.nvim</h1>
   <p><i>Encode and decode text</i></p>
   <p>
-    <img src="https://img.shields.io/badge/version-1.0.0-blue?style=flat-square" />
+    <img src="https://img.shields.io/badge/version-0.1.0-blue?style=flat-square" />
     <a href="https://img.shields.io/github/actions/workflow/status/MisanthropicBit/decipher.nvim/ci.yml?branch=master&style=flat-square">
         <img src="https://img.shields.io/github/actions/workflow/status/MisanthropicBit/decipher.nvim/ci.yml?branch=master&style=flat-square" />
     </a>
@@ -14,8 +14,8 @@
   <br />
 </div>
 
-A small plugin that provides ways to encode and decode text using various codecs
-like base64.
+A plugin that provides ways to encode and decode text using various codecs like
+base64.
 
 ## Installing
 
@@ -64,9 +64,7 @@ require('decipher').setup({
                           -- mode is activated or the cursor is moved
         enter = false, -- Automatically enter the floating window if
                        -- opened
-        options = { -- Options to apply to the floating window contents
-            wrap = false,
-        },
+        options = {}, -- Options to apply to the floating window contents
     },
 })
 ```

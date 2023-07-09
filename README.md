@@ -3,7 +3,7 @@
   <h1>decipher.nvim</h1>
   <p><i>Encode and decode text</i></p>
   <p>
-    <img src="https://img.shields.io/badge/version-0.1.0-blue?style=flat-square" />
+    <img src="https://img.shields.io/badge/version-0.1.1-blue?style=flat-square" />
     <a href="https://img.shields.io/github/actions/workflow/status/MisanthropicBit/decipher.nvim/ci.yml?branch=master&style=flat-square">
         <img src="https://img.shields.io/github/actions/workflow/status/MisanthropicBit/decipher.nvim/ci.yml?branch=master&style=flat-square" />
     </a>

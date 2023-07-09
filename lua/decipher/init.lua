@@ -47,7 +47,13 @@ local function handle_codec(codec_name, value, func_key)
         error(("Codec '%s' not found"):format(codec_name), 0)
     end
 
-    return codec[func_key](value)
+    local func = codec[func_key]
+
+    if not func then
+        error(("Codec '%s' does not support '%s'"):format(codec_name, func_key), 2)
+    end
+
+    return func(value)
 end
 
 ---@param codec_name decipher.CodecArg

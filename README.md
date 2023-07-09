@@ -17,6 +17,8 @@
 A plugin that provides ways to encode and decode text using various codecs like
 base64.
 
+![demo](decipher-demo.gif)
+
 ## Installing
 
 * **[vim-plug](https://github.com/junegunn/vim-plug)**

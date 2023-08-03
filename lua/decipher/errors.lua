@@ -9,6 +9,8 @@ local function _message(message, level, history)
     if type(message) == "string" then
         table.insert(chunks, { " " .. message })
     elseif type(message) == "table" then
+        table.insert(chunks, { " " })
+
         for _, v in pairs(message) do
             table.insert(chunks, v)
         end

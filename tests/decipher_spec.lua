@@ -38,6 +38,27 @@ describe("decipher", function()
             { "[decipher]:", "ErrorMsg" },
             { " This plugin only works with Neovim >= v0.5.0" },
         }, false, {})
+
+        vim.fn.has:revert()
+        vim.api.nvim_echo:revert()
+    end)
+
+    it("prints an error if a bit library is not available", function()
+        stub(decipher, "has_bit_library", false)
+        stub(vim.api, "nvim_echo")
+
+        decipher.setup({})
+
+        assert.stub(vim.api.nvim_echo).was_called_with({
+            { "[decipher]:", "ErrorMsg" },
+            { " " },
+            { "A bit library is required. Ensure that either " },
+            { "neovim has been built with luajit " },
+            { "or use neovim v0.9.0+ which includes a bit library" },
+        }, false, {})
+
+        decipher.has_bit_library:revert()
+        vim.api.nvim_echo:revert()
     end)
 
     it("encodes a string using a codec", function()

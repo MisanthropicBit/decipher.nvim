@@ -17,6 +17,9 @@
 A plugin that provides ways to encode and decode text using various codecs like
 base64.
 
+> [!IMPORTANT]  
+> A bit library is needed which requires that either neovim has been compiled with luajit or you are using v0.9.0+ which provides a bit library.
+
 ![demo](https://github.com/MisanthropicBit/decipher.nvim/assets/1846147/6bc4db76-9a3b-428b-99b4-98e56d06901e)
 
 ## Installing

@@ -1,6 +1,6 @@
 local decipher = {}
 
-local decipher_version = "0.1.1"
+local decipher_version = "0.1.2"
 
 local codecs = require("decipher.codecs")
 local config = require("decipher.config")

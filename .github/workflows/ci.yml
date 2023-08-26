@@ -1,4 +1,4 @@
-name: Run tests
+name: ci
 
 on:
   pull_request: ~
@@ -46,25 +46,29 @@ jobs:
       - name: Run tests
         run: ./tests/run_tests.sh
 
-  # docs:
-  #   name: generate vimdoc
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: generate help
-  #       run: |
-  #         curl -Lq https://github.com/numToStr/lemmy-help/releases/latest/download/lemmy-help-x86_64-unknown-linux-gnu.tar.gz | tar xz
-  #         ./lemmy-help lua > doc/decipher.txt
-  #     - name: embed codeblocks
-  #       uses: dineshsonachalam/markdown-autodocs@v1.0.7
-  #       with:
-  #         commit_message: "doc: auto-generate markdown codeblock"
-  #         output_file_paths: '[./README.md]'
-  #         categories: '[code-block]'
-
-  #     - name: commit help
-  #       uses: stefanzweifel/git-auto-commit-action@v4
-  #       with:
-  #         branch: ${{ github.head_ref }}
-  #         commit_message: "doc: auto-generate vimdoc"
-  #         file_pattern: doc/*.txt
+  release:
+    name: release
+    if: ${{ github.ref == 'refs/heads/master' }}
+    needs:
+      - style
+      - tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/release-please-action@v3
+        id: release
+        with:
+          release-type: simple
+          package-name: decipher.nvim
+          extra-files: |
+            lua/decipher/init.lua
+      - uses: actions/checkout@v3
+      - name: tag stable version
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email github-actions[bot]@users.noreply.github.com
+          git remote add gh-token "https://${{ secrets.GITHUB_TOKEN }}@github.com/google-github-actions/release-please-action.git"
+          git tag -d stable || true
+          git push origin :stable || true
+          git tag -a stable -m "Lastest stable release"
+          git push origin stable

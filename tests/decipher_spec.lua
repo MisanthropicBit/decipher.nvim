@@ -3,7 +3,7 @@ local stub = require("luassert.stub")
 
 describe("decipher", function()
     it("gets the current version", function()
-        assert.are.same(decipher.version(), "0.1.2")
+        assert.are.same(decipher.version(), "0.1.2") -- x-release-please-version
     end)
 
     it("gets a sorted list of supported codecs", function()

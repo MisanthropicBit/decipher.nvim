@@ -213,7 +213,7 @@ end
 ---@param user_config? decipher.Config
 function decipher.setup(user_config)
     if not vim.fn.has("nvim-0.5.0") then
-        errors.error_message("This plugin only works with Neovim >= v0.5.0", false)
+        errors.error_message("This plugin only works with Neovim >= v0.5.0", true)
         return
     end
 
@@ -222,7 +222,7 @@ function decipher.setup(user_config)
             { "A bit library is required. Ensure that either " },
             { "neovim has been built with luajit " },
             { "or use neovim v0.9.0+ which includes a bit library" },
-        }, false)
+        }, true)
 
         return
     end

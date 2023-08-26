@@ -37,7 +37,7 @@ describe("decipher", function()
         assert.stub(vim.api.nvim_echo).was_called_with({
             { "[decipher]:", "ErrorMsg" },
             { " This plugin only works with Neovim >= v0.5.0" },
-        }, false, {})
+        }, true, {})
 
         vim.fn.has:revert()
         vim.api.nvim_echo:revert()
@@ -55,7 +55,7 @@ describe("decipher", function()
             { "A bit library is required. Ensure that either " },
             { "neovim has been built with luajit " },
             { "or use neovim v0.9.0+ which includes a bit library" },
-        }, false, {})
+        }, true, {})
 
         decipher.has_bit_library:revert()
         vim.api.nvim_echo:revert()

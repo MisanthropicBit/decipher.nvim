@@ -204,15 +204,30 @@ function decipher.decode_motion_prompt(options)
     end)
 end
 
+function decipher.has_bit_library()
+    local has_bit, _ = pcall(require, "bit")
+
+    return has_bit
+end
+
 ---@param user_config? decipher.Config
 function decipher.setup(user_config)
-    config.setup(user_config)
-
     if not vim.fn.has("nvim-0.5.0") then
-        errors.error_message("This plugin only works with Neovim >= v0.5.0", false)
+        errors.error_message("This plugin only works with Neovim >= v0.5.0", true)
         return
     end
 
+    if not decipher.has_bit_library() then
+        errors.error_message({
+            { "A bit library is required. Ensure that either " },
+            { "neovim has been built with luajit " },
+            { "or use neovim v0.9.0+ which includes a bit library" },
+        }, true)
+
+        return
+    end
+
+    config.setup(user_config)
     ui.float.setup()
 end
 

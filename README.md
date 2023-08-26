@@ -1,7 +1,7 @@
 <div align="center">
   <br />
   <h1>decipher.nvim</h1>
-  <p><i>Encode and decode text</i></p>
+  <p><i>A plugin that provides ways to encode and decode text using various codecs like base64.</i></p>
   <p>
     <img src="https://img.shields.io/badge/version-0.1.1-blue?style=flat-square" />
     <a href="https://img.shields.io/github/actions/workflow/status/MisanthropicBit/decipher.nvim/ci.yml?branch=master&style=flat-square">
@@ -14,8 +14,8 @@
   <br />
 </div>
 
-A plugin that provides ways to encode and decode text using various codecs like
-base64.
+> [!IMPORTANT]  
+> A bit library is needed which requires that either neovim has been compiled with luajit or you are using v0.9.0+ which provides a bit library.
 
 ![demo](https://github.com/MisanthropicBit/decipher.nvim/assets/1846147/6bc4db76-9a3b-428b-99b4-98e56d06901e)
 

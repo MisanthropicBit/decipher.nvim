@@ -29,6 +29,9 @@ decipher                                                              *decipher*
 ==============================================================================
 Setup                                                           *decipher-setup*
 
+Warning: A bit library is needed which requires that either neovim has been
+compiled with luajit or you are using v0.9.0+ which provides a bit library.
+
 Decipher is set up using `decipher.setup({ ... })`. The below values are the
 defaults. It is not required to call `setup` in which case the defaults will
 be used.

@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        **Before** reporting an issue, please make sure to read the [documentation](https://github.com/MisanthropicBit/decipher.nvim/docs/decipher.txt) and [readme](https://github.com/MisanthropicBit/decipher.nvim/README.md) and search [existing issues](https://github.com/MisanthropicBit/decipher.nvim/issues).
+        **Before** reporting an issue, please make sure to read the [documentation](/doc/decipher.txt) and [readme](/README.md) and search [existing issues](https://github.com/MisanthropicBit/decipher.nvim/issues).
   - type: checkboxes
     attributes:
       label: Did you check docs and existing issues?

@@ -393,10 +393,12 @@ end
 local floats = {}
 
 ---Close a floating window
----@param win_id? number
-function float.close(win_id)
-    local parent_win_handle = win_id or vim.api.nvim_get_current_win()
-    local _float = floats[parent_win_handle]
+---@param parent_win_id? number
+function float.close(parent_win_id)
+    local parent_win_handle = parent_win_id or vim.api.nvim_get_current_win()
+
+    -- Index as a string otherwise lua treats this as a table
+    local _float = floats[tostring(parent_win_handle)]
 
     if _float ~= nil then
         local status, result = pcall(vim.api.nvim_win_get_var, _float.win_id, decipher_float_var_name)
@@ -483,7 +485,8 @@ function float.open(title, contents, window_config, selection_type, _selection)
     win:set_selection(selection_type, _selection)
     win:open()
 
-    floats[cur_win_id] = win
+    -- Index as a string otherwise lua treats this as a table
+    floats[tostring(cur_win_id)] = win
 
     return win
 end
@@ -493,19 +496,15 @@ local function define_highlights()
 end
 
 function float.setup()
-    vim.cmd([[
-        augroup DecipherCleanupFloats
-            autocmd!
-            autocmd WinClosed * lua require("decipher.ui.float").close()
-        augroup end
-    ]])
+    local augroup = vim.api.nvim_create_augroup("DecipherFloatClose", {})
 
-    local augroup = vim.api.nvim_create_augroup("DecipherColorSchemeRefresh", {})
-
-    vim.api.nvim_create_autocmd("ColorScheme", {
-        callback = define_highlights,
+    vim.api.nvim_create_autocmd("WinClosed", {
+        pattern = "*",
+        callback = function(event)
+            float.close(event.match)
+        end,
         group = augroup,
-        desc = "Refresh decipher highlights when colorscheme changes",
+        desc = "Close decipher float when a window is closed",
     })
 
     define_highlights()

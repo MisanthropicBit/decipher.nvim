@@ -422,18 +422,6 @@ function float.open(title, contents, window_config, selection_type, _selection)
     end
 
     local cur_win_id = vim.api.nvim_get_current_win()
-    local existing_float = floats[cur_win_id]
-
-    -- Check for existing float in current buffer and focus that instead of
-    -- opening a new float
-    if existing_float ~= nil then
-        if existing_float:focus() then
-            return existing_float
-        else
-            float.close(existing_float.win_id)
-        end
-    end
-
     local _config = window_config or config.float
     local win = Float:new(_config)
 

@@ -59,6 +59,11 @@ function vader.given(...)
     vim.api.nvim_buf_call(bufnr, function()
         callback({ bufnr = bufnr, win_id = vim.api.nvim_get_current_win() })
     end)
+
+    -- Clean up all open buffers to ensure test isolation
+    for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
+        pcall(vim.api.nvim_buf_delete, buffer, { force = true })
+    end
 end
 
 --- Run normal mode commands without mappings

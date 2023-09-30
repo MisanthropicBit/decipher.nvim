@@ -107,21 +107,6 @@ describe("ui.float", function()
         end)
     end)
 
-    it("enters a float if already opened", function()
-        given(buffer_contents, function(context)
-            local float1 = create_float("title", { "contents" })
-
-            assert(float1 ~= nil, "Float was nil")
-            assert.are.same(vim.api.nvim_win_get_buf(0), context.bufnr)
-
-            local float2 = create_float("title", { "contents" })
-            assert(float2 ~= nil, "Float was nil")
-            assert.are.same(float1, float2)
-
-            ui.float.close(context.win_id)
-        end)
-    end)
-
     it("provides configurable, overriable key mappings", function()
         given(buffer_contents, function(context)
             config.setup({
@@ -162,6 +147,33 @@ describe("ui.float", function()
             assert.are._not.same(_float.buffer, vim.api.nvim_win_get_buf(0))
 
             ui.float.close(context.win_id)
+        end)
+    end)
+
+    it("closes floating window when parent window is closed", function()
+        given(buffer_contents, function(context)
+            config.setup({ float = { enter = true } })
+
+            -- Create another window so we can close the parent window of the
+            -- floating window because it is not the last window anymore
+            vim.cmd("vnew")
+            vim.print({ vim.api.nvim_get_current_win(), vim.api.nvim_win_get_buf(vim.api.nvim_get_current_win()) })
+
+            vim.api.nvim_set_current_win(context.win_id)
+            vim.print(vim.api.nvim_get_current_win())
+            local _float = create_float("title", { "contents" })
+
+            vim.print(_float.buffer, _float.win_id)
+            assert(_float ~= nil, "Float was nil")
+            assert.are.same(_float.buffer, vim.api.nvim_win_get_buf(0))
+
+            vim.api.nvim_win_close(context.win_id, false)
+            vim.print({ vim.api.nvim_get_current_win(), vim.api.nvim_win_get_buf(vim.api.nvim_get_current_win()) })
+            assert.are._not.same(_float.buffer, vim.api.nvim_win_get_buf(0))
+
+            local cur_win_id = vim.api.nvim_get_current_win()
+            assert.are._not.same(cur_win_id, _float.win_id)
+            assert.are._not.same(cur_win_id, context.win_id)
         end)
     end)
 

@@ -74,7 +74,7 @@ local zbase32_encoding_table = {
     [31] = "9",
 }
 
-local crockfold_encoding_table = {
+local crockford_encoding_table = {
     [0] = "0",
     [1] = "1",
     [2] = "2",
@@ -212,7 +212,7 @@ end
 --- Get a codec for the crockford variant of base32
 ---@return decipher.Codec
 function base32.crockford()
-    return util.make_codec("crockford", crockfold_encoding_table, "=", base32)
+    return util.make_codec("crockford", crockford_encoding_table, "=", base32)
 end
 
 return base32

@@ -4,8 +4,11 @@
   <p><i>A plugin that provides ways to encode and decode text using various codecs like base64.</i></p>
   <p>
     <img src="https://img.shields.io/badge/version-0.1.2-blue?style=flat-square" />
-    <a href="https://img.shields.io/github/actions/workflow/status/MisanthropicBit/decipher.nvim/ci.yml?branch=master&style=flat-square">
-        <img src="https://img.shields.io/github/actions/workflow/status/MisanthropicBit/decipher.nvim/ci.yml?branch=master&style=flat-square" />
+    <a href="https://luarocks.org/modules/misanthropicbit/decipher.nvim">
+        <img src="https://img.shields.io/luarocks/v/misanthropicbit/decipher.nvim?logo=lua&color=purple" />
+    </a>
+    <a href="https://img.shields.io/github/actions/workflow/status/MisanthropicBit/decipher.nvim/tests.yml?branch=master&style=flat-square">
+        <img src="https://img.shields.io/github/actions/workflow/status/MisanthropicBit/decipher.nvim/tests.yml?branch=master&style=flat-square" />
     </a>
     <a href="/LICENSE">
         <img src="https://img.shields.io/github/license/MisanthropicBit/decipher.nvim?style=flat-square" />

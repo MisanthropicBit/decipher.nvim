@@ -90,9 +90,9 @@ require('decipher').setup({
 | zbase32          | ✅        | ✅         |
 | crockford        | ✅        | ✅         |
 | base64           | ✅        | ✅         |
-| base64-url¹      | ❌        | ✅         |
+| base64-url¹      | ✅        | ✅         |
 | base64-url-safe² | ✅        | ✅         |
-| url              | ❌        | ✅         |
+| url              | ✅        | ✅         |
 
 ¹ Combination of base64 and url codecs.
 

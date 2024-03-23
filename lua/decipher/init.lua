@@ -127,29 +127,17 @@ local function process_codec(codec_name, codec_func, selection_type, options)
     end
 end
 
---- Prompt for a codec to use
----@return string
-local function prompt_codec_name()
-    local codec_name
-
-    vim.ui.select(decipher.active_codecs(), { prompt = "Codec?: " }, function(item)
-        codec_name = item
-    end)
-
-    return codec_name
-end
-
 ---@param codec_func fun(string): string
 ---@param selection_type decipher.SelectionType
 ---@param options decipher.Options
 local function process_codec_prompt(codec_func, selection_type, options)
-    local codec_name = prompt_codec_name()
+    vim.ui.select(decipher.active_codecs(), { prompt = "Codec?: " }, function(codec_name)
+        if codec_name == nil then
+            return
+        end
 
-    if codec_name == nil then
-        return
-    end
-
-    process_codec(codec_name, codec_func, selection_type, options)
+        process_codec(codec_name, codec_func, selection_type, options)
+    end)
 end
 
 ---@param codec_name decipher.CodecArg

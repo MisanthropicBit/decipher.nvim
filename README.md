@@ -43,7 +43,7 @@ The options below are the default values. Refer to the
 [docs](doc/decipher.txt) for more help.
 
 ```lua
-require('decipher').setup({
+require("decipher").setup({
     active_codecs = "all", -- Set all codecs as active and useable
     float = { -- Floating window options
         padding = 0, -- Zero padding (does not apply to title if any)

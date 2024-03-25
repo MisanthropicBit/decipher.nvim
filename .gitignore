@@ -1,5 +1,9 @@
 doc/tags
 .test_output.tmp
+.busted
+.luarocks/
+lua_modules/
+luarocks
 tables.txt
 lua/decipher/job.lua
 lua/decipher/codecs/base85.lua

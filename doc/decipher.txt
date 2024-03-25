@@ -32,14 +32,14 @@ Setup                                                           *decipher-setup*
 Warning: A bit library is needed which requires that either neovim has been
 compiled with luajit or you are using v0.9.0+ which provides a bit library.
 
-Decipher is set up using `decipher.setup({ ... })`. The below values are the
-defaults. It is not required to call `setup` in which case the defaults will
-be used.
+Setup decipher using `decipher.setup` unless you are content with the defaults.
+The options below are the default values.
+
 >lua
     require("decipher").setup({
         active_codecs = "all", -- Set all codecs as active and useable
         float = { -- Floating window options
-            padding = 0, -- Zero padding
+            padding = 0, -- Zero padding (does not apply to title if any)
             border = { -- Floating window border
                 { "╭", "FloatBorder" },
                 { "─", "FloatBorder" },
@@ -74,7 +74,7 @@ Types                                                           *decipher.types*
         {active_codecs} `"all" | (string | decipher.Codecs)[]`
             A list of the codecs that should be active or "all" for all
             codecs. This only affects the codecs you can choose from when
-            selecting a codec via the UI.
+            selecting a codec via vim.ui.select.
 
         {float} `decipher.WindowConfig`
 
@@ -127,7 +127,7 @@ Types                                                           *decipher.types*
 
                                                               *decipher.Options*
     Fields:
-        {preview} `(boolean)` If true, show a preview of encoding/decoding
+        {preview} `(boolean)` If true, show a preview of the encoding/decoding
         instead of encoding/decoding in place.
 
                                                              *decipher.CodecArg*
@@ -197,17 +197,31 @@ decode_motion({codec_name}, {options})                  *decipher.decode_motion*
 
 encode_selection_prompt({options})            *decipher.encode_selection_prompt*
     Encode a visual selection using a codec. Prompts with a list of the active
-    codecs.
+    codecs via vim.ui.select.
 
     Parameters:  
       • {options} (`decipher.Options`) Options to use
 
 decode_selection_prompt({options})            *decipher.decode_selection_prompt*
     Decode a visual selection using a codec. Prompts with a list of the active
-    codecs.
+    codecs via vim.ui.select.
 
     Parameters:  
       • {options} (`decipher.Options`) Options to use
+
+encode_motion_prompt({options})                  *decipher.encode_motion_prompt*
+    Encode using a motion. Prompts with a list of the active codecs via
+    vim.ui.select.
+
+    Parameters:  
+      • {options}    (`decipher.Options`) Options to use
+
+decode_motion_prompt({options})                  *decipher.decode_motion_prompt*
+    Decode using a motion. Prompts with a list of the active codecs via
+    vim.ui.select.
+
+    Parameters:  
+      • {options}    (`decipher.Options`) Options to use
 
 ==============================================================================
 Mappings                                                     *decipher.mappings*
@@ -274,6 +288,6 @@ Nothing yet.
 ==============================================================================
 License                                                       *decipher.license*
 
-BSD 3-Clause License. Copyright © 2020 Alexander Asp Bock
+BSD 3-Clause License. Copyright © 2020 MisanthropicBit
 
  vim:tw=78:ts=8:ft=help:norl:

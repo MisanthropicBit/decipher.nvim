@@ -1,4 +1,5 @@
 local decipher = require("decipher")
+local codecs = require("decipher.codecs")
 local stub = require("luassert.stub")
 
 describe("decipher", function()
@@ -67,15 +68,25 @@ describe("decipher", function()
         assert.are.same(decipher.decode(decipher.codec.base64, "bGlnaHQgd29yaw=="), "light work")
     end)
 
-    it("issues an error for an unknown/unsupported codec", function()
+    it("issues an error for an unknown codec", function()
         assert.has_error(function()
             decipher.encode("nope", "test")
         end, "Codec 'nope' not found")
     end)
 
     it("issues an error for unsupported encoding/decoding", function()
+        stub(codecs, "get", { decode = function() end })
+
         assert.has_error(function()
             decipher.encode("base64-url", "test")
         end, "Codec 'base64-url' does not support 'encode'")
+
+        stub(codecs, "get", { encode = function() end })
+
+        assert.has_error(function()
+            decipher.decode("base64-url", "test")
+        end, "Codec 'base64-url' does not support 'decode'")
+
+        codecs.get:revert()
     end)
 end)

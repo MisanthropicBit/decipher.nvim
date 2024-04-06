@@ -24,7 +24,7 @@ dependencies = {
 }
 
 source = {
-   url = "git+https://github.com/MisanthropicBit/decipher.nvim",
+   url = "git://github.com/MisanthropicBit/decipher.nvim"
 }
 
 build = {

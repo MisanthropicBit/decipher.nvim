@@ -150,7 +150,7 @@ local default_base64_codec = util.make_codec("base64", rfc4648_default_encoding_
 local function combined_octets(value, i)
     local value1, value2, value3 = value:byte(i, i + 3)
 
-    return bit.bor(bit.lshift(value1, 16), bit.lshift(value2 or 0, 8), value3 or 0)
+    return bits.bor(bits.lshift(value1, 16), bits.lshift(value2 or 0, 8), value3 or 0)
 end
 
 --- Encode a string as base64 with a given codec spec

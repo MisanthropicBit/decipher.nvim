@@ -204,21 +204,21 @@ function Float:open(position)
     self:set_mappings()
     self:set_options()
 
-    if self.window_config.autoclose then
-        -- We defer execution of the autocmd because a motion moves the cursor if
-        -- the position is not at the start of what the motion ends up encompasses and so
-        -- triggers the CursorMoved event immediately, closing the float
-        vim.defer_fn(function()
-            vim.api.nvim_create_autocmd({ "InsertEnter", "CursorMoved" }, {
-                callback = function()
-                    self:close()
-                end,
-                once = true,
-                buffer = self.parent_bufnr,
-                desc = "Closes the decipher floating window when insert mode is entered or the cursor is moved",
-            })
-        end, 0)
-    end
+    -- if self.window_config.autoclose then
+    --     -- We defer execution of the autocmd because a motion moves the cursor if
+    --     -- the position is not at the start of what the motion ends up encompasses and so
+    --     -- triggers the CursorMoved event immediately, closing the float
+    --     vim.defer_fn(function()
+    --         vim.api.nvim_create_autocmd({ "InsertEnter", "CursorMoved" }, {
+    --             callback = function()
+    --                 self:close()
+    --             end,
+    --             once = true,
+    --             buffer = self.parent_bufnr,
+    --             desc = "Closes the decipher floating window when insert mode is entered or the cursor is moved",
+    --         })
+    --     end, 0)
+    -- end
 end
 
 -- Render a page of the float
@@ -413,6 +413,7 @@ end
 ---@param window_config? decipher.WindowConfig
 ---@param selection_type decipher.SelectionType
 ---@param _selection decipher.Region
+---@return decipher.Float?
 function float.open(title, contents, window_config, selection_type, _selection)
     if not has_floating_window then
         errors.error_message("No support for floating windows", true)

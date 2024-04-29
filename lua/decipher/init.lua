@@ -73,6 +73,7 @@ end
 ---@param codec_name string
 ---@param status boolean
 ---@param value string?
+---@return decipher.Float?
 local function open_float_handler(codec_name, status, value, selection_type)
     if status and value == nil then
         value = "Codec not found"
@@ -82,7 +83,7 @@ local function open_float_handler(codec_name, status, value, selection_type)
     -- preview window later on
     local _selection = selection.get_selection(selection_type)
 
-    ui.float.open(codec_name, { value }, config.float, selection_type, _selection)
+    return ui.float.open(codec_name, { value }, config.float, selection_type, _selection)
 end
 
 --- Handler for setting a text region to a value
@@ -111,6 +112,7 @@ end
 ---@param codec_func fun(string): string
 ---@param selection_type decipher.SelectionType
 ---@param options decipher.Options
+---@return decipher.Float?
 local function process_codec(codec_name, codec_func, selection_type, options)
     local lines = selection.get_text(0, selection_type)
     local joined = table.concat(lines, "\n")
@@ -121,7 +123,7 @@ local function process_codec(codec_name, codec_func, selection_type, options)
     local _codec_name = ("%s"):format(codec_name)
 
     if do_preview then
-        open_float_handler(_codec_name, status, value, selection_type)
+        return open_float_handler(_codec_name, status, value, selection_type)
     else
         set_text_region_handler(_codec_name, status, value, selection_type)
     end
@@ -155,9 +157,27 @@ end
 ---@param codec_name decipher.CodecArg
 ---@param options decipher.Options
 function decipher.encode_motion(codec_name, options)
+    ---@type decipher.Float?
+    local float
+
     motion.start_motion(function()
-        process_codec(codec_name, decipher.encode, "motion", options)
+        float = process_codec(codec_name, decipher.encode, "motion", options)
     end)
+
+    if options and options.preview == true and float ~= nil then
+        if config.float.autoclose == true then
+            -- Set up the autocmd to close the floating window *after* the motion
+            -- has been executed to avoid triggering CursorMoved too early
+            vim.api.nvim_create_autocmd({ "InsertEnter", "CursorMoved" }, {
+                callback = function()
+                    float:close()
+                end,
+                once = true,
+                buffer = vim.api.nvim_get_current_buf(),
+                desc = "Closes the decipher floating window when insert mode is entered or the cursor is moved",
+            })
+        end
+    end
 end
 
 ---@param codec_name decipher.CodecArg

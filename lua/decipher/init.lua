@@ -135,24 +135,22 @@ end
 local function set_float_autoclose_autocmds(float, options)
     -- If there is no float or we enter the floating window, do not set up
     -- autoclose autocmds
-    if float == nil or not config.float.enter then
+    if float == nil or config.float.enter == true then
         return
     end
 
-    if options and options.preview == true then
-        if config.float.autoclose == true then
-            -- Set up the autocmd to close the floating window *after* a visual
-            -- selection or motion has been executed to avoid triggering
-            -- CursorMoved too early
-            vim.api.nvim_create_autocmd({ "InsertEnter", "CursorMoved" }, {
-                callback = function()
-                    float:close()
-                end,
-                once = true,
-                buffer = float.parent_bufnr,
-                desc = "Closes a decipher floating window when insert mode is entered or the cursor is moved",
-            })
-        end
+    if options and options.preview == true and config.float.autoclose == true then
+        -- Set up the autocmd to close the floating window *after* a visual
+        -- selection or motion has been executed to avoid triggering
+        -- CursorMoved too early
+        vim.api.nvim_create_autocmd({ "InsertEnter", "CursorMoved" }, {
+            callback = function()
+                float:close()
+            end,
+            once = true,
+            buffer = float.parent_bufnr,
+            desc = "Closes a decipher floating window when insert mode is entered or the cursor is moved",
+        })
     end
 end
 

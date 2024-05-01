@@ -129,6 +129,33 @@ local function process_codec(codec_name, codec_func, selection_type, options)
     end
 end
 
+--- Optionally set autoclose autocmds for a float
+---@param float decipher.Float?
+---@param options decipher.Options?
+local function set_float_autoclose_autocmds(float, options)
+    -- If there is no float or we enter the floating window, do not set up
+    -- autoclose autocmds
+    if float == nil or not config.float.enter then
+        return
+    end
+
+    if options and options.preview == true then
+        if config.float.autoclose == true then
+            -- Set up the autocmd to close the floating window *after* a visual
+            -- selection or motion has been executed to avoid triggering
+            -- CursorMoved too early
+            vim.api.nvim_create_autocmd({ "InsertEnter", "CursorMoved" }, {
+                callback = function()
+                    float:close()
+                end,
+                once = true,
+                buffer = float.parent_bufnr,
+                desc = "Closes a decipher floating window when insert mode is entered or the cursor is moved",
+            })
+        end
+    end
+end
+
 ---@param codec_func fun(string): string
 ---@param selection_type decipher.SelectionType
 ---@param options decipher.Options
@@ -138,20 +165,25 @@ local function process_codec_prompt(codec_func, selection_type, options)
             return
         end
 
-        process_codec(codec_name, codec_func, selection_type, options)
+        local float = process_codec(codec_name, codec_func, selection_type, options)
+        set_float_autoclose_autocmds(float, options)
     end)
 end
 
 ---@param codec_name decipher.CodecArg
 ---@param options decipher.Options
 function decipher.encode_selection(codec_name, options)
-    process_codec(codec_name, decipher.encode, "visual", options)
+    local float = process_codec(codec_name, decipher.encode, "visual", options)
+
+    set_float_autoclose_autocmds(float, options)
 end
 
 ---@param codec_name decipher.CodecArg
 ---@param options decipher.Options
 function decipher.decode_selection(codec_name, options)
-    process_codec(codec_name, decipher.decode, "visual", options)
+    local float = process_codec(codec_name, decipher.decode, "visual", options)
+
+    set_float_autoclose_autocmds(float, options)
 end
 
 ---@param codec_name decipher.CodecArg
@@ -164,28 +196,20 @@ function decipher.encode_motion(codec_name, options)
         float = process_codec(codec_name, decipher.encode, "motion", options)
     end)
 
-    if options and options.preview == true and float ~= nil then
-        if config.float.autoclose == true then
-            -- Set up the autocmd to close the floating window *after* the motion
-            -- has been executed to avoid triggering CursorMoved too early
-            vim.api.nvim_create_autocmd({ "InsertEnter", "CursorMoved" }, {
-                callback = function()
-                    float:close()
-                end,
-                once = true,
-                buffer = vim.api.nvim_get_current_buf(),
-                desc = "Closes the decipher floating window when insert mode is entered or the cursor is moved",
-            })
-        end
-    end
+    set_float_autoclose_autocmds(float, options)
 end
 
 ---@param codec_name decipher.CodecArg
 ---@param options decipher.Options
 function decipher.decode_motion(codec_name, options)
+    ---@type decipher.Float?
+    local float
+
     motion.start_motion(function()
-        process_codec(codec_name, decipher.decode, "motion", options)
+        float = process_codec(codec_name, decipher.decode, "motion", options)
     end)
+
+    set_float_autoclose_autocmds(float, options)
 end
 
 ---@param options decipher.Options
@@ -200,6 +224,7 @@ end
 
 ---@param options decipher.Options
 function decipher.encode_motion_prompt(options)
+    -- TODO: Will this work?
     motion.start_motion(function()
         process_codec_prompt(decipher.encode, "motion", options)
     end)

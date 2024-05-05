@@ -38,6 +38,12 @@ body:
       required: true
   - type: textarea
     attributes:
+      label: Output of `:checkhealth decipher`
+      description: Healthcheck output for decipher.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
       label: Steps To Reproduce
       description: Steps to reproduce the behavior.
       placeholder: |

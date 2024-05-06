@@ -64,7 +64,7 @@ require("decipher").setup({
             help = "?", -- Toggle help
         },
         title = true, -- Display a title with the codec name
-        title_pos = "left" -- Position of the title
+        title_pos = "left", -- Position of the title
         autoclose = true, -- Autoclose floating window if insert
                           -- mode is activated or the cursor is moved
         enter = false, -- Automatically enter the floating window if

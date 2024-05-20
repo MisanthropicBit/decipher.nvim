@@ -10,7 +10,7 @@ local given, normal, expect = vader.given, vader.normal, vader.expect
 
 describe("selection", function()
     after_each(function()
-        -- It seems like the 'selection' option is set globally
+        -- The 'selection' option is set globally
         vim.opt_local.selection = "inclusive"
     end)
 
@@ -27,20 +27,16 @@ describe("selection", function()
 
         describe("get_selection", function()
             it("gets region in line-wise visual mode", function()
-                pending("Skipped")
+                given(contents, function()
+                    normal("Vj<c-c>")
 
-                -- given(contents, function()
-                --     normal("Vj")
+                    local region = selection.get_selection("visual")
 
-                --     local region = selection.get_selection("visual")
-                --     vim.pretty_print(region)
-
-                --     -- TODO: Convert every assert to use same
-                --     assert.are.same(region.start.lnum, 1)
-                --     assert.are.same(region.start.col, 1)
-                --     assert.are.same(region["end"].lnum, 2)
-                --     assert.are.same(region["end"].col, 6)
-                -- end)
+                    assert.are.same(region.start.lnum, 1)
+                    assert.are.same(region.start.col, 1)
+                    assert.are.same(region["end"].lnum, 2)
+                    assert.are.same(region["end"].col, vim.v.maxcol)
+                end)
             end)
 
             it("gets region in character-wise visual mode", function()
@@ -57,18 +53,16 @@ describe("selection", function()
             end)
 
             it("gets region in block-wise visual mode", function()
-                pending("Skipped")
+                given(contents, function()
+                    normal("2|<c-v>je")
 
-                -- given(contents, function()
-                --     normal("2|<c-v>je")
+                    local region = selection.get_selection("visual")
 
-                --     local region = selection.get_selection("visual")
-
-                --     assert.are.same(region, {
-                --         start = { lnum = 1, col = 1 },
-                --         ["end"] = { lnum = 2, col = 4 },
-                --     })
-                -- end)
+                    assert.are.same(region, {
+                        start = { lnum = 1, col = 2 },
+                        ["end"] = { lnum = 2, col = 4 },
+                    })
+                end)
             end)
 
             it("gets region after line-wise visual mode", function()
@@ -189,7 +183,7 @@ describe("selection", function()
 
                     local text = selection.get_text(0, "visual")
 
-                    assert.are.same(text, { "ne 1", "line" })
+                    assert.are.same(text, { "ne 1", "line " })
                 end)
             end)
 
@@ -216,10 +210,46 @@ describe("selection", function()
 
                         local text = selection.get_text(0, "visual")
 
-                        assert.are.same(text, { "ne 1", "line" })
+                        assert.are.same(text, { "ne 1", "line " })
                     end)
                 end
             )
+
+            it("gets text in visual mode selecting past end-of-line with selection option == 'inclusive'", function()
+                given(contents, function()
+                    vim.opt_local.selection = "inclusive"
+                    normal("0v$")
+
+                    local text = selection.get_text(0, "visual")
+
+                    assert.are.same(text, { "line 1" })
+                end)
+            end)
+
+            it(
+                "gets text in visual block mode selecting past end-of-line with selection option == 'inclusive'",
+                function()
+                    given(contents, function()
+                        vim.opt_local.selection = "inclusive"
+                        normal("0<c-v>$<c-c>")
+
+                        local text = selection.get_text(0, "visual")
+
+                        assert.are.same(text, { "line 1" })
+                    end)
+                end
+            )
+
+            it("gets text in visual mode selecting past end-of-line with selection option == 'exclusive'", function()
+                given(contents, function()
+                    vim.opt_local.selection = "exclusive"
+                    normal("0v$<c-c>")
+
+                    local text = selection.get_text(0, "visual")
+
+                    assert.are.same(text, { "line 1" })
+                end)
+            end)
 
             it("gets text after block-wise visual mode", function()
                 given(contents, function()
@@ -349,134 +379,6 @@ describe("selection", function()
                         "XXXXXXXXsecondXXXXXXXXXXXXXXXXXXXXXXXXXXX",
                         "XXXXXXXXthirdXXXXXXXXXXXXXXXXXXXXXXXXXXX",
                         "XXXXXXXXfourthXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-                    })
-                end)
-            end)
-        end)
-    end)
-
-    describe("motion", function()
-        local contents = { "a sentence on the first line", 'this "is" a test' }
-
-        describe("get_selection", function()
-            it("gets region after motion (inner double-quoted string)", function()
-                pending("Skipped")
-
-                -- given(contents, function()
-                --     normal('jwyi"')
-
-                --     local region = selection.get_selection("motion")
-
-                --     assert.are.same(region, {
-                --         start = { lnum = 2, col = 7 },
-                --         ["end"] = { lnum = 2, col = 8 },
-                --     })
-                -- end)
-            end)
-
-            it("gets region after motion (a word)", function()
-                given(contents, function()
-                    normal("$2hyaw")
-
-                    local region = selection.get_selection("motion")
-
-                    assert.are.same(region, {
-                        start = { lnum = 1, col = 24 },
-                        ["end"] = { lnum = 1, col = 28 },
-                    })
-                end)
-            end)
-        end)
-
-        describe("get_text", function()
-            it("gets text after motion (inner double-quoted string)", function()
-                pending("Skipped")
-
-                -- given(contents, function()
-                --     normal('jwyi"')
-
-                --     local text = selection.get_text(0, "motion")
-
-                --     assert.are.same(text, { "is" })
-                -- end)
-            end)
-
-            it("gets text after motion (a word)", function()
-                given(contents, function()
-                    normal("$2hyaw")
-
-                    local text = selection.get_text(0, "motion")
-
-                    assert.are.same(text, { " line" })
-                end)
-            end)
-
-            it("gets text after motion that crosses line boundaries", function()
-                given(contents, function()
-                    normal("2wy5w")
-
-                    local text = selection.get_text(0, "motion")
-
-                    assert.are.same(text, { "on the first line", 'this "' })
-                end)
-            end)
-        end)
-
-        describe("set_text", function()
-            it("sets text after motion", function()
-                pending("Skipped")
-
-                -- given(contents, function()
-                --     normal('jwyi"')
-
-                --     local text = { "is not" }
-                --     selection.set_text(0, "motion", text)
-
-                --     expect({
-                --         "a sentence on the first line",
-                --         'this "is not" a test'
-                --     })
-                -- end)
-            end)
-
-            it("sets text after motion (a word)", function()
-                given(contents, function()
-                    normal("$2hyaw")
-
-                    local text = { "replacement" }
-                    selection.set_text(0, "motion", text)
-
-                    expect({
-                        "a sentence on the firstreplacement",
-                        'this "is" a test',
-                    })
-                end)
-            end)
-
-            it("sets text after motion that crosses line boundaries", function()
-                given(contents, function()
-                    normal("2wy5w")
-
-                    local text = { "replacement" }
-                    selection.set_text(0, "motion", text)
-
-                    expect({
-                        'a sentence replacementis" a test',
-                    })
-                end)
-            end)
-
-            it("sets multi-line text after motion that crosses line boundaries", function()
-                given(contents, function()
-                    normal("2wy5w")
-
-                    local text = { "first", "second", "third" }
-                    selection.set_text(0, "motion", text)
-
-                    expect({
-                        "a sentence first",
-                        "second",
-                        'thirdis" a test',
                     })
                 end)
             end)

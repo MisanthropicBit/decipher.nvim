@@ -32,10 +32,10 @@ describe("selection", function()
 
                     local region = selection.get_selection("visual")
 
-                    assert.are.same(region.start.lnum, 1)
-                    assert.are.same(region.start.col, 1)
-                    assert.are.same(region["end"].lnum, 2)
-                    assert.are.same(region["end"].col, vim.v.maxcol)
+                    assert.are.same(region, {
+                        start = { lnum = 1, col = 1 },
+                        ["end"] = { lnum = 2, col = vim.v.maxcol },
+                    })
                 end)
             end)
 

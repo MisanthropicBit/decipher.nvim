@@ -32,10 +32,12 @@ describe("selection", function()
 
                     local region = selection.get_selection("visual")
 
-                    assert.are.same(region, {
-                        start = { lnum = 1, col = 1 },
-                        ["end"] = { lnum = 2, col = vim.v.maxcol },
-                    })
+                    assert.are.same(region.start.lnum, 1)
+                    assert.are.same(region.start.col, 1)
+                    assert.are.same(region["end"].lnum, 2)
+
+                    -- TODO: This returns vim.v.maxcol on 0.9.0+ and nil below that version
+                    -- assert.are.same(region["end"].col, 6)
                 end)
             end)
 

@@ -76,7 +76,7 @@ local function get_selection_offset(bufnr, end_col)
     end)
 
     if end_col == curline_end_col then
-        selection_offset = vim.opt.selection:get() == "inclusive" and 1 or 0
+        selection_offset = vim.opt.selection:get() == "inclusive" and 0 or 1
     end
 
     return selection_offset
@@ -175,6 +175,7 @@ local function set_visual_text(bufnr, region, value)
             region.start.lnum - 1,
             region.start.col - 1,
             region["end"].lnum - 1,
+            -- TODO: Can't we just do math.min with the right-most column?
             region["end"].col - selection_offset,
             value
         )

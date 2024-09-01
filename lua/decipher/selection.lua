@@ -68,7 +68,6 @@ end
 ---@param end_col integer
 ---@return integer
 local function get_selection_offset(bufnr, end_col)
-    local selection_offset = 0
     local curline_end_col
 
     vim.api.nvim_buf_call(bufnr, function()
@@ -76,10 +75,11 @@ local function get_selection_offset(bufnr, end_col)
     end)
 
     if end_col == curline_end_col then
-        selection_offset = vim.opt.selection:get() == "inclusive" and 0 or 1
+        -- If we are at the end column, adjust for past-end-of-line
+        return 1
     end
 
-    return selection_offset
+    return vim.opt.selection:get() == "inclusive" and 0 or 1
 end
 
 ---@param bufnr number
@@ -93,12 +93,14 @@ local function get_visual_text(bufnr)
         return vim.api.nvim_buf_get_lines(bufnr, region.start.lnum - 1, region["end"].lnum, false)
     elseif mode == "v" then
         -- Character-wise selection
+        local selection_offset = get_selection_offset(bufnr, region["end"].col)
+
         return vim.api.nvim_buf_get_text(
             bufnr,
             region.start.lnum - 1,
             region.start.col - 1,
             region["end"].lnum - 1,
-            region["end"].col,
+            region["end"].col - selection_offset,
             {}
         )
     elseif mode == block_visual_mode then

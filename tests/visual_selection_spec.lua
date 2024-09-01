@@ -185,7 +185,7 @@ describe("selection", function()
 
                     local text = selection.get_text(0, "visual")
 
-                    assert.are.same(text, { "ne 1", "line " })
+                    assert.are.same(text, { "ne 1", "line" })
                 end)
             end)
 
@@ -212,7 +212,7 @@ describe("selection", function()
 
                         local text = selection.get_text(0, "visual")
 
-                        assert.are.same(text, { "ne 1", "line " })
+                        assert.are.same(text, { "ne 1", "line" })
                     end)
                 end
             )

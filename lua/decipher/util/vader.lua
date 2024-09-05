@@ -55,10 +55,28 @@ function vader.given(...)
         vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, contents)
     end
 
+    local ok, err
+
     -- TODO: Add custom formatter here?
     vim.api.nvim_buf_call(bufnr, function()
-        callback({ bufnr = bufnr, win_id = vim.api.nvim_get_current_win() })
+        ok, err = pcall(callback, { bufnr = bufnr, win_id = vim.api.nvim_get_current_win() })
     end)
+
+    -- Clean up all tabs, windows, and buffers to ensure test isolation
+    for _, win_id in ipairs(vim.api.nvim_list_wins()) do
+        pcall(vim.api.nvim_win_close, win_id, true)
+    end
+
+    for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
+        pcall(vim.api.nvim_buf_delete, buffer, { force = true })
+    end
+
+    vim.cmd([[silent! tabonly!]])
+    vim.cmd([[silent! tabclose!]])
+
+    if not ok then
+        error(err)
+    end
 end
 
 --- Run normal mode commands without mappings

@@ -1,4 +1,6 @@
+local decipher = require("decipher")
 local config = require("decipher.config")
+local codecs = require("decipher.codecs")
 
 describe("config", function()
     it("throws an error on invalid configs", function()
@@ -37,6 +39,13 @@ describe("config", function()
             ---@diagnostic disable-next-line:assign-type-mismatch
             config.setup({ active_codecs = { "base64", "base33" } })
         end)
+    end)
+
+    it('uses all codecs when "all" is used', function()
+        config.setup({ active_codecs = "all" })
+
+        assert.are.same(config.active_codecs, codecs.supported())
+        assert.are.same(decipher.active_codecs(), codecs.supported())
     end)
 
     it("throws no errors for a valid config", function()

@@ -73,6 +73,7 @@ end
 ---@param codec_name string
 ---@param status boolean
 ---@param value string?
+---@param selection_type decipher.SelectionType
 local function open_float_handler(codec_name, status, value, selection_type)
     if status and value == nil then
         value = "Codec not found"

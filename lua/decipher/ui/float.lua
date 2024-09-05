@@ -121,6 +121,7 @@ local Float = {
 ---@param window_config decipher.WindowConfig
 ---@return decipher.Float
 function Float:new(window_config)
+    ---@type decipher.Float
     local win = {}
 
     setmetatable(win, self)

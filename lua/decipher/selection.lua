@@ -12,20 +12,22 @@ local selection = {}
 
 local block_visual_mode = "\22"
 
+---@param mode string
+---@return boolean
 local function is_visual_mode(mode)
     return vim.tbl_contains({ "v", "V", block_visual_mode }, mode)
 end
 
-local function get_mode(bufnr)
-    return vim.api.nvim_buf_call(bufnr, function()
-        return vim.fn.mode()
-    end)
-end
+---@return string
+function selection.get_last_visual_mode()
+    local mode = vim.fn.mode()
 
-local function get_visualmode(bufnr)
-    return vim.api.nvim_buf_call(bufnr, function()
-        return vim.fn.visualmode()
-    end)
+    if not is_visual_mode(mode) then
+        -- If there was no current visual mode, get the previous mode instead
+        mode = vim.fn.visualmode()
+    end
+
+    return mode
 end
 
 ---@param type decipher.SelectionType
@@ -51,24 +53,39 @@ function selection.get_selection(type)
     }
 end
 
+---@return decipher.Region
 function selection.get_visual_selection()
     return selection.get_selection("visual")
 end
 
+---@return decipher.Region
 function selection.get_motion_selection()
     return selection.get_selection("motion")
+end
+
+--- Adjust a past-end-of-line visual selection by the value of 'selection' setting
+---@param bufnr integer
+---@param end_col integer
+---@return integer
+local function get_selection_offset(bufnr, end_col)
+    local curline_end_col
+
+    vim.api.nvim_buf_call(bufnr, function()
+        curline_end_col = vim.fn.col("$")
+    end)
+
+    if end_col == curline_end_col then
+        -- If we are at the end column, adjust for past-end-of-line
+        return 1
+    end
+
+    return vim.opt.selection:get() == "inclusive" and 0 or 1
 end
 
 ---@param bufnr number
 ---@return string[]
 local function get_visual_text(bufnr)
-    local mode = get_mode(bufnr)
-
-    if not is_visual_mode(mode) then
-        -- If there was no current visual mode, get the previous mode instead
-        mode = get_visualmode(bufnr)
-    end
-
+    local mode = selection.get_last_visual_mode()
     local region = selection.get_selection("visual")
 
     if mode == "V" then
@@ -76,18 +93,19 @@ local function get_visual_text(bufnr)
         return vim.api.nvim_buf_get_lines(bufnr, region.start.lnum - 1, region["end"].lnum, false)
     elseif mode == "v" then
         -- Character-wise selection
-        local exclusive = vim.opt.selection:get() == "exclusive" and 1 or 0
+        local selection_offset = get_selection_offset(bufnr, region["end"].col)
 
         return vim.api.nvim_buf_get_text(
             bufnr,
             region.start.lnum - 1,
             region.start.col - 1,
             region["end"].lnum - 1,
-            region["end"].col - exclusive,
+            region["end"].col - selection_offset,
             {}
         )
     elseif mode == block_visual_mode then
         -- Block-wise selection
+        local selection_offset = get_selection_offset(bufnr, region["end"].col)
         local lines = vim.api.nvim_buf_get_lines(bufnr, region.start.lnum - 1, region["end"].lnum, false)
 
         local start_col = region.start.col
@@ -100,9 +118,8 @@ local function get_visual_text(bufnr)
 
         -- Truncate each line by the start and end column
         return vim.tbl_map(function(line)
-            return line:sub(start_col, end_col)
+            return line:sub(start_col, end_col - selection_offset)
         end, lines)
-        ---@diagnostic disable-next-line:missing-return
     end
 
     return {}
@@ -136,32 +153,39 @@ function selection.get_text(bufnr, type)
 end
 
 ---@param bufnr number
+---@param region decipher.Region
 ---@param value string[]
 local function set_visual_text(bufnr, region, value)
-    local vmode = get_visualmode(bufnr)
+    local vmode = vim.fn.visualmode()
+
+    if not is_visual_mode(vmode) then
+        -- We might be setting text from a floating window so get the visual mode in
+        -- the original buffer
+        vim.api.nvim_buf_call(bufnr, function()
+            vmode = vim.fn.visualmode()
+        end)
+    end
 
     if vmode == "V" then
         -- Line-wise selection
         return vim.api.nvim_buf_set_lines(bufnr, region.start.lnum - 1, region["end"].lnum, false, value)
     elseif vmode == "v" then
         -- Character-wise selection
-        local exclusive = vim.opt.selection:get() == "exclusive" and 1 or 0
-
-        -- TODO: Do we swap columns here as well?
+        local selection_offset = get_selection_offset(bufnr, region["end"].col)
 
         return vim.api.nvim_buf_set_text(
             bufnr,
             region.start.lnum - 1,
             region.start.col - 1,
             region["end"].lnum - 1,
-            region["end"].col - exclusive,
+            region["end"].col - selection_offset,
             value
         )
     elseif vmode == block_visual_mode then
         -- Block-wise selection
-        local exclusive = vim.opt.selection:get() == "exclusive" and 1 or 0
+        local selection_offset = get_selection_offset(bufnr, region["end"].col)
         local start_col = region.start.col
-        local end_col = region["end"].col - exclusive
+        local end_col = region["end"].col - selection_offset
         local end_lnum = math.max(region["end"].lnum, region.start.lnum + #value - 1)
         local i = 1
 
@@ -189,6 +213,7 @@ local function set_visual_text(bufnr, region, value)
 end
 
 ---@param bufnr number
+---@param region decipher.Region
 ---@param value string[]
 local function set_motion_text(bufnr, region, value)
     return vim.api.nvim_buf_set_text(
@@ -216,6 +241,7 @@ end
 --- Set a given selection to some text
 ---@param bufnr number
 ---@param type decipher.SelectionType
+---@param _selection decipher.Region
 ---@param value string[]
 function selection.set_text_from_selection(bufnr, type, _selection, value)
     if type == "visual" then

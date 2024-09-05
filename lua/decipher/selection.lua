@@ -105,6 +105,7 @@ local function get_visual_text(bufnr)
         )
     elseif mode == block_visual_mode then
         -- Block-wise selection
+        local selection_offset = get_selection_offset(bufnr, region["end"].col)
         local lines = vim.api.nvim_buf_get_lines(bufnr, region.start.lnum - 1, region["end"].lnum, false)
 
         local start_col = region.start.col
@@ -117,7 +118,7 @@ local function get_visual_text(bufnr)
 
         -- Truncate each line by the start and end column
         return vim.tbl_map(function(line)
-            return line:sub(start_col, end_col)
+            return line:sub(start_col, end_col - selection_offset)
         end, lines)
     end
 
@@ -177,7 +178,6 @@ local function set_visual_text(bufnr, region, value)
             region.start.lnum - 1,
             region.start.col - 1,
             region["end"].lnum - 1,
-            -- TODO: Can't we just do math.min with the right-most column?
             region["end"].col - selection_offset,
             value
         )

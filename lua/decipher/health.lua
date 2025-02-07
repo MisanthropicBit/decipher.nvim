@@ -14,7 +14,6 @@ else
     report_ok = vim.health.report_ok
     ---@diagnostic disable-next-line: deprecated
     report_error = vim.health.report_error
-    ---@diagnostic disable-next-line: deprecated
 end
 
 function health.check()

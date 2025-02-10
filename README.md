@@ -3,7 +3,7 @@
   <h1>decipher.nvim</h1>
   <p><i>A plugin that provides ways to encode and decode text using various codecs like base64.</i></p>
   <p>
-    <img src="https://img.shields.io/badge/version-1.0.2-blue?style=flat-square" />
+    <img src="https://img.shields.io/badge/version-1.0.3-blue?style=flat-square" />
     <a href="https://luarocks.org/modules/misanthropicbit/decipher.nvim">
         <img src="https://img.shields.io/luarocks/v/misanthropicbit/decipher.nvim?logo=lua&color=purple" />
     </a>

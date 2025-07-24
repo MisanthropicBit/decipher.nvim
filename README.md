@@ -22,6 +22,21 @@
 
 ![demo](https://github.com/MisanthropicBit/decipher.nvim/assets/1846147/6bc4db76-9a3b-428b-99b4-98e56d06901e)
 
+# Table of contents
+
+- [Installing](#installing)
+- [Setup](#setup)
+- [Example keymaps](#example-keymaps)
+- [Supported Codecs](#supported-codecs)
+    - [base32](#base32)
+    - [z-base32](#z-base32)
+    - [crockford](#crockford)
+    - [base64](#base64)
+    - [base64-url](#base64-url)
+    - [base64-url-safe](#base64)
+    - [base64-url-encoded](#base64-url-encoded)
+    - [url](#url)
+
 ## Installing
 
 * **[vim-plug](https://github.com/junegunn/vim-plug)**
@@ -44,7 +59,6 @@ The options below are the default values. Refer to the
 
 ```lua
 require("decipher").setup({
-    active_codecs = "all", -- Set all codecs as active and useable
     float = { -- Floating window options
         padding = 0, -- Zero padding (does not apply to title if any)
         border = { -- Floating window border
@@ -94,24 +108,47 @@ end)
 
 ## Supported Codecs
 
-<details>
-<summary>Legend</summary>
+#### Base32
 
-* ‚úÖ = supported
-* ‚ùå = not supported
-* üóìÔ∏è = planned
-</details>
+Example: `"this is encoded" => "ORUGS4ZANFZSAZLOMNXWIZLE"`
 
-| Codec            | Encoding  | Decoding  |
-| :--------------- | :-------: | :-------: |
-| base32           | ‚úÖ        | ‚úÖ         |
-| zbase32          | ‚úÖ        | ‚úÖ         |
-| crockford        | ‚úÖ        | ‚úÖ         |
-| base64           | ‚úÖ        | ‚úÖ         |
-| base64-url¬π      | ‚úÖ        | ‚úÖ         |
-| base64-url-safe¬≤ | ‚úÖ        | ‚úÖ         |
-| url              | ‚úÖ        | ‚úÖ         |
+#### Z-base32
 
-¬π Combination of base64 and url codecs.
+A more human-readable version of base32.
 
-¬≤ Base64-variant that is safe to include in urls.
+Example: `"this is encoded" => "qtwg1h3ypf31y3mqcpzse3mr"`
+
+#### Crockford
+
+Variant of base32 which excludes 'I', 'L', 'O', and 'U' to avoid confusion with digits.
+
+Example: `"this is encoded" => "EHM6JWS0D5SJ0SBECDQP8SB4"`
+
+#### Base64
+
+Example `"light work." => "bGlnaHQgd29yay4="`
+
+#### Base64-url
+
+Url-safe version of base64 with optional padding used in [json web tokens](https://www.jwt.io/).
+
+Example `"light work." => "bGlnaHQgd29yay4"` (base64 would have added a single `'='` at the end)
+
+#### Base64-url-safe
+
+Url-safe version of base64 that uses a different encoding table to avoid use of
+url-unsafe characters. This is basically base64url with mandatory padding.
+
+Example `"≈≥´ÕE#ˇï3" => "xQSzq81FI_-VMw=="`
+
+#### Base64-url-encoded
+
+Url-safe version of base64 with url percent-encoding.
+
+Example `"≈≥´ÕE#ˇï3" =>  "xQSzq81FI%2f%2bVMw%3d%3d"`
+
+#### Url
+
+Also known as percent-encoding.
+
+Example `th<is is encod!ed> => th%3cis+is+encod%21ed%3e`

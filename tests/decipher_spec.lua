@@ -8,19 +8,11 @@ describe("decipher", function()
             "base32",
             "base64",
             "base64-url",
+            "base64-url-encoded",
             "base64-url-safe",
             "crockford",
             "url",
             "zbase32",
-        })
-    end)
-
-    it("gets a sorted list of active codecs", function()
-        decipher.setup({ active_codecs = { "crockford", "base64" } })
-
-        assert.are.same(decipher.active_codecs(), {
-            "base64",
-            "crockford",
         })
     end)
 

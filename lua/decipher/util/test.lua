@@ -7,6 +7,12 @@ local test = {}
 function test.test_encode(test_cases, encode_func)
     for input, output in pairs(test_cases) do
         local encoded = encode_func(input)
+        local len_same = #encoded == #output
+        local values_same = encoded == output
+
+        if not len_same or not values_same then
+            vim.print(vim.inspect({ encoded, output }))
+        end
 
         assert.are.equal(#encoded, #output)
         assert.are.equal(encoded, output)
@@ -20,6 +26,12 @@ end
 function test.test_decode(test_cases, decode_func)
     for input, output in pairs(test_cases) do
         local decoded = decode_func(output)
+        local len_same = #decoded == #input
+        local values_same = decoded == input
+
+        if not len_same or not values_same then
+            vim.print(vim.inspect({ decoded, input }))
+        end
 
         assert.are.equal(#decoded, #input)
         assert.are.equal(decoded, input)

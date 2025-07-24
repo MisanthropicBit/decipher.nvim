@@ -1,7 +1,5 @@
 local config = {}
 
-local codecs = require("decipher.codecs")
-
 ---@class decipher.WindowMappings
 ---@field close? string
 ---@field apply? string
@@ -19,12 +17,10 @@ local codecs = require("decipher.codecs")
 ---@field options? table<string, any>
 
 ---@class decipher.Config
----@field active_codecs? (string | decipher.Codecs)[] | "all"
 ---@field float? decipher.WindowConfig
 
 ---@type decipher.Config
 local default_config = {
-    active_codecs = "all",
     float = {
         padding = 0,
         border = {
@@ -51,28 +47,6 @@ local default_config = {
     },
 }
 
---- Validate a dimension
-local function validate_dimension(arg)
-    return arg == "auto" or type(arg) == "number"
-end
-
---- Validate a codec option
-local function validate_codecs(arg)
-    if arg == "all" then
-        return true
-    elseif type(arg) == "table" then
-        for idx, value in ipairs(arg) do
-            if codecs.get(value) == nil then
-                return false, ("Invalid codec '%s' at index %d in config.active_codecs"):format(value, idx)
-            end
-        end
-
-        return true
-    end
-
-    return false, 'config.active_codecs should be "all" or a list of codecs'
-end
-
 --- Validate a floating window border
 local function validate_border(arg)
     local presets = {
@@ -91,7 +65,6 @@ end
 ---@param _config decipher.Config
 local function validate_config(_config)
     vim.validate({
-        active_codecs = { _config.active_codecs, validate_codecs, "valid codecs" },
         ["float.padding"] = { _config.float.padding, "number" },
         ["float.border"] = { _config.float.border, validate_border, "valid border" },
         ["float.mappings"] = { _config.float.mappings, "table" },
@@ -119,10 +92,6 @@ end
 ---@param user_config? decipher.Config
 function config.setup(user_config)
     _user_config = vim.tbl_deep_extend("keep", user_config or {}, default_config)
-
-    if _user_config.active_codecs == "all" then
-        _user_config.active_codecs = codecs.supported()
-    end
 
     validate_config(_user_config)
 end

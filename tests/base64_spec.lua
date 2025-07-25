@@ -12,7 +12,7 @@ describe("codecs.base64", function()
         [""] = "",
         ["works with unicode like âœ”"] = "d29ya3Mgd2l0aCB1bmljb2RlIGxpa2Ug4pyU",
         ["line1\nline2"] = "bGluZTEKbGluZTI=",
-        ["Å³«ÍE#ÿ•3"] = "xQSzq81FI/+VMw==",
+        ["ğŸ”‘_ğŸ§â›³ğŸˆ¹"] = "8J+UkV/wn4+n4puz8J+IuQ==",
     }
 
     it("encodes strings into base64", function()

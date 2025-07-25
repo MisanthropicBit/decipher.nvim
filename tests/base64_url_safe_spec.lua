@@ -10,9 +10,9 @@ describe("codecs.base64_url_safe", function()
         ["light wo"] = "bGlnaHQgd28=",
         ["light w"] = "bGlnaHQgdw==",
         [""] = "",
-        -- ["works with unicode like âœ”"] = "d29ya3Mgd2l0aCB1bmljb2RlIGxpa2Ug4pyU",
+        ["works with unicode like âœ”"] = "d29ya3Mgd2l0aCB1bmljb2RlIGxpa2Ug4pyU",
         ["line1\nline2"] = "bGluZTEKbGluZTI=",
-        ["Å³«ÍE#ÿ•3"] = "xQSzq81FI_-VMw==",
+        ["ğŸ”‘_ğŸ§â›³ğŸˆ¹"] = "8J-UkV_wn4-n4puz8J-IuQ==",
     }
 
     it("encodes strings into url-safe base64", function()

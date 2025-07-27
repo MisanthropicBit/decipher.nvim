@@ -24,10 +24,12 @@ describe("codecs.zbase32", function()
 
     it("handles nil values", function()
         assert.has_error(function()
+            ---@diagnostic disable-next-line: param-type-mismatch
             zbase32.encode(nil)
         end, "Cannot encode nil value")
 
         assert.has_error(function()
+            ---@diagnostic disable-next-line: param-type-mismatch
             zbase32.decode(nil)
         end, "Cannot decode nil value")
     end)

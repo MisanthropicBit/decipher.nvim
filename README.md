@@ -29,13 +29,13 @@
 - [Example keymaps](#example-keymaps)
 - [Supported Codecs](#supported-codecs)
     - [base32](#base32)
-    - [z-base32](#z-base32)
-    - [crockford](#crockford)
     - [base64](#base64)
     - [base64-url](#base64-url)
     - [base64-url-safe](#base64)
     - [base64-url-encoded](#base64-url-encoded)
+    - [crockford](#crockford)
     - [url](#url)
+    - [z-base32](#z-base32)
 
 ## Installing
 
@@ -112,18 +112,6 @@ end)
 
 Example: `"this is encoded" => "ORUGS4ZANFZSAZLOMNXWIZLE"`
 
-#### Z-base32
-
-A more human-readable version of base32.
-
-Example: `"this is encoded" => "qtwg1h3ypf31y3mqcpzse3mr"`
-
-#### Crockford
-
-Variant of base32 which excludes 'I', 'L', 'O', and 'U' to avoid confusion with digits.
-
-Example: `"this is encoded" => "EHM6JWS0D5SJ0SBECDQP8SB4"`
-
 #### Base64
 
 Example `"light work." => "bGlnaHQgd29yay4="`
@@ -147,8 +135,20 @@ Url-safe version of base64 with url percent-encoding.
 
 Example `"Å³«ÍE#ÿ•3" =>  "xQSzq81FI%2f%2bVMw%3d%3d"`
 
+#### Crockford
+
+Variant of base32 which excludes 'I', 'L', 'O', and 'U' to avoid confusion with digits.
+
+Example: `"this is encoded" => "EHM6JWS0D5SJ0SBECDQP8SB4"`
+
 #### Url
 
 Also known as percent-encoding.
 
 Example `th<is is encod!ed> => th%3cis+is+encod%21ed%3e`
+
+#### Z-base32
+
+A more human-readable version of base32.
+
+Example: `"this is encoded" => "qtwg1h3ypf31y3mqcpzse3mr"`

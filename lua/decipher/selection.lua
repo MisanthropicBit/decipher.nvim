@@ -48,7 +48,7 @@ function selection.get_selection(type)
     local end_lnum, end_col = unpack(vim.fn.getpos(_marks[2]), 2, 3)
 
     -- Temporary fix for discrepancy between 0.11.0+ and below
-    if vim.fn.has("nvim-0.11.0") == 1 then
+    if type == "motion" and vim.fn.has("nvim-0.11.0") == 1 then
         end_col = end_col + 1
     end
 

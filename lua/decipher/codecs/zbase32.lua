@@ -40,14 +40,14 @@ local zbase32_encoding_table = {
 
 local zbase32_codec = util.make_codec("zbase32", zbase32_encoding_table, "=", base32)
 
---- Encode a zbase32-encoded string
+--- Encode a string as zbase32
 ---@param value string
 ---@return string
 function zbase32.encode(value)
     return zbase32_codec.encode(value)
 end
 
---- Decode a string as zbase32
+--- Decode a zbase32-encoded string
 ---@param value string
 ---@return string
 function zbase32.decode(value)

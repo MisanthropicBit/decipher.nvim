@@ -12,6 +12,7 @@ describe("codecs.zbase32", function()
         [""] = "",
         ["line1\nline2"] = "ptwsh3jtbjsg15ufge======",
         ["works with unicode like ✔"] = "q7zzr45urb5s17derb4sh4mdp71gkedcpfiske8nu1ky====",
+        ["🔑_🏧⛳🈹"] = "6nx3jrk96nxa9j9nuq39b8hezr======",
     }
 
     it("encodes strings into zbase32", function()

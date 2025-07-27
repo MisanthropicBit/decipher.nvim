@@ -1,6 +1,7 @@
 local crockford = require("decipher.codecs.crockford")
 local test_utils = require("decipher.util.test")
 
+vim.print(require("decipher").encode("crockford", "🔑_🏧⛳🈹"))
 describe("codecs.crockford", function()
     local std_test_cases = {
         ["Many hands make light work."] = "9NGPWY90D1GPWS3K41PP2TV541P6JSV8EGG7EVVJDCQ0====",
@@ -12,6 +13,7 @@ describe("codecs.crockford", function()
         [""] = "",
         ["line1\nline2"] = "DHMPWS9H19P6JVK568======",
         ["works with unicode like ✔"] = "EXQQ4TVK41VPJX3841TPWTB3DXJ6A83CD5NPA872KJA0====",
+        ["🔑_🏧⛳🈹"] = "Y2FS94AZY2FRZ9Z2KESZ17W8Q4======",
     }
 
     it("encodes strings into crockford", function()

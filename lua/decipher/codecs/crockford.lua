@@ -40,14 +40,14 @@ local crockfold_encoding_table = {
 
 local crockford_codec = util.make_codec("crockford", crockfold_encoding_table, "=", base32)
 
---- Encode a crockford-encoded string
+--- Encode a string as crockford
 ---@param value string
 ---@return string
 function crockford.encode(value)
     return crockford_codec.encode(value)
 end
 
---- Decode a string as crockford
+--- Decode a crockford-encoded string
 ---@param value string
 ---@return string
 function crockford.decode(value)

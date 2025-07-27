@@ -3,11 +3,11 @@ local codecs = {}
 local base32 = require("decipher.codecs.base32")
 local base64 = require("decipher.codecs.base64")
 local base64_url = require("decipher.codecs.base64_url")
-local base64_url_safe = require("decipher.codecs.base64_url_safe")
 local base64_url_encoded = require("decipher.codecs.base64_url_encoded")
+local base64_url_safe = require("decipher.codecs.base64_url_safe")
 local crockford = require("decipher.codecs.crockford")
-local zbase32 = require("decipher.codecs.zbase32")
 local url = require("decipher.codecs.url")
+local zbase32 = require("decipher.codecs.zbase32")
 
 ---@enum decipher.Codecs
 codecs.codec = {

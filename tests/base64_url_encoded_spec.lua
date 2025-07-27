@@ -1,7 +1,7 @@
 local base64_url_encoded = require("decipher.codecs.base64_url_encoded")
 local test_utils = require("decipher.util.test")
 
-describe("codecs.base64_url", function()
+describe("codecs.base64_url_encoded", function()
     local test_cases = {
         ["Many hands make light work."] = "TWFueSBoYW5kcyBtYWtlIGxpZ2h0IHdvcmsu",
         ["light work."] = "bGlnaHQgd29yay4%3d",
@@ -25,10 +25,12 @@ describe("codecs.base64_url", function()
 
     it("handles nil values", function()
         assert.has_error(function()
+            ---@diagnostic disable-next-line: param-type-mismatch
             base64_url_encoded.encode(nil)
         end, "Cannot encode nil value")
 
         assert.has_error(function()
+            ---@diagnostic disable-next-line: param-type-mismatch
             base64_url_encoded.decode(nil)
         end, "Cannot decode nil value")
     end)

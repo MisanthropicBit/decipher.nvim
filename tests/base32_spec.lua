@@ -12,6 +12,7 @@ describe("codecs.base32", function()
         [""] = "",
         ["line1\nline2"] = "NRUW4ZJRBJWGS3TFGI======",
         ["works with unicode like ✔"] = "O5XXE23TEB3WS5DIEB2W42LDN5SGKIDMNFVWKIHCTSKA====",
+        ["🔑_🏧⛳🈹"] = "6CPZJEK76CPY7J7CTOZ7BH4IXE======",
     }
 
     it("encodes strings into base32", function()

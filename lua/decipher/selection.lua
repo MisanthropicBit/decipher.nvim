@@ -47,6 +47,11 @@ function selection.get_selection(type)
     local start_lnum, start_col = unpack(vim.fn.getpos(_marks[1]), 2, 3)
     local end_lnum, end_col = unpack(vim.fn.getpos(_marks[2]), 2, 3)
 
+    -- Temporary fix for discrepancy between 0.11.0+ and below
+    if vim.fn.has("nvim-0.11.0") == 1 then
+        end_col = end_col + 1
+    end
+
     return {
         start = { lnum = start_lnum, col = start_col },
         ["end"] = { lnum = end_lnum, col = end_col },

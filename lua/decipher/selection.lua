@@ -49,7 +49,11 @@ function selection.get_selection(type)
 
     -- Temporary fix for discrepancy between 0.11.0+ and below
     if type == "motion" and vim.fn.has("nvim-0.11.0") == 1 then
-        end_col = end_col + 1
+        local eol_col = vim.fn.col("$") - 1
+
+        if end_col < eol_col then
+            end_col = end_col + 1
+        end
     end
 
     return {

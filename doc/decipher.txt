@@ -37,7 +37,6 @@ The options below are the default values.
 
 >lua
     require("decipher").setup({
-        active_codecs = "all", -- Set all codecs as active and useable
         float = { -- Floating window options
             padding = 0, -- Zero padding (does not apply to title if any)
             border = { -- Floating window border
@@ -71,11 +70,6 @@ Types                                                           *decipher.types*
 <
                                                                *decipher.Config*
     Fields:  
-        {active_codecs} `"all" | (string | decipher.Codecs)[]`
-            A list of the codecs that should be active or "all" for all
-            codecs. This only affects the codecs you can choose from when
-            selecting a codec via vim.ui.select.
-
         {float} `decipher.WindowConfig`
 
                                                          *decipher.WindowConfig*
@@ -152,10 +146,6 @@ version()                                                     *decipher.version*
 
 supported_codecs()                                   *decipher.supported_codecs*
     Returns a list of currently supported codecs.
-
-active_codecs()                                         *decipher.active_codecs*
-    Returns a list of currently active codecs as per |active_codecs| in
-    `decipher.Config`.
 
 encode({codec_name}, {value})                                  *decipher.encode*
     Encode a value using a codec.

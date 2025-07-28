@@ -2,6 +2,8 @@
 
 local json = {}
 
+local compat = require("decipher.compat")
+
 ---Return an iterator over a table's keys in sorted order
 ---@param tbl table
 ---@return function
@@ -152,7 +154,7 @@ local function format_table(value, buffer)
     if vim.tbl_count(value) == 0 then
         buffer:add("{}")
     else
-        if vim.tbl_islist(value) then
+        if compat.tbl_islist(value) then
             format_array(value, buffer)
         else
             format_table_as_object(value, buffer)

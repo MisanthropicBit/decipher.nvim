@@ -152,7 +152,6 @@ describe("selection", function()
                         third_line = 'third"is" a test'
                     end
 
-
                     expect({
                         "a sentence first",
                         "second",

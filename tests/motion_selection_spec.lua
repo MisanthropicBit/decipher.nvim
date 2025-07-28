@@ -56,15 +56,14 @@ describe("selection", function()
 
         describe("get_text", function()
             it("gets text after motion (inner double-quoted string)", function()
-                pending("Skipped")
+                given(contents, function()
+                    normal('jwyi"')
 
-                -- given(contents, function()
-                --     normal('jwyi"')
+                    local text = selection.get_text(0, "motion")
+                    local expected_text = get_end_col_offset() == 1 and "is" or 'is"'
 
-                --     local text = selection.get_text(0, "motion")
-
-                --     assert.are.same(text, { "is" })
-                -- end)
+                    assert.are.same(text, { expected_text })
+                end)
             end)
 
             it("gets text after motion (a word)", function()
@@ -82,7 +81,7 @@ describe("selection", function()
                     normal("2wy5w")
 
                     local text = selection.get_text(0, "motion")
-                    local second_line = text[2]:sub(1, #text[2] - get_end_col_offset())
+                    local second_line = get_end_col_offset() == 1 and "this " or 'this "'
 
                     assert.are.same(text, { "on the first line", second_line })
                 end)
@@ -91,19 +90,18 @@ describe("selection", function()
 
         describe("set_text", function()
             it("sets text after motion", function()
-                pending("Skipped")
+                given(contents, function()
+                    normal('jwyi"')
 
-                -- given(contents, function()
-                --     normal('jwyi"')
+                    local text = { "is not" }
+                    selection.set_text(0, "motion", text)
+                    local second_line = get_end_col_offset() == 1 and 'this "is not" a test' or 'this "is not a test'
 
-                --     local text = { "is not" }
-                --     selection.set_text(0, "motion", text)
-
-                --     expect({
-                --         "a sentence on the first line",
-                --         'this "is not" a test'
-                --     })
-                -- end)
+                    expect({
+                        "a sentence on the first line",
+                        second_line,
+                    })
+                end)
             end)
 
             it("sets text after motion (a word)", function()
@@ -131,7 +129,7 @@ describe("selection", function()
                     local end_col_offset = get_end_col_offset()
 
                     if end_col_offset == 1 then
-                        text_after[1] = { 'a sentence replacement"is" a test' }
+                        text_after = { 'a sentence replacement"is" a test' }
                     end
 
                     expect(text_after)

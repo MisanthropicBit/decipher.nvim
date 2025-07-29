@@ -81,7 +81,7 @@ function base64_url_safe.encode(value)
     return base64_url_safe_codec.encode(value)
 end
 
---- Decode a string as url-safe base64
+--- Decode a string encoded as url-safe base64
 ---@param value string
 ---@return string
 function base64_url_safe.decode(value)

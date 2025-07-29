@@ -13,10 +13,10 @@ end
 function compat.get_report_funcs()
     if vim.fn.has("nvim-0.10") == 1 then
         return vim.health.start, vim.health.ok, vim.health.error
-    else
-        ---@diagnostic disable-next-line: deprecated
-        return vim.health.report_start, vim.health.report_ok, vim.health.report_error
     end
+
+    ---@diagnostic disable-next-line: deprecated
+    return vim.health.report_start, vim.health.report_ok, vim.health.report_error
 end
 
 return compat

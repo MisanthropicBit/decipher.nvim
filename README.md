@@ -127,13 +127,13 @@ Example `"light work." => "bGlnaHQgd29yay4"` (base64 would have added a single `
 Url-safe version of base64 that uses a different encoding table to avoid use of
 url-unsafe characters. This is basically base64url with mandatory padding.
 
-Example `"Å³«ÍE#ÿ•3" => "xQSzq81FI_-VMw=="`
+Example `"ðŸ”‘_ðŸ§â›³ðŸˆ¹" => "8J-UkV_wn4-n4puz8J-IuQ=="`
 
 #### Base64-url-encoded
 
 Url-safe version of base64 with url percent-encoding.
 
-Example `"Å³«ÍE#ÿ•3" =>  "xQSzq81FI%2f%2bVMw%3d%3d"`
+Example `"ðŸ”‘_ðŸ§â›³ðŸˆ¹" =>  "8J%2bUkV%2fwn4%2bn4puz8J%2bIuQ%3d%3d"`
 
 #### Crockford
 

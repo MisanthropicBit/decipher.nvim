@@ -39,76 +39,6 @@ local rfc4648_encoding_table = {
     [31] = "7",
 }
 
-local zbase32_encoding_table = {
-    [0] = "y",
-    [1] = "b",
-    [2] = "n",
-    [3] = "d",
-    [4] = "r",
-    [5] = "f",
-    [6] = "g",
-    [7] = "8",
-    [8] = "e",
-    [9] = "j",
-    [10] = "k",
-    [11] = "m",
-    [12] = "c",
-    [13] = "p",
-    [14] = "q",
-    [15] = "x",
-    [16] = "o",
-    [17] = "t",
-    [18] = "1",
-    [19] = "u",
-    [20] = "w",
-    [21] = "i",
-    [22] = "s",
-    [23] = "z",
-    [24] = "a",
-    [25] = "3",
-    [26] = "4",
-    [27] = "5",
-    [28] = "h",
-    [29] = "7",
-    [30] = "6",
-    [31] = "9",
-}
-
-local crockfold_encoding_table = {
-    [0] = "0",
-    [1] = "1",
-    [2] = "2",
-    [3] = "3",
-    [4] = "4",
-    [5] = "5",
-    [6] = "6",
-    [7] = "7",
-    [8] = "8",
-    [9] = "9",
-    [10] = "A",
-    [11] = "B",
-    [12] = "C",
-    [13] = "D",
-    [14] = "E",
-    [15] = "F",
-    [16] = "G",
-    [17] = "H",
-    [18] = "J",
-    [19] = "K",
-    [20] = "M",
-    [21] = "N",
-    [22] = "P",
-    [23] = "Q",
-    [24] = "R",
-    [25] = "S",
-    [26] = "T",
-    [27] = "V",
-    [28] = "W",
-    [29] = "X",
-    [30] = "Y",
-    [31] = "Z",
-}
-
 local default_base32_codec = util.make_codec("base32", rfc4648_encoding_table, "=", base32)
 
 --- Encode a string as base32 with a given codec spec
@@ -169,7 +99,7 @@ function base32.decode_with(value, base32_codec)
     end
 
     if #value % 8 ~= 0 then
-        error("base32-encoded string is not a multiple of 8", 0)
+        error(("%s-encoded string is not a multiple of 8"):format(base32_codec.name), 0)
     end
 
     local pad_char = base32_codec.pad_char
@@ -201,18 +131,6 @@ end
 ---@return string
 function base32.decode(value)
     return default_base32_codec.decode(value)
-end
-
---- Get a codec for the zbase32 variant of base32
----@return decipher.Codec
-function base32.zbase32()
-    return util.make_codec("zbase32", zbase32_encoding_table, "=", base32)
-end
-
---- Get a codec for the crockford variant of base32
----@return decipher.Codec
-function base32.crockford()
-    return util.make_codec("crockford", crockfold_encoding_table, "=", base32)
 end
 
 return base32

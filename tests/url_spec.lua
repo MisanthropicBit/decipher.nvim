@@ -8,6 +8,7 @@ describe("codecs.url", function()
         ["http://www.test.com/?symbol=€"] = "http://www.test.com/?symbol%3d%e2%82%ac",
         ["http://www.test.com/?symbol=🥲"] = "http://www.test.com/?symbol%3d%f0%9f%a5%b2",
         [""] = "",
+        ["🔑_🏧⛳🈹"] = "%f0%9f%94%91_%f0%9f%8f%a7%e2%9b%b3%f0%9f%88%b9",
     }
 
     it("url-decodes strings", function()

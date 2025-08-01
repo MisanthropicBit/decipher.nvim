@@ -27,15 +27,6 @@ function decipher.supported_codecs()
     return codecs.supported()
 end
 
---- Get a list of currently active codecs
----@return decipher.Codecs[]
-function decipher.active_codecs()
-    local _codecs = vim.tbl_values(config.active_codecs)
-    table.sort(_codecs)
-
-    return _codecs
-end
-
 ---@param codec_name decipher.CodecArg
 ---@param value string
 ---@param func_key "encode" | "decode"
@@ -132,7 +123,7 @@ end
 ---@param selection_type decipher.SelectionType
 ---@param options decipher.Options
 local function process_codec_prompt(codec_func, selection_type, options)
-    vim.ui.select(decipher.active_codecs(), { prompt = "Codec?: " }, function(codec_name)
+    vim.ui.select(codecs.supported(), { prompt = "Codec?: " }, function(codec_name)
         if codec_name == nil then
             return
         end

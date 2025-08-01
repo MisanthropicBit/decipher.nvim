@@ -31,7 +31,7 @@ local function url_encode_byte(list, byte)
     table.insert(list, ("%x"):format(bits.band(byte, 0xf)))
 end
 
----Url-encode a string
+--- Url-encode a string
 ---@param value string
 ---@return string
 function url.encode(value)
@@ -57,7 +57,7 @@ function url.encode(value)
     return table.concat(result)
 end
 
----Url-decode a string
+--- Url-decode a string
 ---@param value string
 ---@return string
 function url.decode(value)

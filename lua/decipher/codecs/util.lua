@@ -1,20 +1,24 @@
 local codecs_util = {}
 
 ---@param value string
----@param i number
+---@param idx number
 ---@param spec decipher.CodecSpec
 ---@return number
-function codecs_util.decoding_table_lookup(value, i, spec)
-    local char = value:sub(i, i)
+function codecs_util.decoding_table_lookup(value, idx, spec)
+    local char = value:sub(idx, idx)
 
     if char == spec.pad_char then
         return 0
+    elseif char == "" then
+        -- This occurs when an encoded string is too short and indexing the
+        -- value goes out of bounds and returns an empty string
+        error(("Attempt to decode out of bounds at position %d, encoded string is too short"):format(idx))
     end
 
     local decoded = spec.decoding_table[char]
 
     if decoded == nil then
-        error(("Invalid character '%s' at byte position %d in %s string"):format(char, i, spec.name), 0)
+        error(("Invalid character '%s' at byte position %d in %s string"):format(char, idx, spec.name), 0)
     end
 
     return decoded

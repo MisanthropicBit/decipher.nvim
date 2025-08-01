@@ -1,13 +1,31 @@
 local float = {}
 
+local compat = require("decipher.compat")
 local config = require("decipher.config")
-local errors = require("decipher.errors")
+local notifications = require("decipher.notifications")
 local Page = require("decipher.ui.page")
 local util = require("decipher.util")
 local selection = require("decipher.selection")
 
+---@alias decipher.Anchor "NW" | "SW" | "NE" | "SE"
+
+---@class decipher.FloatOpenOptions
+---@field title          string?
+---@field contents       string[]
+---@field window_config  decipher.WindowConfig?
+---@field selection_type decipher.SelectionType
+---@field codec_name     string
+---@field codec_type     "encode" | "decode"
+---@field selection      decipher.Region
+
+local augroup = vim.api.nvim_create_augroup("decipher.augroup", {})
+
+---Tracks open floating windows
+---@type table<number, decipher.Float>
+local floats = {}
+
 ---@type boolean
-local has_floating_window = vim.fn.has("nvim") == 1 and vim.fn.exists("*nvim_win_set_config") == 1
+local has_floating_window = vim.fn.exists("*nvim_win_set_config") == 1
 
 ---@type boolean
 local has_title = vim.fn.has("nvim-0.9") == 1
@@ -17,6 +35,17 @@ local decipher_float_var_name = "decipher_float"
 -- As percentages of the window's dimensions
 local default_max_width = 0.8
 local default_max_height = 0.7
+
+local minimum_window_options = {
+    style = "minimal",
+    relative = "editor",
+    width = 1,
+    height = 1,
+    row = 1,
+    col = 1,
+    noautocmd = true,
+    focusable = true,
+}
 
 ---@type table<string, any>
 local window_options = {
@@ -35,8 +64,9 @@ local buffer_options = {
     buftype = "nofile",
     bufhidden = "wipe",
     buflisted = false,
-    modifiable = false,
     filetype = "decipher_float",
+    modifiable = true,
+    swapfile = false,
 }
 
 ---@param percentage number
@@ -56,47 +86,65 @@ local function get_global_coordinates()
     }
 end
 
----Pad an array of given lines
----@param lines string[]
----@param padding number
----@param padchar string
----@return string[], number, number
-local function pad_lines(lines, padding, padchar)
-    local padded = {}
-    local width = 0
+---@param position decipher.Position initial position of the float
+---@param width    number            width of the float
+---@param height   number            height of the float
+---@return { anchor: decipher.Anchor, position: decipher.Position }
+local function get_anchored_position(position, width, height)
+    local vertical_anchor, horizontal_anchor = "N", "W"
 
-    for _ = 1, padding do
-        table.insert(padded, "")
+    if position.lnum + height > vim.o.lines - 1 then
+        vertical_anchor = "S"
     end
 
-    local padstr = padding > 0 and padchar:rep(padding) or ""
-
-    for _, line in ipairs(lines) do
-        local padded_line = padstr .. line .. padstr
-
-        table.insert(padded, padded_line)
-        width = math.max(width, #padded_line)
+    if position.col + width >= vim.o.columns then
+        horizontal_anchor = "E"
     end
 
-    for _ = 1, padding do
-        table.insert(padded, "")
+    return {
+        anchor = vertical_anchor .. horizontal_anchor,
+        position = position,
+    }
+end
+
+---@param max_width  number | "auto"
+---@param max_height number | "auto"
+---@return number, number
+local function compute_max_dimensions(max_width, max_height)
+    if max_width ~= "auto" then
+        if 0 < max_width and max_width < 1 then
+            ---@diagnostic disable-next-line:param-type-mismatch
+            max_width = from_percentage(max_width, vim.o.columns)
+        end
     end
 
-    return padded, width, #padded
+    if max_height ~= "auto" then
+        -- Convert percentages to window dimension limits
+        if 0 < max_height and max_height < 1 then
+            ---@diagnostic disable-next-line:param-type-mismatch
+            max_height = from_percentage(max_height, vim.o.lines)
+        end
+    end
+
+    ---@cast max_width integer
+    ---@cast max_height integer
+
+    return max_width, max_height
 end
 
 ---@class decipher.Float
----@field width number Width of the float
----@field height number Height of the float
----@field curpage string Name of the current page
----@field pages table<string, decipher.Page> Table of pages by name
----@field selection_type decipher.SelectionType -- Type of selection that triggered this float to open
----@field parent_selection decipher.Region -- Region selected in the parent buffer
----@field win_id? number Window id
----@field parent_bufnr? number Parent buffer number
----@field buffer? number Buffer id
----@field position decipher.Position position of the float
----@field window_config? decipher.WindowConfig
+---@field width            number                       Width of the float
+---@field height           number                       Height of the float
+---@field curpage          string                       Name of the current page
+---@field pages            table<string, decipher.Page> Table of pages by name
+---@field selection_type   decipher.SelectionType       Type of selection that triggered this float to open
+---@field parent_selection decipher.Region              Region selected in the parent buffer
+---@field win_id?          number                       Window id
+---@field parent_bufnr?    number                       Parent buffer number
+---@field buffer?          number                       Buffer id
+---@field position         decipher.Position            Position of the float
+---@field window_config?   decipher.WindowConfig
+---@field codec_type "encode" | "decode"
 local Float = {
     width = 0,
     height = 0,
@@ -121,7 +169,6 @@ local Float = {
 ---@param window_config decipher.WindowConfig
 ---@return decipher.Float
 function Float:new(window_config)
-    ---@type decipher.Float
     local win = {}
 
     setmetatable(win, self)
@@ -131,77 +178,17 @@ function Float:new(window_config)
     return win
 end
 
----@private
----@return number, number
-function Float:compute_max_dimensions()
-    local max_width = default_max_width
-    local max_height = default_max_height
-
-    if max_width ~= "auto" then
-        if 0 < max_width and max_width < 1 then
-            ---@diagnostic disable-next-line:param-type-mismatch
-            max_width = from_percentage(max_width, vim.o.columns)
-        end
-    end
-
-    if max_height ~= "auto" then
-        -- Convert percentages to window dimension limits
-        if 0 < max_height and max_height < 1 then
-            ---@diagnostic disable-next-line:param-type-mismatch
-            max_height = from_percentage(max_height, vim.o.lines)
-        end
-    end
-
-    ---@diagnostic disable-next-line:return-type-mismatch
-    return max_width, max_height
-end
-
----@alias decipher.Anchor "NW" | "SW" | "NE" | "SE"
-
----@private
----@param position decipher.Position initial position of the float
----@param width number width of the float
----@param height number height of the float
----@param padding number padding of the float
----@return { anchor: decipher.Anchor, position: decipher.Position }
-function Float:get_anchored_position(position, width, height, padding)
-    local vertical_anchor, horizontal_anchor = "N", "W"
-
-    if position.lnum + height + padding > vim.o.lines - 1 then
-        vertical_anchor = "S"
-    end
-
-    if position.col + width + padding >= vim.o.columns then
-        horizontal_anchor = "E"
-    end
-
-    return {
-        anchor = vertical_anchor .. horizontal_anchor,
-        position = position,
-    }
-end
-
 ---@param position? decipher.Position
-function Float:open(position)
-    local minimum_window_options = {
-        style = "minimal",
-        relative = "editor",
-        width = 1,
-        height = 1,
-        row = 1,
-        col = 1,
-        border = self.window_config.border,
-        noautocmd = true,
-        focusable = true,
-    }
-
+function Float:open(position, options)
     self.position = position or get_global_coordinates()
     self.parent_bufnr = vim.api.nvim_get_current_buf()
     self.buffer = vim.api.nvim_create_buf(false, true)
-    self.win_id = vim.api.nvim_open_win(self.buffer, self.window_config.enter or false, minimum_window_options)
+
+    local window_options = vim.tbl_extend("force", minimum_window_options, { border = self.window_config.border })
+    self.win_id = vim.api.nvim_open_win(self.buffer, self.window_config.enter or false, window_options)
 
     vim.api.nvim_win_set_var(self.win_id, decipher_float_var_name, true)
-    self:render_page("main")
+
     self:set_mappings()
     self:set_options()
 
@@ -214,6 +201,7 @@ function Float:open(position)
                 callback = function()
                     self:close()
                 end,
+                group = augroup,
                 once = true,
                 buffer = self.parent_bufnr,
                 desc = "Closes the decipher floating window when insert mode is entered or the cursor is moved",
@@ -222,49 +210,44 @@ function Float:open(position)
     end
 end
 
--- Render a page of the float
+--- Render a page of the float
 ---@private
 ---@param name string
 ---@return boolean
 function Float:render_page(name)
-    -- NOTE: We could also create separate buffers for each page instead
     local page = self:get_page(name)
-    local success = page:setup()
+    local success, _ = pcall(page.setup, page)
 
     if not success then
         return false
     end
 
-    local contents, width, height = pad_lines(page.contents, self.window_config.padding, " ")
-    local max_width, max_height = self:compute_max_dimensions()
+    local contents = page.contents
+    ---@cast contents string[]
 
-    if max_width ~= "auto" then
-        local title_width = page.title and #page.title + 2 or 0
-        width = math.max(title_width, math.min(width, max_width))
-    end
+    local lines_width, lines_height = util.str.dimensions(contents)
+    local max_width, max_height = compute_max_dimensions(default_max_width, default_max_height)
 
-    if max_height ~= "auto" then
-        height = math.min(height, max_height)
-    end
+    -- Adjust width so there is space for the title
+    local title_width = page.title and (#page.title + 2) or 0
+    lines_width = math.max(title_width, math.min(lines_width, max_width))
+    lines_height = math.min(lines_height, max_height)
 
-    -- Temporarily make the buffer modifiable so we can render the page
-    vim.api.nvim_buf_set_option(self.buffer, "modifiable", true)
-    vim.api.nvim_buf_set_lines(self.buffer, 0, -1, true, contents)
-    vim.api.nvim_buf_set_option(self.buffer, "modifiable", false)
+    page:render(contents)
 
-    local anchored = self:get_anchored_position(self.position, width, height, self.window_config.padding)
+    local anchored = get_anchored_position(self.position, lines_width, lines_height)
 
     local win_config = {
         relative = "editor",
         row = anchored.position.lnum,
         col = anchored.position.col,
         anchor = anchored.anchor,
-        width = width,
-        height = height,
+        width = lines_width,
+        height = lines_height,
     }
 
     if has_title then
-        if self.window_config.title then
+        if self.window_config.title and page.title then
             win_config.title = {
                 { " " .. page.title .. " ", "DecipherFloatTitle" },
             }
@@ -272,23 +255,24 @@ function Float:render_page(name)
         end
     else
         if self.window_config.title then
-            errors.warn_message("'title' option requires nvim 0.9+")
+            notifications.warn("'title' option requires nvim 0.9+")
         end
     end
 
     vim.api.nvim_win_set_config(self.win_id, win_config)
-
     self.curpage = name
 
     return true
 end
 
+--- Set mappings for the float
 ---@private
--- Set mappings for the float
 function Float:set_mappings()
     if self.window_config.mappings then
         local map_options = { buffer = self.buffer, silent = true, noremap = true }
 
+        ---@param key  string
+        ---@param func function
         local function set_keymap(key, func)
             local lhs = self.window_config.mappings[key]
 
@@ -298,12 +282,22 @@ function Float:set_mappings()
         set_keymap("close", function()
             self:close()
         end)
+
         set_keymap("apply", function()
-            self:apply_codec()
+            self:update_parent_buffer(vim.api.nvim_buf_get_lines(self.buffer, 0, -1, true))
         end)
+
+        set_keymap("update", function()
+            local contents = vim.api.nvim_buf_get_lines(self.buffer, 0, -1, true)
+            local new_encoded = require("decipher")[self.codec_type](self.codec_name, table.concat(contents))
+
+            self:update_parent_buffer({ new_encoded })
+        end)
+
         set_keymap("help", function()
             self:switch_to_page("help")
         end)
+
         set_keymap("jsonpp", function()
             self:switch_to_page("jsonpp")
         end)
@@ -315,68 +309,70 @@ end
 function Float:set_options()
     -- Set default window options
     for option, value in pairs(window_options) do
-        vim.api.nvim_win_set_option(self.win_id, option, value)
+        compat.set_option(option, value, { win = self.win_id })
     end
 
     -- Set default buffer options
     for option, value in pairs(buffer_options) do
-        vim.api.nvim_buf_set_option(self.buffer, option, value)
+        compat.set_option(option, value, { buf = self.buffer })
     end
 
     -- Set user options last so they take priority
     for option, value in pairs(self.window_config.options) do
-        vim.api.nvim_win_set_option(self.win_id, option, value)
+        compat.set_option(option, value, { win = self.win_id })
     end
 end
 
----@param name string
-function Float:get_page(name)
-    return self.pages[name]
+---@param page_name string
+---@return decipher.Page
+function Float:get_page(page_name)
+    return self.pages[page_name]
 end
 
----@param name string
+---@param name    string
 ---@param options decipher.Page?
 function Float:add_page(name, options)
     self.pages[name] = Page:new(self, options)
 end
 
--- Set the selected region for a visual selection or motion
----@param parent_selection decipher.Region selection orginially made in the
---                          float's parent buffer
+--- Set the selected region for a visual selection or motion
+---@param selection_type   decipher.SelectionType
+---@param parent_selection decipher.Region selection orginially made in the float's parent buffer
 function Float:set_selection(selection_type, parent_selection)
     self.selection_type = selection_type
     self.parent_selection = parent_selection
 end
 
--- Apply the encoding or decoding in a preview to the selection that triggered
--- the preview
-function Float:apply_codec()
+--- Update the parent buffer (the original selection/motion) with a value then
+--- close the float
+---@private
+---@param value string[]
+function Float:update_parent_buffer(value)
     if self.selection_type and self.parent_selection then
-        selection.set_text_from_selection(
-            self.parent_bufnr,
-            self.selection_type,
-            self.parent_selection,
-            self:get_page("main").contents
-        )
+        selection.set_text_from_selection(self.parent_bufnr, self.selection_type, self.parent_selection, value)
 
         self:close()
     end
 end
 
----Switch between a given page and the main page
+--- Switch between a given page and the main page
 ---@param page_name string page name to toggle between
 function Float:switch_to_page(page_name)
-    local old_page = self.curpage
-    local target_page = self.curpage == page_name and "main" or page_name
+    local old_page = self:get_page(self.curpage)
 
+    if old_page then
+        old_page:save()
+    end
+
+    local target_page = self.curpage == page_name and "main" or page_name
     local success = self:render_page(target_page)
 
-    if success then
-        self:get_page(old_page):posthook()
+    if success and old_page then
+        old_page:cleanup()
     end
 end
 
--- Attempt to focus the float. May fail silently if window has already been closed
+--- Attempt to focus the float. May fail silently if window has already been closed
 ---@return boolean
 function Float:focus()
     local status, _ = pcall(vim.api.nvim_set_current_win, self.win_id)
@@ -384,39 +380,16 @@ function Float:focus()
     return status
 end
 
----Attempt to close the float. May fail silently if window has already been closed
+--- Attempt to close the float. May fail silently if window has already been closed
 function Float:close()
     pcall(vim.api.nvim_win_close, self.win_id, true)
 end
 
----Tracks open floating windows
----@type table<number, decipher.Float>
-local floats = {}
-
----Close a floating window
----@param win_id? number
-function float.close(win_id)
-    local parent_win_handle = win_id or vim.api.nvim_get_current_win()
-    local _float = floats[parent_win_handle]
-
-    if _float ~= nil then
-        local status, result = pcall(vim.api.nvim_win_get_var, _float.win_id, decipher_float_var_name)
-        floats[parent_win_handle] = nil
-
-        if status and result == true then
-            _float:close()
-        end
-    end
-end
-
----@param title? string
----@param contents string[]
----@param window_config? decipher.WindowConfig
----@param selection_type decipher.SelectionType
----@param _selection decipher.Region
-function float.open(title, contents, window_config, selection_type, _selection)
+---@param options decipher.FloatOpenOptions
+---@return decipher.Float?
+function float.open(options)
     if not has_floating_window then
-        errors.error_message("No support for floating windows", true)
+        notifications.error("No support for floating windows")
         return nil
     end
 
@@ -433,83 +406,112 @@ function float.open(title, contents, window_config, selection_type, _selection)
         end
     end
 
-    local _config = window_config or config.float
-    local win = Float:new(_config)
+    local _config = options.window_config or config.float
+    local _float = Float:new(_config)
 
-    win:add_page("main", {
-        title = title,
+    _float:add_page("main", {
+        parent = _float,
+        title = options.title,
         -- Escape the string since you cannot set lines in a buffer if it
         -- contains newlines
-        contents = util.str.escape_newlines(contents),
+        contents = util.str.escape_newlines(options.contents),
     })
 
     local help_format = "%s - %s"
 
-    win:add_page("help", {
+    _float:add_page("help", {
+        parent = _float,
         title = "Help",
-        setup = function(parent)
+        setup = function(parent, page)
             local mappings = parent.window_config.mappings
 
-            return {
+            page.contents = {
                 help_format:format(mappings.close, "Close the floating window"),
-                help_format:format(mappings.apply, "Apply the encoding/decoding"),
-                help_format:format(mappings.jsonpp, "Prettily format contents as json"),
+                help_format:format(mappings.apply, "Apply the encoding/decoding of the original selection ignoring any changes made in the floating window"),
+                help_format:format(
+                    mappings.update,
+                    "Update the value in the orignal buffer with any changes made in the floating window"
+                ),
+                help_format:format(mappings.jsonpp, "Prettily format contents as an immutable json view"),
                 help_format:format(mappings.help, "Toggle this help"),
             }
         end,
     })
 
-    win:add_page("jsonpp", {
+    _float:add_page("jsonpp", {
+        parent = _float,
         setup = function(parent, page)
             local main_page = parent.pages["main"]
             local success, result = pcall(vim.json.decode, table.concat(main_page.contents))
 
             if not success then
-                errors.error_message("Cannot decode as json: " .. result, true)
+                notifications.error("Cannot decode as json: " .. result)
                 return nil
             end
 
             local pretty = util.json.pretty_print(result, { sort_keys = true })
 
             page.title = main_page.title .. " (json pretty-print)"
-            vim.bo[parent.buffer].filetype = "json"
+            page.contents = vim.fn.split(pretty, "\n")
 
-            return vim.fn.split(pretty, "\n")
+            vim.bo[parent.buffer].filetype = "json"
+            vim.bo[parent.buffer].modifiable = false
         end,
-        posthook = function(parent)
+        cleanup = function(parent)
             vim.bo[parent.buffer].filetype = nil
+            vim.bo[parent.buffer].modifiable = true
         end,
     })
 
-    win:set_selection(selection_type, _selection)
-    win:open()
+    _float.codec_name = options.codec_name
+    _float.codec_type = options.codec_type
+    _float:set_selection(options.selection_type, options.selection)
+    _float:open()
+    _float:switch_to_page("main")
 
-    floats[cur_win_id] = win
+    floats[cur_win_id] = _float
 
-    return win
+    -- vim.api.nvim_create_autocmd({ "BufWriteCmd" }, {
+    --     callback = function(event)
+    --         local contents = vim.api.nvim_buf_get_lines(event.buf, 0, -1, true)
+    --
+    --         win:get_page(win.curpage):set_contents(contents)
+    --         vim.bo[event.buf].modified = false
+    --     end,
+    --     once = true,
+    --     buffer = win.buffer,
+    --     desc = "Saves changes made in the floating window.",
+    -- })
+
+    return _float
 end
 
-local function define_highlights()
-    vim.cmd([[hi default link DecipherFloatTitle Title]])
+--- Close a floating window
+---@param win_id? number
+function float.close(win_id)
+    local parent_win_handle = win_id or vim.api.nvim_get_current_win()
+    local _float = floats[parent_win_handle]
+
+    if _float ~= nil then
+        local status, result = pcall(vim.api.nvim_win_get_var, _float.win_id, decipher_float_var_name)
+        floats[parent_win_handle] = nil
+
+        if status and result == true then
+            _float:close()
+        end
+    end
 end
 
 function float.setup()
-    vim.cmd([[
-        augroup DecipherCleanupFloats
-            autocmd!
-            autocmd WinClosed * lua require("decipher.ui.float").close()
-        augroup end
-    ]])
-
-    local augroup = vim.api.nvim_create_augroup("DecipherColorSchemeRefresh", {})
-
-    vim.api.nvim_create_autocmd("ColorScheme", {
-        callback = define_highlights,
+    vim.api.nvim_create_autocmd("WinClosed", {
+        callback = function(event)
+            float.close(event.match)
+        end,
         group = augroup,
-        desc = "Refresh decipher highlights when colorscheme changes",
+        desc = "Close any decipher floats related to the window that was closed",
     })
 
-    define_highlights()
+    vim.cmd([[hi default link DecipherFloatTitle Title]])
 end
 
 return float

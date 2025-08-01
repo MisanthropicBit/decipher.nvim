@@ -19,4 +19,21 @@ function compat.get_report_funcs()
     end
 end
 
+---@param name string
+---@param value unknown
+---@param options { scope: "local" | "global", win: integer?, buf: integer? }
+function compat.set_option(name, value, options)
+    if vim.fn.has("nvim-0.10.0") == 1 then
+        vim.api.nvim_set_option_value(name, value, options)
+    else
+        if options.win then
+            ---@diagnostic disable-next-line: deprecated
+            vim.api.nvim_win_set_option(options.win, name, value)
+        elseif options.buf then
+            ---@diagnostic disable-next-line: deprecated
+            vim.api.nvim_buf_set_option(options.buf, name, value)
+        end
+    end
+end
+
 return compat

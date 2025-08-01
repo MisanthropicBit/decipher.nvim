@@ -4,7 +4,7 @@ local decipher_version = "1.0.3"
 
 local codecs = require("decipher.codecs")
 local config = require("decipher.config")
-local errors = require("decipher.errors")
+local notifications = require("decipher.notifications")
 local motion = require("decipher.motion")
 local selection = require("decipher.selection")
 local str_utils = require("decipher.util.string")
@@ -14,6 +14,10 @@ decipher.codec = codecs.codec
 
 ---@class decipher.Options
 ---@field public preview boolean if a preview should be shown or not
+
+---@class decipher.ProcessCodecOptions
+---@field selection_type decipher.SelectionType
+---@field codec_type "encode" | "decode"
 
 ---@alias decipher.CodecArg string | decipher.Codecs
 
@@ -65,7 +69,8 @@ end
 ---@param status boolean
 ---@param value string?
 ---@param selection_type decipher.SelectionType
-local function open_float_handler(codec_name, status, value, selection_type)
+---@param codec_type "encode" | "decode"
+local function open_float_handler(codec_name, status, value, selection_type, codec_type)
     if status and value == nil then
         value = "Codec not found"
     end
@@ -74,7 +79,15 @@ local function open_float_handler(codec_name, status, value, selection_type)
     -- preview window later on
     local _selection = selection.get_selection(selection_type)
 
-    ui.float.open(codec_name, { value }, config.float, selection_type, _selection)
+    ui.float.open({
+        title = codec_name,
+        contents = { value },
+        config = config.float,
+        selection_type = selection_type,
+        codec_name = codec_name,
+        codec_type = codec_type,
+        selection = _selection,
+    })
 end
 
 --- Handler for setting a text region to a value
@@ -85,12 +98,12 @@ end
 ---@diagnostic disable-next-line:unused-local
 local function set_text_region_handler(codec_name, status, value, selection_type)
     if not status then
-        errors.error_message(("%s: %s"):format(codec_name, value), true)
+        notifications.error(("%s: %s"):format(codec_name, value))
         return
     end
 
     if value == nil then
-        errors.error_message_codec(codec_name)
+        notifications.codec_not_found("Codec not found: " .. codec_name)
         return
     end
 
@@ -102,8 +115,9 @@ end
 ---@param codec_name decipher.CodecArg
 ---@param codec_func fun(string): string
 ---@param selection_type decipher.SelectionType
+---@param codec_type "encode" | "decode"
 ---@param options decipher.Options
-local function process_codec(codec_name, codec_func, selection_type, options)
+local function process_codec(codec_name, codec_func, selection_type, codec_type, options)
     local lines = selection.get_text(0, selection_type)
     local joined = table.concat(lines, "\n")
     local status, value = pcall(codec_func, codec_name, joined)
@@ -113,7 +127,7 @@ local function process_codec(codec_name, codec_func, selection_type, options)
     local _codec_name = ("%s"):format(codec_name)
 
     if do_preview then
-        open_float_handler(_codec_name, status, value, selection_type)
+        open_float_handler(_codec_name, status, value, selection_type, codec_type)
     else
         set_text_region_handler(_codec_name, status, value, selection_type)
     end
@@ -121,34 +135,35 @@ end
 
 ---@param codec_func fun(string): string
 ---@param selection_type decipher.SelectionType
+---@param codec_type "encode" | "decode"
 ---@param options decipher.Options
-local function process_codec_prompt(codec_func, selection_type, options)
+local function process_codec_prompt(codec_func, selection_type, codec_type, options)
     vim.ui.select(codecs.supported(), { prompt = "Codec?: " }, function(codec_name)
         if codec_name == nil then
             return
         end
 
-        process_codec(codec_name, codec_func, selection_type, options)
+        process_codec(codec_name, codec_func, selection_type, codec_type, options)
     end)
 end
 
 ---@param codec_name decipher.CodecArg
 ---@param options decipher.Options
 function decipher.encode_selection(codec_name, options)
-    process_codec(codec_name, decipher.encode, "visual", options)
+    process_codec(codec_name, decipher.encode, "visual", "encode", options)
 end
 
 ---@param codec_name decipher.CodecArg
 ---@param options decipher.Options
 function decipher.decode_selection(codec_name, options)
-    process_codec(codec_name, decipher.decode, "visual", options)
+    process_codec(codec_name, decipher.decode, "visual", "decode", options)
 end
 
 ---@param codec_name decipher.CodecArg
 ---@param options decipher.Options
 function decipher.encode_motion(codec_name, options)
     motion.start_motion(function()
-        process_codec(codec_name, decipher.encode, "motion", options)
+        process_codec(codec_name, decipher.encode, "motion", "encode", options)
     end)
 end
 
@@ -156,31 +171,31 @@ end
 ---@param options decipher.Options
 function decipher.decode_motion(codec_name, options)
     motion.start_motion(function()
-        process_codec(codec_name, decipher.decode, "motion", options)
+        process_codec(codec_name, decipher.decode, "motion", "decode", options)
     end)
 end
 
 ---@param options decipher.Options
 function decipher.encode_selection_prompt(options)
-    process_codec_prompt(decipher.encode, "visual", options)
+    process_codec_prompt(decipher.encode, "visual", "encode", options)
 end
 
 ---@param options decipher.Options
 function decipher.decode_selection_prompt(options)
-    process_codec_prompt(decipher.decode, "visual", options)
+    process_codec_prompt(decipher.decode, "visual", "decode", options)
 end
 
 ---@param options decipher.Options
 function decipher.encode_motion_prompt(options)
     motion.start_motion(function()
-        process_codec_prompt(decipher.encode, "motion", options)
+        process_codec_prompt(decipher.encode, "motion", "encode", options)
     end)
 end
 
 ---@param options decipher.Options
 function decipher.decode_motion_prompt(options)
     motion.start_motion(function()
-        process_codec_prompt(decipher.decode, "motion", options)
+        process_codec_prompt(decipher.decode, "motion", "decode", options)
     end)
 end
 
@@ -193,16 +208,14 @@ end
 ---@param user_config? decipher.Config
 function decipher.setup(user_config)
     if not vim.fn.has("nvim-0.5.0") then
-        errors.error_message("This plugin only works with Neovim >= v0.5.0", true)
+        notifications.error("This plugin only works with Neovim >= v0.5.0")
         return
     end
 
     if not decipher.has_bit_library() then
-        errors.error_message({
-            { "A bit library is required. Ensure that either " },
-            { "neovim has been built with luajit " },
-            { "or use neovim v0.9.0+ which includes a bit library" },
-        }, true)
+        notifications.error(
+            "A bit library is required. Ensure that either neovim has been built with luajit or use neovim v0.9.0+ which includes a bit library"
+        )
 
         return
     end

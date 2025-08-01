@@ -1,7 +1,7 @@
 local util = require("decipher.util")
 
 describe("util", function()
-    describe("escape_newlines", function()
+    describe("string", function()
         it("escapes newlines", function()
             assert.are.same(util.str.escape_newlines({ "" }), { "" })
             assert.are.same(util.str.escape_newlines({ "no newlines" }), { "no newlines" })
@@ -10,6 +10,40 @@ describe("util", function()
             local lines = { "two\nnewlines\n", "no newlines" }
 
             assert.are.same(util.str.escape_newlines(lines), { "two\\nnewlines\\n", "no newlines" })
+        end)
+
+        it("pads lines", function()
+            local padded1 = util.str.pad_lines({ "one", "two", "three" }, 1)
+
+            assert.are.same(padded1, {
+                "",
+                " one ",
+                " two ",
+                " three ",
+                "",
+            })
+
+            local padded2 = util.str.pad_lines({ "one", "two", "three" }, 2)
+
+            assert.are.same(padded2, {
+                "",
+                "",
+                "  one  ",
+                "  two  ",
+                "  three  ",
+                "",
+                "",
+            })
+        end)
+
+        it("unpads lines", function()
+            local unpadded1 = util.str.unpad_lines(util.str.pad_lines({ "one", "two", "three" }, 2))
+
+            assert.are.same(unpadded1, {
+                "one",
+                "two",
+                "three",
+            })
         end)
     end)
 

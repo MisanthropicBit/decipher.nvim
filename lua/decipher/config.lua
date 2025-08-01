@@ -3,6 +3,7 @@ local config = {}
 ---@class decipher.WindowMappings
 ---@field close? string
 ---@field apply? string
+---@field update? string
 ---@field jsonpp? string
 ---@field help? string
 
@@ -15,6 +16,7 @@ local config = {}
 ---@field autoclose? boolean
 ---@field enter? boolean
 ---@field options? table<string, any>
+---@field json_auto_open boolean
 
 ---@class decipher.Config
 ---@field float? decipher.WindowConfig
@@ -36,6 +38,7 @@ local default_config = {
         mappings = {
             close = "q",
             apply = "a",
+            update = "U",
             jsonpp = "J",
             help = "?",
         },
@@ -44,6 +47,7 @@ local default_config = {
         autoclose = true,
         enter = false,
         options = {},
+        json_auto_open = true,
     },
 }
 
@@ -70,6 +74,7 @@ local function validate_config(_config)
         ["float.mappings"] = { _config.float.mappings, "table" },
         ["float.mappings.close"] = { _config.float.mappings.close, "string" },
         ["float.mappings.apply"] = { _config.float.mappings.apply, "string" },
+        ["float.mappings.update"] = { _config.float.mappings.update, "string" },
         ["float.mappings.jsonpp"] = { _config.float.mappings.jsonpp, "string" },
         ["float.mappings.help"] = { _config.float.mappings.help, "string" },
         ["float.title"] = { _config.float.title, "boolean" },
@@ -77,6 +82,7 @@ local function validate_config(_config)
         ["float.autoclose"] = { _config.float.autoclose, "boolean" },
         ["float.enter"] = { _config.float.enter, "boolean" },
         ["float.options"] = { _config.float.options, "table" },
+        ["float.json_auto_open"] = { _config.float.json_auto_open, "boolean" },
     })
 end
 

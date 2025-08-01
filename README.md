@@ -39,6 +39,8 @@
 
 ## Installing
 
+Requires at least neovim v0.8.0.
+
 * **[vim-plug](https://github.com/junegunn/vim-plug)**
 
 ```vim

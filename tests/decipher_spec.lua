@@ -10,8 +10,11 @@ describe("decipher", function()
             "base64-url",
             "base64-url-encoded",
             "base64-url-safe",
+            "c-escape",
             "crockford",
             "url",
+            "url_rfc3986",
+            "xml",
             "zbase32",
         })
     end)

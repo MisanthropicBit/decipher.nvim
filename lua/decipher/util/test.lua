@@ -30,7 +30,7 @@ function test.test_decode(test_cases, decode_func)
         local values_same = decoded == input
 
         if not len_same or not values_same then
-            vim.print(vim.inspect({ decoded, input }))
+            vim.print(vim.inspect({ "decoded: ", decoded, "input: ", input }))
         end
 
         assert.are.equal(#decoded, #input)

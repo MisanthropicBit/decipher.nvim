@@ -35,6 +35,7 @@
     - [base64-url-encoded](#base64-url-encoded)
     - [crockford](#crockford)
     - [url](#url)
+    - [xml](#xml)
     - [z-base32](#z-base32)
 
 ## Installing
@@ -148,6 +149,12 @@ Example: `"this is encoded" => "EHM6JWS0D5SJ0SBECDQP8SB4"`
 Also known as percent-encoding.
 
 Example `th<is is encod!ed> => th%3cis+is+encod%21ed%3e`
+
+#### Xml
+
+Encodes/decodes xml components. Also decodes html entities.
+
+Example `"<tag>value</tag> => &lt;tag&gt;value&lt;/tag&gt;`
 
 #### Z-base32
 

@@ -8,7 +8,7 @@ local base64_url_safe = require("decipher.codecs.base64_url_safe")
 local crockford = require("decipher.codecs.crockford")
 local c_escape = require("decipher.codecs.c_escape")
 local url = require("decipher.codecs.url")
-local url_rfc3986 = require("decipher.codecs.url_rfc3986")
+local url_plus = require("decipher.codecs.url_plus")
 local xml = require("decipher.codecs.xml")
 local zbase32 = require("decipher.codecs.zbase32")
 
@@ -22,7 +22,7 @@ codecs.codec = {
     crockford = "crockford",
     c_escape = "c-escape",
     url = "url",
-    url_rfc3986 = "url-rfc3986",
+    url_plus = "url-plus",
     xml = "xml",
     zbase32 = "zbase32",
 }
@@ -52,7 +52,7 @@ local codecs_map = {
     crockford = crockford,
     ["c-escape"] = c_escape,
     url = url,
-    url_rfc3986 = url_rfc3986,
+    url_plus = url_plus,
     zbase32 = zbase32,
     xml = xml,
 }

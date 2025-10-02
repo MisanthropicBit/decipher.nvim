@@ -13,7 +13,7 @@ describe("decipher", function()
             "c-escape",
             "crockford",
             "url",
-            "url_rfc3986",
+            "url_plus",
             "xml",
             "zbase32",
         })

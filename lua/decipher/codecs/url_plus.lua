@@ -1,13 +1,13 @@
-local url_rfc3986 = {}
+local url_plus = {}
 
 local url = require("decipher.codecs.url")
 
-function url_rfc3986.encode(value)
+function url_plus.encode(value)
     return url.encode_with(value)
 end
 
-function url_rfc3986.decode(value)
+function url_plus.decode(value)
     return url.decode_with(value, { decode_plus_as_space = false })
 end
 
-return url_rfc3986
+return url_plus

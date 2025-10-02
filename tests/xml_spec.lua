@@ -2,8 +2,10 @@ local xml = require("decipher.codecs.xml")
 local test_utils = require("decipher.util.test")
 
 describe("codecs.xml", function()
+    local test_case1 = [[<tag>\"&value'</tag>]]
+
     local test_cases = {
-        ["<tag>\"&value'</tag>"] = "&lt;tag&gt;&quot;&amp;value&apos;&lt;/tag&gt;",
+        [test_case1] = "&lt;tag&gt;\\&quot;&amp;value&apos;&lt;/tag&gt;",
     }
 
     it("xml-encodes strings", function()

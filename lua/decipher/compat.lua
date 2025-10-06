@@ -36,4 +36,23 @@ function compat.set_option(name, value, options)
     end
 end
 
+---@param name string
+---@param value any
+---@param validator vim.validate.Validator
+---@param optional boolean?
+---@param message string?
+function compat.validate(name, value, validator, optional, message)
+    if vim.fn.has("nvim-0.11.0") then
+        vim.validate(name, value, validator, optional, message)
+    else
+        vim.validate({
+            [name] = {
+                value = value,
+                validator = validator,
+                optional_or_msg = optional or message,
+            }
+        })
+    end
+end
+
 return compat

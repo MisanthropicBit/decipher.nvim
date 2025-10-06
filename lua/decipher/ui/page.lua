@@ -6,12 +6,14 @@
 ---@field _cleanup  fun(float: decipher.Float, page: decipher.Page)?
 local Page = {}
 
+local compat = require("decipher.compat")
+
 ---@param parent  decipher.Float
 ---@param options decipher.Page?
 function Page:new(parent, options)
     local _options = options or {}
 
-    vim.validate("setup", _options.setup, "function", true)
+    compat.validate("setup", _options.setup, "function", true)
 
     local page = {
         parent = parent,

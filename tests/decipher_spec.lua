@@ -23,11 +23,9 @@ describe("decipher", function()
         decipher.setup({})
 
         assert.stub(vim.fn.has).was_called_with("nvim-0.5.0")
-        assert.stub(vim.notify).was_called_with(
-            "This plugin only works with Neovim >= v0.5.0",
-            vim.log.levels.ERROR,
-            { title = "decipher.nvim" }
-        )
+        assert
+            .stub(vim.notify)
+            .was_called_with("This plugin only works with Neovim >= v0.5.0", vim.log.levels.ERROR, { title = "decipher.nvim" })
 
         vim.fn.has:revert()
         vim.notify:revert()

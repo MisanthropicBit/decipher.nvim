@@ -9,7 +9,7 @@ local Page = {}
 ---@param parent  decipher.Float
 ---@param options decipher.Page?
 function Page:new(parent, options)
-    local _options = options or{}
+    local _options = options or {}
 
     vim.validate("setup", _options.setup, "function", true)
 

@@ -4,20 +4,28 @@ local base64url = {}
 
 local base64 = require("decipher.codecs.base64")
 
+--- Encode a string as base64url
+---@param value string
+---@return string
 function base64url.encode(value)
     if value == nil then
         error("Cannot encode nil value", 0)
     end
 
-    return vim.fn.trim(base64.encode(value), "=", 2):gsub("+", "-"):gsub("/", "_")
+    local encoded, _ = vim.fn.trim(base64.encode(value), "=", 2):gsub("+", "-"):gsub("/", "_")
+
+    return encoded
 end
 
+--- Decode a base64url-encoded string
+---@param value string
+---@return string
 function base64url.decode(value)
     if value == nil then
         error("Cannot decode nil value", 0)
     end
 
-    local translated = value:gsub("-", "+"):gsub("_", "/")
+    local translated, _ = value:gsub("-", "+"):gsub("_", "/")
     local len_remainder = #translated % 4
 
     if len_remainder == 0 then

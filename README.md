@@ -3,7 +3,7 @@
   <h1>decipher.nvim</h1>
   <p><i>A plugin that provides ways to encode and decode text using various codecs like base64.</i></p>
   <p>
-    <img src="https://img.shields.io/badge/version-1.0.3-blue?style=flat-square" />
+    <img src="https://img.shields.io/badge/version-2.0.0-blue?style=flat-square" />
     <a href="https://luarocks.org/modules/misanthropicbit/decipher.nvim">
         <img src="https://img.shields.io/luarocks/v/misanthropicbit/decipher.nvim?logo=lua&color=purple" />
     </a>
@@ -39,6 +39,8 @@
 
 ## Installing
 
+Requires at least neovim v0.8.0.
+
 * **[vim-plug](https://github.com/junegunn/vim-plug)**
 
 ```vim
@@ -62,14 +64,14 @@ require("decipher").setup({
     float = { -- Floating window options
         padding = 0, -- Zero padding (does not apply to title if any)
         border = { -- Floating window border
-            { "╭", "FloatBorder" },
-            { "─", "FloatBorder" },
-            { "╮", "FloatBorder" },
-            { "│", "FloatBorder" },
-            { "╯", "FloatBorder" },
-            { "─", "FloatBorder" },
-            { "╰", "FloatBorder" },
-            { "│", "FloatBorder" },
+            { "â­", "FloatBorder" },
+            { "â", "FloatBorder" },
+            { "â®", "FloatBorder" },
+            { "â", "FloatBorder" },
+            { "â¯", "FloatBorder" },
+            { "â", "FloatBorder" },
+            { "â°", "FloatBorder" },
+            { "â", "FloatBorder" },
         },
         mappings = {
             close = "q", -- Key to press to close the floating window
@@ -127,13 +129,13 @@ Example `"light work." => "bGlnaHQgd29yay4"` (base64 would have added a single `
 Url-safe version of base64 that uses a different encoding table to avoid use of
 url-unsafe characters. This is basically base64url with mandatory padding.
 
-Example `"����E#��3" => "xQSzq81FI_-VMw=="`
+Example `"🔑_🏧⛳🈹" => "8J-UkV_wn4-n4puz8J-IuQ=="`
 
 #### Base64-url-encoded
 
 Url-safe version of base64 with url percent-encoding.
 
-Example `"����E#��3" =>  "xQSzq81FI%2f%2bVMw%3d%3d"`
+Example `"🔑_🏧⛳🈹" =>  "8J%2bUkV%2fwn4%2bn4puz8J%2bIuQ%3d%3d"`
 
 #### Crockford
 

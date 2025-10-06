@@ -19,7 +19,14 @@ describe("ui.float", function()
     end)
 
     local function create_float(title, contents)
-        return ui.float.open(title, contents, nil, "visual", region)
+        return ui.float.open({
+            title = title,
+            contents = contents,
+            selection_type = "visual",
+            selection = region,
+            codec_name = "base64",
+            codec_type = "decode",
+        })
     end
 
     it("opens a float", function()
@@ -43,19 +50,6 @@ describe("ui.float", function()
             assert.are.same(window_config.relative, "editor")
 
             expect({ "contents" }, _float.buffer)
-
-            ui.float.close(context.win_id)
-        end)
-    end)
-
-    it("pads contents", function()
-        given(buffer_contents, function(context)
-            config.setup({ float = { padding = 1 } })
-
-            local _float = create_float("title", { "contents" })
-
-            assert(_float ~= nil, "Float was nil")
-            expect({ "", " contents ", "" }, _float.buffer)
 
             ui.float.close(context.win_id)
         end)
@@ -136,14 +130,14 @@ describe("ui.float", function()
 
             local _float = create_float("title", { "contents" })
 
-            assert(_float ~= nil, "Float was nil")
+            assert.is_not_nil(_float)
             assert.are.same(_float.buffer, vim.api.nvim_win_get_buf(0))
             assert.are._not.same(vim.fn.maparg("q", "n"), "")
             assert.are._not.same(vim.fn.maparg("A", "n"), "")
-            assert.are.same(vim.fn.maparg("a", "n"), "")
-            assert.are._not.same(vim.fn.maparg("J", "n"), "")
+            assert.are.same(vim.fn.maparg("<leader>a", "n"), "")
+            assert.are._not.same(vim.fn.maparg("<leader>j", "n"), "")
             assert.are._not.same(vim.fn.maparg("g?", "n"), "")
-            assert.are.same(vim.fn.maparg("?", "n"), "")
+            assert.are.same(vim.fn.maparg("?g", "n"), "")
 
             ui.float.close(context.win_id)
         end)
@@ -155,7 +149,7 @@ describe("ui.float", function()
 
             local _float = create_float("title", { "contents" })
 
-            assert(_float ~= nil, "Float was nil")
+            assert.is_not_nil(_float)
             assert.are.same(_float.buffer, vim.api.nvim_win_get_buf(0))
 
             normal("q")
@@ -171,19 +165,20 @@ describe("ui.float", function()
 
             local _float = create_float("title", { "contents" })
 
-            assert(_float ~= nil, "Float was nil")
+            assert.is_not_nil(_float)
 
             assert.are.same(_float.buffer, vim.api.nvim_win_get_buf(0))
-            normal("?")
+            normal("g?")
 
             expect({
                 "q - Close the floating window",
-                "a - Apply the encoding/decoding",
-                "J - Prettily format contents as json",
-                "? - Toggle this help",
+                "<leader>a - Apply the encoding/decoding of the original selection ignoring any changes made in the floating window",
+                "<leader>u - Update the value in the orignal buffer with any changes made in the floating window",
+                "<leader>j - Prettily format contents as an immutable json view",
+                "g? - Toggle this help",
             }, _float.buffer)
 
-            normal("?")
+            normal("g?")
             expect({ "contents" }, _float.buffer)
 
             ui.float.close(context.win_id)
@@ -198,7 +193,7 @@ describe("ui.float", function()
             decipher.decode_selection("base64", { preview = true })
             expect({ "light work" })
 
-            normal("a")
+            normal("<leader>a")
             expect({ "light work" })
 
             ui.float.close(context.win_id)

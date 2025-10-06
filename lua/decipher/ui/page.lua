@@ -7,14 +7,18 @@
 local Page = {}
 
 ---@param parent  decipher.Float
----@param options decipher.Page
+---@param options decipher.Page?
 function Page:new(parent, options)
+    local _options = options or{}
+
+    vim.validate("setup", _options.setup, "function", true)
+
     local page = {
         parent = parent,
-        title = options.title or nil,
-        contents = options.contents or {},
-        _setup = options.setup or nil,
-        _cleanup = options.cleanup or nil,
+        title = _options.title,
+        contents = _options.contents or {},
+        _setup = _options.setup,
+        _cleanup = _options.cleanup,
     }
 
     self.__index = self
@@ -23,15 +27,9 @@ function Page:new(parent, options)
 end
 
 function Page:setup()
-    if not self._setup then
-        return true
-    elseif type(self._setup) == "function" then
+    if type(self._setup) == "function" then
         self._setup(self.parent, self)
-
-        return self.contents ~= nil
     end
-
-    return false
 end
 
 function Page:cleanup()

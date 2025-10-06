@@ -36,7 +36,8 @@ local decipher_float_var_name = "decipher_float"
 local default_max_width = 0.8
 local default_max_height = 0.7
 
-local minimum_window_options = {
+---@type table<string, string | number | boolean>
+local default_floating_window_options = {
     style = "minimal",
     relative = "editor",
     width = 1,
@@ -47,7 +48,7 @@ local minimum_window_options = {
     focusable = true,
 }
 
----@type table<string, any>
+---@type table<string, boolean | string>
 local window_options = {
     wrap = false,
     number = false,
@@ -144,7 +145,8 @@ end
 ---@field buffer?          number                       Buffer id
 ---@field position         decipher.Position            Position of the float
 ---@field window_config?   decipher.WindowConfig
----@field codec_type "encode" | "decode"
+---@field codec_name       string                       The codec used when opening the float
+---@field codec_type       "encode" | "decode"          The method used when opening the float
 local Float = {
     width = 0,
     height = 0,
@@ -184,8 +186,10 @@ function Float:open(position, options)
     self.parent_bufnr = vim.api.nvim_get_current_buf()
     self.buffer = vim.api.nvim_create_buf(false, true)
 
-    local window_options = vim.tbl_extend("force", minimum_window_options, { border = self.window_config.border })
-    self.win_id = vim.api.nvim_open_win(self.buffer, self.window_config.enter or false, window_options)
+    local floatting_window_options = vim.tbl_extend("force", default_floating_window_options, {
+        border = self.window_config.border,
+    })
+    self.win_id = vim.api.nvim_open_win(self.buffer, self.window_config.enter or false, floatting_window_options)
 
     vim.api.nvim_win_set_var(self.win_id, decipher_float_var_name, true)
 
@@ -216,9 +220,12 @@ end
 ---@return boolean
 function Float:render_page(name)
     local page = self:get_page(name)
-    local success, _ = pcall(page.setup, page)
+    local success, result = pcall(page.setup, page)
 
+    -- Either an error was thrown or the setup function failed
     if not success then
+        ---@cast result string
+        notifications.error(result)
         return false
     end
 
@@ -289,7 +296,11 @@ function Float:set_mappings()
 
         set_keymap("update", function()
             local contents = vim.api.nvim_buf_get_lines(self.buffer, 0, -1, true)
-            local new_encoded = require("decipher")[self.codec_type](self.codec_name, table.concat(contents))
+
+            -- If we opened a float after decoding then we should encode it
+            -- when updating and vice versa
+            local method = self.codec_type == "encode" and "decode" or "encode"
+            local new_encoded = require("decipher")[method](self.codec_name, table.concat(contents))
 
             self:update_parent_buffer({ new_encoded })
         end)
@@ -427,7 +438,10 @@ function float.open(options)
 
             page.contents = {
                 help_format:format(mappings.close, "Close the floating window"),
-                help_format:format(mappings.apply, "Apply the encoding/decoding of the original selection ignoring any changes made in the floating window"),
+                help_format:format(
+                    mappings.apply,
+                    "Apply the encoding/decoding of the original selection ignoring any changes made in the floating window"
+                ),
                 help_format:format(
                     mappings.update,
                     "Update the value in the orignal buffer with any changes made in the floating window"
@@ -445,8 +459,7 @@ function float.open(options)
             local success, result = pcall(vim.json.decode, table.concat(main_page.contents))
 
             if not success then
-                notifications.error("Cannot decode as json: " .. result)
-                return nil
+                error("Cannot decode as json: " .. result)
             end
 
             local pretty = util.json.pretty_print(result, { sort_keys = true })

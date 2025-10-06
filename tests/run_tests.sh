@@ -3,9 +3,9 @@
 tempfile=".test_output.tmp"
 
 if [[ -n $1 ]]; then
-    nvim --headless --noplugin -u tests/minimal_init.vim -c "PlenaryBustedFile $1" | tee "${tempfile}"
+    nvim --headless --noplugin -u tests/minimal_init.lua -c "PlenaryBustedFile $1" | tee "${tempfile}"
 else
-	nvim --headless --noplugin -u tests/minimal_init.vim -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.vim'}" | tee "${tempfile}"
+	nvim --headless --noplugin -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.lua'}" | tee "${tempfile}"
 fi
 
 # Plenary doesn't emit exit code 1 when tests have errors during setup

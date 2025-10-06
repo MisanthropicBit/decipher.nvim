@@ -42,7 +42,7 @@ end
 ---@param optional boolean?
 ---@param message string?
 function compat.validate(name, value, validator, optional, message)
-    if vim.fn.has("nvim-0.11.0") then
+    if vim.fn.has("nvim-0.11.0") == 1 then
         vim.validate(name, value, validator, optional, message)
     else
         vim.validate({

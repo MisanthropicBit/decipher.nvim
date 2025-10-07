@@ -45,13 +45,7 @@ function compat.validate(name, value, validator, optional, message)
     if vim.fn.has("nvim-0.11.0") == 1 then
         vim.validate(name, value, validator, optional, message)
     else
-        vim.validate({
-            [name] = {
-                value = value,
-                validator = validator,
-                optional_or_msg = optional or message,
-            }
-        })
+        vim.validate({ [name] = { value, validator, optional or message } })
     end
 end
 

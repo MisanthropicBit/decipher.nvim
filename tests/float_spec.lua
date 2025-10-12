@@ -194,7 +194,7 @@ describe("ui.float", function()
 
             expect({
                 "q          Close the preview",
-                "<leader>a  Apply the preview to the selection",
+                "<leader>a  Apply the preview to the selection including any changes",
                 "<leader>u  Update selection with preview",
                 "<leader>j  View preview as immutable json",
                 "g?         Toggle this help",

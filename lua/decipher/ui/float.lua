@@ -186,10 +186,10 @@ function Float:open(position, options)
     self.parent_bufnr = vim.api.nvim_get_current_buf()
     self.buffer = vim.api.nvim_create_buf(false, true)
 
-    local floatting_window_options = vim.tbl_extend("force", default_floating_window_options, {
+    local floating_window_options = vim.tbl_extend("force", default_floating_window_options, {
         border = self.window_config.border,
     })
-    self.win_id = vim.api.nvim_open_win(self.buffer, self.window_config.enter or false, floatting_window_options)
+    self.win_id = vim.api.nvim_open_win(self.buffer, self.window_config.enter or false, floating_window_options)
 
     vim.api.nvim_win_set_var(self.win_id, decipher_float_var_name, true)
 
@@ -201,6 +201,10 @@ function Float:open(position, options)
         -- the position is not at the start of what the motion ends up encompasses and so
         -- triggers the CursorMoved event immediately, closing the float
         vim.defer_fn(function()
+            if not vim.api.nvim_buf_is_valid(self.parent_bufnr) then
+                return
+            end
+
             vim.api.nvim_create_autocmd({ "InsertEnter", "CursorMoved" }, {
                 callback = function()
                     self:close()
@@ -220,10 +224,9 @@ end
 ---@return boolean
 function Float:render_page(name)
     local page = self:get_page(name)
-    local success, result = pcall(page.setup, page)
+    local ok, result = pcall(page.setup, page)
 
-    -- Either an error was thrown or the setup function failed
-    if not success then
+    if not ok then
         ---@cast result string
         notifications.error(result)
         return false
@@ -309,8 +312,8 @@ function Float:set_mappings()
             self:switch_to_page("help")
         end)
 
-        set_keymap("jsonpp", function()
-            self:switch_to_page("jsonpp")
+        set_keymap("json", function()
+            self:switch_to_page("json")
         end)
     end
 end
@@ -428,37 +431,48 @@ function float.open(options)
         contents = util.str.escape_newlines(options.contents),
     })
 
-    local help_format = "%s - %s"
-
     _float:add_page("help", {
         parent = _float,
         title = "Help",
+        ---@param parent decipher.Float
         setup = function(parent, page)
             local mappings = parent.window_config.mappings
+            ---@cast mappings -nil
+
+            local mapping_lens = vim.tbl_map(function(mapping)
+                return #mapping
+            end, vim.tbl_values(mappings))
+            ---@cast mapping_lens number[]
+
+            local max_keymap_width = math.max(unpack(mapping_lens))
+
+            ---@param mapping string
+            ---@param desc string
+            ---@return string
+            local function format_help_entry(mapping, desc)
+                local help_format = "%s%s  %s"
+                local spacing = (" "):rep(max_keymap_width - #mapping)
+
+                return help_format:format(mapping, spacing, desc)
+            end
 
             page.contents = {
-                help_format:format(mappings.close, "Close the floating window"),
-                help_format:format(
-                    mappings.apply,
-                    "Apply the encoding/decoding of the original selection ignoring any changes made in the floating window"
-                ),
-                help_format:format(
-                    mappings.update,
-                    "Update the value in the orignal buffer with any changes made in the floating window"
-                ),
-                help_format:format(mappings.jsonpp, "Prettily format contents as an immutable json view"),
-                help_format:format(mappings.help, "Toggle this help"),
+                format_help_entry(mappings.close, "Close the preview"),
+                format_help_entry(mappings.apply, "Apply the preview to the selection including any changes"),
+                format_help_entry(mappings.update, "Update selection with preview"),
+                format_help_entry(mappings.json, "View preview as immutable json"),
+                format_help_entry(mappings.help, "Toggle this help"),
             }
         end,
     })
 
-    _float:add_page("jsonpp", {
+    _float:add_page("json", {
         parent = _float,
         setup = function(parent, page)
             local main_page = parent.pages["main"]
-            local success, result = pcall(vim.json.decode, table.concat(main_page.contents))
+            local ok, result = pcall(vim.json.decode, table.concat(main_page.contents))
 
-            if not success then
+            if not ok then
                 error("Cannot decode as json: " .. result)
             end
 
@@ -484,18 +498,6 @@ function float.open(options)
 
     floats[cur_win_id] = _float
 
-    -- vim.api.nvim_create_autocmd({ "BufWriteCmd" }, {
-    --     callback = function(event)
-    --         local contents = vim.api.nvim_buf_get_lines(event.buf, 0, -1, true)
-    --
-    --         win:get_page(win.curpage):set_contents(contents)
-    --         vim.bo[event.buf].modified = false
-    --     end,
-    --     once = true,
-    --     buffer = win.buffer,
-    --     desc = "Saves changes made in the floating window.",
-    -- })
-
     return _float
 end
 
@@ -517,8 +519,9 @@ end
 
 function float.setup()
     vim.api.nvim_create_autocmd("WinClosed", {
+        ---@param event { buf: number, event: string, file: string, id: number, match: string }
         callback = function(event)
-            float.close(event.match)
+            float.close(tonumber(event.match))
         end,
         group = augroup,
         desc = "Close any decipher floats related to the window that was closed",

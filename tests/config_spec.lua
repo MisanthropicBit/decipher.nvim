@@ -8,7 +8,7 @@ describe("config", function()
             { float = { border = "triple" } },
             { float = { mappings = { close = 1 } } },
             { float = { mappings = { apply = {} } } },
-            { float = { mappings = { jsonpp = coroutine.create(function() end) } } },
+            { float = { mappings = { json = coroutine.create(function() end) } } },
             { float = { mappings = { help = function() end } } },
             { float = { title = {} } },
             { float = { title_pos = 1 } },
@@ -26,6 +26,7 @@ describe("config", function()
 
     it("throws no errors for a valid config", function()
         config.setup({
+            ---@diagnostic disable-next-line: missing-fields
             float = {
                 padding = 1,
                 border = {
@@ -41,7 +42,7 @@ describe("config", function()
                 mappings = {
                     close = "e",
                     apply = "p",
-                    jsonpp = "H",
+                    json = "H",
                     help = "x",
                 },
                 title = false,

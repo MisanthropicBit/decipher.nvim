@@ -4,7 +4,7 @@ local config = {}
 ---@field close? string
 ---@field apply? string
 ---@field update? string
----@field jsonpp? string
+---@field json? string
 ---@field help? string
 
 ---@class decipher.WindowConfig
@@ -39,7 +39,7 @@ local default_config = {
             close = "q",
             apply = "<leader>a",
             update = "<leader>u",
-            jsonpp = "<leader>j",
+            json = "<leader>j",
             help = "g?",
         },
         title = true,
@@ -75,7 +75,7 @@ local function validate_config(_config)
         ["float.mappings.close"] = { _config.float.mappings.close, "string" },
         ["float.mappings.apply"] = { _config.float.mappings.apply, "string" },
         ["float.mappings.update"] = { _config.float.mappings.update, "string" },
-        ["float.mappings.jsonpp"] = { _config.float.mappings.jsonpp, "string" },
+        ["float.mappings.json"] = { _config.float.mappings.json, "string" },
         ["float.mappings.help"] = { _config.float.mappings.help, "string" },
         ["float.title"] = { _config.float.title, "boolean" },
         ["float.title_pos"] = { _config.float.title_pos, "string" },

@@ -224,23 +224,23 @@ describe("ui.float", function()
     end)
 
     it("applies preview with changes", function()
-        given(buffer_contents, function(context)
+        given({ "ewogICJhIjogMQp9" }, function(context)
             ---@diagnostic disable-next-line: missing-fields
             config.setup({ float = { enter = true } })
 
             normal("V")
             decipher.decode_selection("base64", { preview = true })
 
-            expect({ "light work" }, vim.api.nvim_get_current_buf())
+            expect({ "{", '  "a": 1', "}" }, vim.api.nvim_get_current_buf())
 
-            -- Change 'light' to 'heavy'
-            normal("0ciwheavy")
+            -- Add a ("b", 2) key-value pair
+            normal('2ggA,<cr>"b": 2')
 
-            -- Apply decoded preview, ignoring changes
+            -- Apply decoded preview
             normal("1 a")
 
             -- Original buffer
-            expect({ "heavy work" }, vim.api.nvim_get_current_buf())
+            expect({ "{", '  "a": 1,', '  "b": 2', "}" }, vim.api.nvim_get_current_buf())
 
             ui.float.close(context.win_id)
         end)

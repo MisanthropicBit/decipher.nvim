@@ -367,12 +367,7 @@ end
 ---@param value string[]
 function Float:update_parent_buffer(value)
     if self.selection_type and self.parent_selection then
-        selection.set_text_from_selection(
-            self.parent_bufnr,
-            self.selection_type,
-            self.parent_selection,
-            { table.concat(value, "\n") }
-        )
+        selection.set_text_from_selection(self.parent_bufnr, self.selection_type, self.parent_selection, value)
 
         self:close()
     end

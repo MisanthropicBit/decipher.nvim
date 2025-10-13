@@ -143,7 +143,7 @@ describe("ui.float", function()
                     enter = true,
                     mappings = {
                         apply = "A",
-                        help = "g?",
+                        help = "?g",
                     },
                 },
             })
@@ -156,8 +156,8 @@ describe("ui.float", function()
             assert.are_not.same(vim.fn.maparg("A", "n"), "")
             assert.are.same(vim.fn.maparg("<leader>a", "n"), "")
             assert.are_not.same(vim.fn.maparg("<leader>j", "n"), "")
-            assert.are_not.same(vim.fn.maparg("g?", "n"), "")
-            assert.are.same(vim.fn.maparg("?g", "n"), "")
+            assert.are.same(vim.fn.maparg("g?", "n"), "")
+            assert.are_not.same(vim.fn.maparg("?g", "n"), "")
 
             ui.float.close(context.win_id)
         end)

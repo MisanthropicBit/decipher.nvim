@@ -13,7 +13,8 @@ describe("config", function()
             { float = { title = {} } },
             { float = { title_pos = 1 } },
             { float = { autoclose = 1 } },
-            { float = { options = "whoops" } },
+            { float = { win_options = "whoops" } },
+            { float = { zindex = false } },
         }
 
         for _, wrong_config in ipairs(wrong_configs) do
@@ -49,10 +50,11 @@ describe("config", function()
                 title_pos = "right",
                 autoclose = false,
                 enter = true,
-                options = {
+                win_options = {
                     wrap = false,
                     number = true,
                 },
+                zindex = 52,
             },
         })
     end)

@@ -15,8 +15,8 @@ local config = {}
 ---@field title_pos? 'left' | 'center' | 'right'
 ---@field autoclose? boolean
 ---@field enter? boolean
----@field options? table<string, any>
----@field json_auto_open boolean
+---@field win_options? table<string, any>
+---@field zindex integer?
 
 ---@class decipher.Config
 ---@field float? decipher.WindowConfig
@@ -46,8 +46,8 @@ local default_config = {
         title_pos = "left",
         autoclose = true,
         enter = false,
-        options = {},
-        json_auto_open = true,
+        win_options = {},
+        zindex = 50,
     },
 }
 
@@ -81,8 +81,8 @@ local function validate_config(_config)
         ["float.title_pos"] = { _config.float.title_pos, "string" },
         ["float.autoclose"] = { _config.float.autoclose, "boolean" },
         ["float.enter"] = { _config.float.enter, "boolean" },
-        ["float.options"] = { _config.float.options, "table" },
-        ["float.json_auto_open"] = { _config.float.json_auto_open, "boolean" },
+        ["float.win_options"] = { _config.float.win_options, "table" },
+        ["float.zindex"] = { _config.float.zindex, "number" },
     })
 end
 

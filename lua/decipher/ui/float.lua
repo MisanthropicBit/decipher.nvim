@@ -188,9 +188,10 @@ function Float:open(position, options)
 
     local floating_window_options = vim.tbl_extend("force", default_floating_window_options, {
         border = self.window_config.border,
+        zindex = config.float.zindex or 50,
     })
-    self.win_id = vim.api.nvim_open_win(self.buffer, self.window_config.enter or false, floating_window_options)
 
+    self.win_id = vim.api.nvim_open_win(self.buffer, self.window_config.enter or false, floating_window_options)
     vim.api.nvim_win_set_var(self.win_id, decipher_float_var_name, true)
 
     self:set_mappings()
@@ -332,7 +333,7 @@ function Float:set_options()
     end
 
     -- Set user options last so they take priority
-    for option, value in pairs(self.window_config.options) do
+    for option, value in pairs(self.window_config.win_options) do
         compat.set_option(option, value, { win = self.win_id })
     end
 end

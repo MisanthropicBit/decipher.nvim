@@ -67,12 +67,17 @@ end
 
 ---@param codec_name string
 ---@param status boolean
----@param value string?
+---@param value string
 ---@param selection_type decipher.SelectionType
 ---@param codec_type "encode" | "decode"
 local function open_float_handler(codec_name, status, value, selection_type, codec_type)
     if status and value == nil then
         value = "Codec not found"
+    end
+
+    if not status then
+        notifications.error(("%s: %s"):format(codec_name, value))
+        return
     end
 
     -- We need the selection in order to apply the codec operation from the
@@ -81,7 +86,7 @@ local function open_float_handler(codec_name, status, value, selection_type, cod
 
     ui.float.open({
         title = codec_name,
-        contents = { value },
+        contents = vim.fn.split(value, [[\r\?\n]]),
         config = config.float,
         selection_type = selection_type,
         codec_name = codec_name,

@@ -1,5 +1,7 @@
 local float = {}
 
+-- TODO: Preview does not expand with manually inserted newlines and long lines
+
 local compat = require("decipher.compat")
 local config = require("decipher.config")
 local notifications = require("decipher.notifications")
@@ -299,12 +301,13 @@ function Float:set_mappings()
         end)
 
         set_keymap("update", function()
-            local contents = vim.api.nvim_buf_get_lines(self.buffer, 0, -1, true)
+            -- Get contents and concatenate with newlines
+            local contents = table.concat(vim.api.nvim_buf_get_lines(self.buffer, 0, -1, true), "\n")
 
             -- If we opened a float after decoding then we should encode it
             -- when updating and vice versa
             local method = self.codec_type == "encode" and "decode" or "encode"
-            local new_encoded = require("decipher")[method](self.codec_name, table.concat(contents))
+            local new_encoded = require("decipher")[method](self.codec_name, contents)
 
             self:update_parent_buffer({ new_encoded })
         end)
@@ -364,7 +367,12 @@ end
 ---@param value string[]
 function Float:update_parent_buffer(value)
     if self.selection_type and self.parent_selection then
-        selection.set_text_from_selection(self.parent_bufnr, self.selection_type, self.parent_selection, value)
+        selection.set_text_from_selection(
+            self.parent_bufnr,
+            self.selection_type,
+            self.parent_selection,
+            { table.concat(value, "\n") }
+        )
 
         self:close()
     end

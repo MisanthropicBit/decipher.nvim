@@ -247,17 +247,17 @@ describe("ui.float", function()
     end)
 
     it("updates original buffer with preview", function()
-        given(buffer_contents, function(context)
+        given({ "ewogICJhIjogMQp9" }, function(context)
             ---@diagnostic disable-next-line: missing-fields
             config.setup({ float = { enter = true, mappings = { update = "u" } } })
 
             normal("V")
             decipher.decode_selection("base64", { preview = true })
 
-            expect({ "light work" }, vim.api.nvim_get_current_buf())
+            expect({ "{", '  "a": 1', "}" }, vim.api.nvim_get_current_buf())
 
-            -- Change 'light' to 'heavy'
-            normal("0ciwheavy")
+            -- Add a ("b", 2) key-value pair
+            normal('2ggA,<cr>"b": 2')
 
             -- Update original buffer with change
             -- NOTE: This does not work with the default leader keymap although
@@ -265,7 +265,7 @@ describe("ui.float", function()
             normal("u")
 
             -- Original buffer
-            expect({ "aGVhdnkgd29yaw==" }, vim.api.nvim_get_current_buf())
+            expect({ "ewogICJhIjogMSwKICAiYiI6IDIKfQ==" }, vim.api.nvim_get_current_buf())
         end)
     end)
 

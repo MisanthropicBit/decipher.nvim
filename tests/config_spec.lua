@@ -8,12 +8,13 @@ describe("config", function()
             { float = { border = "triple" } },
             { float = { mappings = { close = 1 } } },
             { float = { mappings = { apply = {} } } },
-            { float = { mappings = { jsonpp = coroutine.create(function() end) } } },
+            { float = { mappings = { json = coroutine.create(function() end) } } },
             { float = { mappings = { help = function() end } } },
             { float = { title = {} } },
             { float = { title_pos = 1 } },
             { float = { autoclose = 1 } },
-            { float = { options = "whoops" } },
+            { float = { win_options = "whoops" } },
+            { float = { zindex = false } },
         }
 
         for _, wrong_config in ipairs(wrong_configs) do
@@ -26,6 +27,7 @@ describe("config", function()
 
     it("throws no errors for a valid config", function()
         config.setup({
+            ---@diagnostic disable-next-line: missing-fields
             float = {
                 padding = 1,
                 border = {
@@ -41,17 +43,18 @@ describe("config", function()
                 mappings = {
                     close = "e",
                     apply = "p",
-                    jsonpp = "H",
+                    json = "H",
                     help = "x",
                 },
                 title = false,
                 title_pos = "right",
                 autoclose = false,
                 enter = true,
-                options = {
+                win_options = {
                     wrap = false,
                     number = true,
                 },
+                zindex = 52,
             },
         })
     end)

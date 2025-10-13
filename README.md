@@ -64,20 +64,21 @@ require("decipher").setup({
     float = { -- Floating window options
         padding = 0, -- Zero padding (does not apply to title if any)
         border = { -- Floating window border
-            { "╭", "FloatBorder" },
-            { "─", "FloatBorder" },
-            { "╮", "FloatBorder" },
-            { "│", "FloatBorder" },
-            { "╯", "FloatBorder" },
-            { "─", "FloatBorder" },
-            { "╰", "FloatBorder" },
-            { "│", "FloatBorder" },
+            { "Ã¢ÂÂ­", "FloatBorder" },
+            { "Ã¢ÂÂ", "FloatBorder" },
+            { "Ã¢ÂÂ®", "FloatBorder" },
+            { "Ã¢ÂÂ", "FloatBorder" },
+            { "Ã¢ÂÂ¯", "FloatBorder" },
+            { "Ã¢ÂÂ", "FloatBorder" },
+            { "Ã¢ÂÂ°", "FloatBorder" },
+            { "Ã¢ÂÂ", "FloatBorder" },
         },
         mappings = {
-            close = "q", -- Key to press to close the floating window
-            apply = "a", -- Key to press to apply the encoding/decoding
-            jsonpp = "J", -- Key to prettily format contents as json if possbile
-            help = "?", -- Toggle help
+            close = "q", -- Close the floating window
+            apply = "<leader>a", -- Apply the encoded/decoded preview in the original buffer
+            update = "<leader>u", -- Update the original buffer with changes made in the encoded/decoded preview
+            jsonpp = "<leader>j", -- Prettily format contents as json if possible (view is immutable)
+            help = "g?", -- Toggle help
         },
         title = true, -- Display a title with the codec name
         title_pos = "left", -- Position of the title
@@ -129,13 +130,13 @@ Example `"light work." => "bGlnaHQgd29yay4"` (base64 would have added a single `
 Url-safe version of base64 that uses a different encoding table to avoid use of
 url-unsafe characters. This is basically base64url with mandatory padding.
 
-Example `"🔑_🏧⛳🈹" => "8J-UkV_wn4-n4puz8J-IuQ=="`
+Example `"ð_ð§â³ð¹" => "8J-UkV_wn4-n4puz8J-IuQ=="`
 
 #### Base64-url-encoded
 
 Url-safe version of base64 with url percent-encoding.
 
-Example `"🔑_🏧⛳🈹" =>  "8J%2bUkV%2fwn4%2bn4puz8J%2bIuQ%3d%3d"`
+Example `"ð_ð§â³ð¹" =>  "8J%2bUkV%2fwn4%2bn4puz8J%2bIuQ%3d%3d"`
 
 #### Crockford
 

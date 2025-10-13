@@ -1,7 +1,7 @@
 local util = require("decipher.util")
 
 describe("util", function()
-    describe("escape_newlines", function()
+    describe("string", function()
         it("escapes newlines", function()
             assert.are.same(util.str.escape_newlines({ "" }), { "" })
             assert.are.same(util.str.escape_newlines({ "no newlines" }), { "no newlines" })

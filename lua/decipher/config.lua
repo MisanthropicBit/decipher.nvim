@@ -3,7 +3,8 @@ local config = {}
 ---@class decipher.WindowMappings
 ---@field close? string
 ---@field apply? string
----@field jsonpp? string
+---@field update? string
+---@field json? string
 ---@field help? string
 
 ---@class decipher.WindowConfig
@@ -14,7 +15,8 @@ local config = {}
 ---@field title_pos? 'left' | 'center' | 'right'
 ---@field autoclose? boolean
 ---@field enter? boolean
----@field options? table<string, any>
+---@field win_options? table<string, any>
+---@field zindex integer?
 
 ---@class decipher.Config
 ---@field float? decipher.WindowConfig
@@ -35,15 +37,17 @@ local default_config = {
         },
         mappings = {
             close = "q",
-            apply = "a",
-            jsonpp = "J",
-            help = "?",
+            apply = "<leader>a",
+            update = "<leader>u",
+            json = "<leader>j",
+            help = "g?",
         },
         title = true,
         title_pos = "left",
         autoclose = true,
         enter = false,
-        options = {},
+        win_options = {},
+        zindex = 50,
     },
 }
 
@@ -70,13 +74,15 @@ local function validate_config(_config)
         ["float.mappings"] = { _config.float.mappings, "table" },
         ["float.mappings.close"] = { _config.float.mappings.close, "string" },
         ["float.mappings.apply"] = { _config.float.mappings.apply, "string" },
-        ["float.mappings.jsonpp"] = { _config.float.mappings.jsonpp, "string" },
+        ["float.mappings.update"] = { _config.float.mappings.update, "string" },
+        ["float.mappings.json"] = { _config.float.mappings.json, "string" },
         ["float.mappings.help"] = { _config.float.mappings.help, "string" },
         ["float.title"] = { _config.float.title, "boolean" },
         ["float.title_pos"] = { _config.float.title_pos, "string" },
         ["float.autoclose"] = { _config.float.autoclose, "boolean" },
         ["float.enter"] = { _config.float.enter, "boolean" },
-        ["float.options"] = { _config.float.options, "table" },
+        ["float.win_options"] = { _config.float.win_options, "table" },
+        ["float.zindex"] = { _config.float.zindex, "number" },
     })
 end
 

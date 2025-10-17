@@ -1,4 +1,4 @@
-local escape = {}
+local c_escape = {}
 
 -- All credit for these functions go to vim-unimpaired by tpope which have been ported to lua
 
@@ -24,7 +24,7 @@ vim.g._decipher_escape_decoding_map = {
     ["\n"] = "",
 }
 
-function escape.encode(value)
+function c_escape.encode(value)
     if value == nil then
         error("Cannot encode nil value", 0)
     end
@@ -41,7 +41,7 @@ function escape.encode(value)
     )
 end
 
-function escape.decode(value)
+function c_escape.decode(value)
     if value == nil then
         error("Cannot decode nil value", 0)
     end
@@ -72,4 +72,4 @@ function escape.decode(value)
     )
 end
 
-return escape
+return c_escape

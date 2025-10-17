@@ -13,7 +13,6 @@ describe("codecs.c_escape", function()
     }
 
     it("escapes strings as a c string", function()
-        local test = "line 1\nline2"
         test_utils.test_encode(test_cases, c_escape.encode)
     end)
 

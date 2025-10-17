@@ -11,7 +11,7 @@ function test.test_encode(test_cases, encode_func)
         local values_same = encoded == output
 
         if not len_same or not values_same then
-            vim.print(vim.inspect({ encoded, output }))
+            vim.print(vim.inspect({ "encoded: ", encoded, "output: ", output }))
         end
 
         assert.are.equal(#encoded, #output)

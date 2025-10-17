@@ -6,7 +6,10 @@ local base64_url = require("decipher.codecs.base64_url")
 local base64_url_encoded = require("decipher.codecs.base64_url_encoded")
 local base64_url_safe = require("decipher.codecs.base64_url_safe")
 local crockford = require("decipher.codecs.crockford")
+local c_escape = require("decipher.codecs.c_escape")
 local url = require("decipher.codecs.url")
+local url_plus = require("decipher.codecs.url_plus")
+local xml = require("decipher.codecs.xml")
 local zbase32 = require("decipher.codecs.zbase32")
 
 ---@enum decipher.Codecs
@@ -17,7 +20,10 @@ codecs.codec = {
     base64_url_encoded = "base64-url-encoded",
     base64_url_safe = "base64-url-safe",
     crockford = "crockford",
+    c_escape = "c-escape",
     url = "url",
+    url_plus = "url-plus",
+    xml = "xml",
     zbase32 = "zbase32",
 }
 
@@ -38,14 +44,17 @@ codecs.codec = {
 
 ---@type table<string, decipher.Codec>
 local codecs_map = {
-    ["base32"] = base32,
-    ["base64"] = base64,
+    base32 = base32,
+    base64 = base64,
     ["base64-url"] = base64_url,
     ["base64-url-encoded"] = base64_url_encoded,
     ["base64-url-safe"] = base64_url_safe,
-    ["crockford"] = crockford,
-    ["url"] = url,
-    ["zbase32"] = zbase32,
+    crockford = crockford,
+    ["c-escape"] = c_escape,
+    url = url,
+    url_plus = url_plus,
+    zbase32 = zbase32,
+    xml = xml,
 }
 
 ---@param name decipher.CodecArg

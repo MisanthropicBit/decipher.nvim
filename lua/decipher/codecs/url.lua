@@ -1,6 +1,11 @@
 local url = {}
 
+-- An implementation of RFC 1866, mainly for the application/x-www-form-urlencoded mimetype
+
 local bits = require("decipher.bits")
+
+---@class decipher.UrlCodecOptions
+---@field decode_plus_as_space boolean
 
 -- stylua: ignore
 local reserved = {
@@ -31,10 +36,10 @@ local function url_encode_byte(list, byte)
     table.insert(list, ("%x"):format(bits.band(byte, 0xf)))
 end
 
---- Url-encode a string
 ---@param value string
+---@param options decipher.UrlCodecOptions?
 ---@return string
-function url.encode(value)
+function url.encode_with(value, options)
     if value == nil then
         error("Cannot encode nil value", 0)
     end
@@ -57,21 +62,29 @@ function url.encode(value)
     return table.concat(result)
 end
 
---- Url-decode a string
+--- Url-encode a string
 ---@param value string
 ---@return string
-function url.decode(value)
+function url.encode(value)
+    return url.encode_with(value)
+end
+
+---@param value string
+---@param options decipher.UrlCodecOptions?
+---@return string
+function url.decode_with(value, options)
     if value == nil then
         error("Cannot decode nil value", 0)
     end
 
+    local plus_as_space = options and options.decode_plus_as_space or false
     local result = {}
     local i = 1
 
     while i <= #value do
         local char = value:sub(i, i)
 
-        if char == "+" then
+        if plus_as_space and char == "+" then
             table.insert(result, " ")
             i = i + 1
         elseif char ~= "%" then
@@ -87,6 +100,12 @@ function url.decode(value)
     end
 
     return table.concat(result)
+end
+--- Url-decode a string
+---@param value string
+---@return string
+function url.decode(value)
+    return url.decode_with(value, { decode_plus_as_space = true })
 end
 
 return url

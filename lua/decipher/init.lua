@@ -212,8 +212,8 @@ end
 
 ---@param user_config? decipher.Config
 function decipher.setup(user_config)
-    if not vim.fn.has("nvim-0.5.0") then
-        notifications.error("This plugin only works with Neovim >= v0.5.0")
+    if not vim.fn.has("nvim-0.8.0") then
+        notifications.error("This plugin only works with Neovim >= v0.8.0")
         return
     end
 

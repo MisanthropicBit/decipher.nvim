@@ -67,21 +67,27 @@ require("decipher").setup({
     float = { -- Floating window options
         padding = 0, -- Zero padding (does not apply to title if any)
         border = { -- Floating window border
-            { "Ã¢ÂÂ­", "FloatBorder" },
-            { "Ã¢ÂÂ", "FloatBorder" },
-            { "Ã¢ÂÂ®", "FloatBorder" },
-            { "Ã¢ÂÂ", "FloatBorder" },
-            { "Ã¢ÂÂ¯", "FloatBorder" },
-            { "Ã¢ÂÂ", "FloatBorder" },
-            { "Ã¢ÂÂ°", "FloatBorder" },
-            { "Ã¢ÂÂ", "FloatBorder" },
+            { "╭", "FloatBorder" },
+            { "─", "FloatBorder" },
+            { "╮", "FloatBorder" },
+            { "│", "FloatBorder" },
+            { "╯", "FloatBorder" },
+            { "─", "FloatBorder" },
+            { "╰", "FloatBorder" },
+            { "│", "FloatBorder" },
         },
         mappings = {
-            close = "q", -- Close the floating window
-            apply = "<leader>a", -- Apply the encoded/decoded preview in the original buffer
-            update = "<leader>u", -- Update the original buffer with changes made in the encoded/decoded preview
-            jsonpp = "<leader>j", -- Prettily format contents as json if possible (view is immutable)
-            help = "g?", -- Toggle help
+            -- Close the floating window
+            close = "q",
+            -- Apply the encoding/decoding shown in the preview in the original buffer
+            apply = "<leader>a",
+            -- Update the original buffer with changes made in the encoded/decoded preview
+            -- keeping the text encoded/decoded
+            update = "<leader>u",
+            -- Prettily format contents as json if possible (view is immutable)
+            jsonpp = "<leader>j",
+            -- Toggle help
+            help = "g?",
         },
         title = true, -- Display a title with the codec name
         title_pos = "left", -- Position of the title

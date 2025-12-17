@@ -30,7 +30,8 @@ describe("ui.float", function()
             codec_type = "decode",
         })
 
-        assert(_float ~= nil, "Float was nil")
+        assert.is_not_nil(_float)
+        ---@cast _float -nil
         assert.are.same(vim.api.nvim_win_get_var(_float.win_id, "decipher_float"), true)
 
         return _float
@@ -46,7 +47,8 @@ describe("ui.float", function()
             codec_type = "decode",
         })
 
-        assert(_float ~= nil, "Float was nil")
+        assert.is_not_nil(_float)
+        ---@cast _float -nil
         assert.are_not.same(_float.buffer, vim.api.nvim_win_get_buf(0))
         assert.are.same(vim.api.nvim_win_get_var(_float.win_id, "decipher_float"), true)
 
@@ -194,8 +196,8 @@ describe("ui.float", function()
 
             expect({
                 "q          Close the preview",
-                "<leader>a  Apply the preview to the selection including any changes",
-                "<leader>u  Update selection with preview",
+                "<leader>a  Apply the encoding/decoding to the original selection including any changes",
+                "<leader>u  Update the original selection with changes keeping text encoded/decoded",
                 "<leader>j  View preview as immutable json",
                 "g?         Toggle this help",
             }, _float.buffer)

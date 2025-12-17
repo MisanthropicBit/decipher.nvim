@@ -373,7 +373,7 @@ function Float:update_parent_buffer(value)
     end
 end
 
---- Switch between a given page and the main page
+--- Switch to a given page
 ---@param page_name string page name to toggle between
 function Float:switch_to_page(page_name)
     local old_page = self:get_page(self.curpage)
@@ -462,8 +462,14 @@ function float.open(options)
 
             page.contents = {
                 format_help_entry(mappings.close, "Close the preview"),
-                format_help_entry(mappings.apply, "Apply the preview to the selection including any changes"),
-                format_help_entry(mappings.update, "Update selection with preview"),
+                format_help_entry(
+                    mappings.apply,
+                    "Apply the encoding/decoding to the original selection including any changes"
+                ),
+                format_help_entry(
+                    mappings.update,
+                    "Update the original selection with changes keeping text encoded/decoded"
+                ),
                 format_help_entry(mappings.json, "View preview as immutable json"),
                 format_help_entry(mappings.help, "Toggle this help"),
             }
@@ -482,7 +488,7 @@ function float.open(options)
 
             local pretty = util.json.pretty_print(result, { sort_keys = true })
 
-            page.title = main_page.title .. " (json pretty-print)"
+            page.title = main_page.title .. " (json)"
             page.contents = vim.fn.split(pretty, "\n")
 
             vim.bo[parent.buffer].filetype = "json"

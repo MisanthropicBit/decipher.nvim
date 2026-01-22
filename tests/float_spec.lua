@@ -198,7 +198,7 @@ describe("ui.float", function()
                 "q          Close the preview",
                 "<leader>a  Apply the encoding/decoding to the original selection including any changes",
                 "<leader>u  Update the original selection with changes keeping text encoded/decoded",
-                "<leader>j  View preview as immutable json",
+                "<leader>j  View as json if possible",
                 "g?         Toggle this help",
             }, _float.buffer)
 
@@ -296,6 +296,83 @@ describe("ui.float", function()
                 .stub(vim.notify)
                 ---@diagnostic disable-next-line: undefined-field
                 .was_called_with(match.has_match("Cannot decode as json: "), vim.log.levels.ERROR, { title = "decipher.nvim" })
+
+            ---@diagnostic disable-next-line: undefined-field
+            vim.notify:revert()
+        end)
+    end)
+
+    it("applies modified json view", function()
+        given({ "eyJhIjogMX0=" }, function(context)
+            ---@diagnostic disable-next-line: missing-fields
+            config.setup({ float = { enter = true, mappings = { json = "j", apply = "a" } } })
+
+            normal("V")
+            decipher.decode_selection("base64", { preview = true })
+
+            expect({ '{"a": 1}' }, vim.api.nvim_get_current_buf())
+
+            -- Change key from "a" to "b"
+            normal("farb")
+
+            -- View as json and apply
+            -- NOTE: This does not work with the default leader keymap although
+            -- it works when applying
+            normal("j")
+            normal("1 a")
+
+            expect({ "{", '  "b": 1', "}" }, 0)
+        end)
+    end)
+
+    it("updates with modified json view", function()
+        given({ "eyJhIjogMX0=" }, function(context)
+            ---@diagnostic disable-next-line: missing-fields
+            config.setup({ float = { enter = true, mappings = { json = "j", update = "u" } } })
+
+            normal("V")
+            decipher.decode_selection("base64", { preview = true })
+
+            expect({ '{"a": 1}' }, vim.api.nvim_get_current_buf())
+
+            -- Change key from "a" to "b"
+            normal("farb")
+
+            -- View as json and update
+            -- NOTE: This does not work with the default leader keymap although
+            -- it works when applying
+            normal("j")
+            normal("1 u")
+
+            expect({ "eyJiIjoxfQ==" }, 0)
+        end)
+    end)
+
+    it("fails to parse json when applying", function()
+        given({ "eyJhIjogMX0=" }, function(context)
+            ---@diagnostic disable-next-line: missing-fields
+            config.setup({ float = { enter = true, mappings = { json = "j", update = "a" } } })
+
+            stub(vim, "notify")
+
+            normal("V")
+            decipher.decode_selection("base64", { preview = true })
+
+            expect({ '{"a": 1}' }, vim.api.nvim_get_current_buf())
+
+            -- NOTE: This does not work with the default leader keymap although
+            -- it works when applying
+            normal("j")
+
+            -- Delete first brace and apply
+            normal("x")
+            normal("1 a")
+
+            assert
+                ---@diagnostic disable-next-line: param-type-mismatch
+                .stub(vim.notify)
+                ---@diagnostic disable-next-line: undefined-field
+                .was_called_with(match.has_match("Failed to parse json: "), vim.log.levels.ERROR, { title = "decipher.nvim" })
 
             ---@diagnostic disable-next-line: undefined-field
             vim.notify:revert()

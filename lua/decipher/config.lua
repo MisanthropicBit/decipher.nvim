@@ -8,7 +8,6 @@ local config = {}
 ---@field help? string
 
 ---@class decipher.WindowConfig
----@field padding? number
 ---@field border? string | string[] | string[][]
 ---@field mappings? decipher.WindowMappings
 ---@field title? boolean
@@ -24,7 +23,6 @@ local config = {}
 ---@type decipher.Config
 local default_config = {
     float = {
-        padding = 0,
         border = {
             { "╭", "FloatBorder" },
             { "─", "FloatBorder" },
@@ -69,7 +67,6 @@ end
 ---@param _config decipher.Config
 local function validate_config(_config)
     vim.validate({
-        ["float.padding"] = { _config.float.padding, "number" },
         ["float.border"] = { _config.float.border, validate_border, "valid border" },
         ["float.mappings"] = { _config.float.mappings, "table" },
         ["float.mappings.close"] = { _config.float.mappings.close, "string" },

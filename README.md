@@ -65,7 +65,6 @@ The options below are the default values. Refer to the
 ```lua
 require("decipher").setup({
     float = { -- Floating window options
-        padding = 0, -- Zero padding (does not apply to title if any)
         border = { -- Floating window border
             { "╭", "FloatBorder" },
             { "─", "FloatBorder" },

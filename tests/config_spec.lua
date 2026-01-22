@@ -3,7 +3,6 @@ local config = require("decipher.config")
 describe("config", function()
     it("throws an error on invalid configs", function()
         local wrong_configs = {
-            { float = { padding = "nope" } },
             { float = { border = true } },
             { float = { border = "triple" } },
             { float = { mappings = { close = 1 } } },
@@ -29,7 +28,6 @@ describe("config", function()
         config.setup({
             ---@diagnostic disable-next-line: missing-fields
             float = {
-                padding = 1,
                 border = {
                     { "╭", "Keyword" },
                     { "─", "Keyword" },

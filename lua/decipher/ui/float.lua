@@ -304,6 +304,27 @@ function Float:set_mappings()
             -- Get contents and concatenate with newlines
             local contents = table.concat(vim.api.nvim_buf_get_lines(self.buffer, 0, -1, true), "\n")
 
+            if self.curpage == "json" then
+                -- The contents is a prettified json string so parse it into a
+                -- lua table then encode that object as json again to strip
+                -- whitespace
+                local parse_ok, lua_obj = pcall(vim.json.decode, contents)
+
+                if not parse_ok then
+                    notifications.error("Failed to parse json: " .. lua_obj)
+                    return
+                end
+
+                local encode_ok, json = pcall(vim.json.encode, lua_obj)
+
+                if not encode_ok then
+                    notifications.error("Failed to encode lua object as json: " .. json)
+                    return
+                end
+
+                contents = json
+            end
+
             -- If we opened a float after decoding then we should encode it
             -- when updating and vice versa
             local method = self.codec_type == "encode" and "decode" or "encode"
@@ -470,7 +491,7 @@ function float.open(options)
                     mappings.update,
                     "Update the original selection with changes keeping text encoded/decoded"
                 ),
-                format_help_entry(mappings.json, "View preview as immutable json"),
+                format_help_entry(mappings.json, "View as json if possible"),
                 format_help_entry(mappings.help, "Toggle this help"),
             }
         end,
@@ -492,11 +513,9 @@ function float.open(options)
             page.contents = vim.fn.split(pretty, "\n")
 
             vim.bo[parent.buffer].filetype = "json"
-            vim.bo[parent.buffer].modifiable = false
         end,
         cleanup = function(parent)
             vim.bo[parent.buffer].filetype = nil
-            vim.bo[parent.buffer].modifiable = true
         end,
     })
 

@@ -84,8 +84,8 @@ require("decipher").setup({
             -- Update the original buffer with changes made in the encoded/decoded preview
             -- keeping the text encoded/decoded
             update = "<leader>u",
-            -- Prettily format contents as json if possible (view is immutable)
-            jsonpp = "<leader>j",
+            -- Prettily format contents as json if possible
+            json = "<leader>j",
             -- Toggle help
             help = "g?",
         },
@@ -99,6 +99,15 @@ require("decipher").setup({
     },
 })
 ```
+
+> [!IMPORTANT]  
+> When updating via the prettified json view all whitespace is stripped and key
+> order is **_not_** preserved due to the way the JSON spec is specified.
+> Additionally, JSON encoding/decoding relies on `vim.json.encode` and
+> `vim.json.decode` whose behaviour may change.
+>
+> If you want to preserve whitespace and key order, update via the normal
+> preview instead.
 
 ## Example keymaps
 

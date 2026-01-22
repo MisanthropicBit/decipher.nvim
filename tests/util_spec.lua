@@ -84,7 +84,9 @@ describe("util", function()
             local test = {
                 msg = "hello",
                 levels = {
-                    b = 2,
+                    b = {
+                        d = 4,
+                    },
                     c = 3,
                     a = 1,
                 },
@@ -100,7 +102,9 @@ describe("util", function()
   "hide": true,
   "levels": {
     "a": 1,
-    "b": 2,
+    "b": {
+      "d": 4
+    },
     "c": 3
   },
   "msg": "hello",

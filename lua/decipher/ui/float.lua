@@ -328,9 +328,9 @@ function Float:set_mappings()
             -- If we opened a float after decoding then we should encode it
             -- when updating and vice versa
             local method = self.codec_type == "encode" and "decode" or "encode"
-            local new_encoded = require("decipher")[method](self.codec_name, contents)
+            local new_contents = require("decipher")[method](self.codec_name, contents)
 
-            self:update_parent_buffer({ new_encoded })
+            self:update_parent_buffer({ new_contents })
         end)
 
         set_keymap("help", function()

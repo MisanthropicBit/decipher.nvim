@@ -3,16 +3,9 @@
   <h1>decipher.nvim</h1>
   <p><i>A plugin that provides ways to encode and decode text using various codecs like base64.</i></p>
   <p>
-    <img src="https://img.shields.io/badge/version-2.1.0-blue?style=flat-square" />
-    <a href="https://luarocks.org/modules/misanthropicbit/decipher.nvim">
-        <img src="https://img.shields.io/luarocks/v/misanthropicbit/decipher.nvim?logo=lua&color=purple" />
-    </a>
-    <a href="https://img.shields.io/github/actions/workflow/status/MisanthropicBit/decipher.nvim/tests.yml?branch=master&style=flat-square">
-        <img src="https://img.shields.io/github/actions/workflow/status/MisanthropicBit/decipher.nvim/tests.yml?branch=master&style=flat-square" />
-    </a>
-    <a href="/LICENSE">
-        <img src="https://img.shields.io/github/license/MisanthropicBit/decipher.nvim?style=flat-square" />
-    </a>
+    <img src="https://img.shields.io/github/v/release/MisanthropicBit/decipher.nvim?style=flat-square" />
+    <a href="https://img.shields.io/github/actions/workflow/status/MisanthropicBit/decipher.nvim/tests.yml?branch=master&style=flat-square"><img src="https://img.shields.io/github/actions/workflow/status/MisanthropicBit/decipher.nvim/tests.yml?branch=master&style=flat-square" /></a>
+    <a href="/LICENSE"><img src="https://img.shields.io/github/license/MisanthropicBit/decipher.nvim?style=flat-square&color=purple" /></a>
   </p>
   <br />
 </div>
@@ -65,7 +58,6 @@ The options below are the default values. Refer to the
 ```lua
 require("decipher").setup({
     float = { -- Floating window options
-        padding = 0, -- Zero padding (does not apply to title if any)
         border = { -- Floating window border
             { "╭", "FloatBorder" },
             { "─", "FloatBorder" },
@@ -77,21 +69,59 @@ require("decipher").setup({
             { "│", "FloatBorder" },
         },
         mappings = {
-            close = "q", -- Key to press to close the floating window
-            apply = "a", -- Key to press to apply the encoding/decoding
-            jsonpp = "J", -- Key to prettily format contents as json if possbile
-            help = "?", -- Toggle help
+            -- Close the floating window
+            close = "q",
+            -- Apply the encoding/decoding in the preview to the original buffer
+            apply = "<leader>a",
+            -- Update the original buffer with changes made in the encoded/decoded preview
+            -- keeping the text encoded/decoded
+            update = "<leader>u",
+            -- Prettily format contents as json if possible
+            json = "<leader>j",
+            -- Toggle help
+            help = "g?",
         },
-        title = true, -- Display a title with the codec name
-        title_pos = "left", -- Position of the title
-        autoclose = true, -- Autoclose floating window if insert
-                          -- mode is activated or the cursor is moved
-        enter = false, -- Automatically enter the floating window if
-                       -- opened
-        options = {}, -- Options to apply to the floating window contents
+        -- Display a title with the codec name
+        title = true,
+        -- Position of the title
+        title_pos = "left",
+        -- Autoclose floating window if insert mode is activated or the cursor
+        -- is moved
+        autoclose = true,
+        -- Automatically open the json view if the contents is valid json
+        autojson = false,
+        -- Automatically enter the floating window if opened
+        enter = false,
+        -- Options to apply to the floating window contents
+        win_options = {},
+        -- Z-index of the floating preview
+        zindex = 50,
     },
 })
 ```
+
+## JSON view
+
+### Applying
+
+When **_applying_** the json view, the prettified format is applied along with
+indentation and whitespace.
+
+If you want to retain the original whitespace and indentation when applying,
+apply via the normal view instead.
+
+### Updating
+
+When **_updating_** the original buffer from the json view, all whitespace and
+indentation are stripped and key order is **_not_** preserved due to the way the
+JSON spec is specified. This is by design as you would usually not wish for
+whitespace and indentation to become part of an encoding.
+
+Additionally, JSON encoding/decoding relies on `vim.json.encode` and
+`vim.json.decode` whose behaviour may change.
+
+If you want to preserve whitespace and key order when updating, update via the
+normal view instead.
 
 ## Example keymaps
 

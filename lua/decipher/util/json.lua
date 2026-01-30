@@ -4,7 +4,7 @@ local json = {}
 
 local compat = require("decipher.compat")
 
----Return an iterator over a table's keys in sorted order
+--- Return an iterator over a table's keys in sorted order
 ---@param tbl table
 ---@return function
 ---@return table
@@ -84,7 +84,7 @@ function ResultBuffer:get()
     return table.concat(self._result)
 end
 
----Escape special characters in strings
+--- Escape special characters in strings
 ---@param value string
 ---@return string
 local function escape_chars(value)
@@ -196,7 +196,7 @@ end
 
 format_value = _format_value
 
----Pretty-print a lua value as json
+--- Pretty-print a lua value as json
 ---@param value any
 ---@param options? JsonPrettyPrintOptions
 function json.pretty_print(value, options)

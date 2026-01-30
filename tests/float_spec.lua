@@ -2,6 +2,8 @@ local decipher = require("decipher")
 local config = require("decipher.config")
 local vader = require("decipher.util.vader")
 local ui = require("decipher.ui")
+local match = require("luassert.match")
+local stub = require("luassert.stub")
 
 local given, normal, expect = vader.given, vader.normal, vader.expect
 
@@ -19,18 +21,59 @@ describe("ui.float", function()
     end)
 
     local function create_float(title, contents)
-        return ui.float.open(title, contents, nil, "visual", region)
+        local _float = ui.float.open({
+            title = title,
+            contents = contents,
+            selection_type = "visual",
+            selection = region,
+            codec_name = "base64",
+            codec_type = "decode",
+        })
+
+        assert.is_not_nil(_float)
+        ---@cast _float -nil
+        assert.are.same(vim.api.nvim_win_get_var(_float.win_id, "decipher_float"), true)
+
+        return _float
     end
 
-    it("opens a float", function()
-        given(buffer_contents, function(context)
-            local _float = create_float("title", { "contents" })
+    it("creates a float", function()
+        local _float = ui.float.open({
+            title = "title",
+            contents = { "contents" },
+            selection_type = "visual",
+            selection = region,
+            codec_name = "base64",
+            codec_type = "decode",
+        })
 
-            assert(_float ~= nil, "Float was nil")
+        assert.is_not_nil(_float)
+        ---@cast _float -nil
+        assert.are_not.same(_float.buffer, vim.api.nvim_win_get_buf(0))
+        assert.are.same(vim.api.nvim_win_get_var(_float.win_id, "decipher_float"), true)
+
+        local window_config = vim.api.nvim_win_get_config(_float.win_id)
+
+        assert.are_not.same(_float.buffer, vim.api.nvim_win_get_buf(0))
+        assert.are.same(vim.api.nvim_win_get_var(_float.win_id, "decipher_float"), true)
+
+        if vim.fn.has("nvim-0.9") == 1 then
+            assert.are.same(window_config.title[1][1], " title ")
+            assert.are.same(window_config.title_pos, "left")
+        end
+
+        assert.are.same(window_config.width, 8)
+        assert.are.same(window_config.height, 1)
+        assert.are.same(window_config.focusable, true)
+        assert.are.same(window_config.relative, "editor")
+    end)
+
+    it("opens a float", function()
+        given("", function(context)
+            local _float = create_float("title", { "contents" })
 
             local window_config = vim.api.nvim_win_get_config(_float.win_id)
 
-            assert.are._not.same(_float.buffer, vim.api.nvim_win_get_buf(0))
             assert.are.same(vim.api.nvim_win_get_var(_float.win_id, "decipher_float"), true)
             if vim.fn.has("nvim-0.9") == 1 then
                 assert.are.same(window_config.title[1][1], " title ")
@@ -43,19 +86,6 @@ describe("ui.float", function()
             assert.are.same(window_config.relative, "editor")
 
             expect({ "contents" }, _float.buffer)
-
-            ui.float.close(context.win_id)
-        end)
-    end)
-
-    it("pads contents", function()
-        given(buffer_contents, function(context)
-            config.setup({ float = { padding = 1 } })
-
-            local _float = create_float("title", { "contents" })
-
-            assert(_float ~= nil, "Float was nil")
-            expect({ "", " contents ", "" }, _float.buffer)
 
             ui.float.close(context.win_id)
         end)
@@ -94,28 +124,13 @@ describe("ui.float", function()
     --     end)
     -- end)
 
-    it("immediately enters a float if configured", function()
-        given(buffer_contents, function(context)
-            config.setup({ float = { enter = true } })
-
-            local _float = create_float("title", { "contents" })
-
-            assert(_float ~= nil, "Float was nil")
-            assert.are.same(_float.buffer, vim.api.nvim_win_get_buf(0))
-
-            ui.float.close(context.win_id)
-        end)
-    end)
-
     it("enters a float if already opened", function()
-        given(buffer_contents, function(context)
+        given("", function(context)
             local float1 = create_float("title", { "contents" })
 
-            assert(float1 ~= nil, "Float was nil")
             assert.are.same(vim.api.nvim_win_get_buf(0), context.bufnr)
 
             local float2 = create_float("title", { "contents" })
-            assert(float2 ~= nil, "Float was nil")
             assert.are.same(float1, float2)
 
             ui.float.close(context.win_id)
@@ -123,67 +138,71 @@ describe("ui.float", function()
     end)
 
     it("provides configurable, overriable key mappings", function()
-        given(buffer_contents, function(context)
+        given("", function(context)
             config.setup({
+                ---@diagnostic disable-next-line: missing-fields
                 float = {
                     enter = true,
                     mappings = {
                         apply = "A",
-                        help = "g?",
+                        help = "?g",
                     },
                 },
             })
 
             local _float = create_float("title", { "contents" })
 
-            assert(_float ~= nil, "Float was nil")
+            assert.is_not_nil(_float)
             assert.are.same(_float.buffer, vim.api.nvim_win_get_buf(0))
-            assert.are._not.same(vim.fn.maparg("q", "n"), "")
-            assert.are._not.same(vim.fn.maparg("A", "n"), "")
-            assert.are.same(vim.fn.maparg("a", "n"), "")
-            assert.are._not.same(vim.fn.maparg("J", "n"), "")
-            assert.are._not.same(vim.fn.maparg("g?", "n"), "")
-            assert.are.same(vim.fn.maparg("?", "n"), "")
+            assert.are_not.same(vim.fn.maparg("q", "n"), "")
+            assert.are_not.same(vim.fn.maparg("A", "n"), "")
+            assert.are.same(vim.fn.maparg("<leader>a", "n"), "")
+            assert.are_not.same(vim.fn.maparg("<leader>j", "n"), "")
+            assert.are.same(vim.fn.maparg("g?", "n"), "")
+            assert.are_not.same(vim.fn.maparg("?g", "n"), "")
 
             ui.float.close(context.win_id)
         end)
     end)
 
     it("closes window using mapping", function()
-        given(buffer_contents, function(context)
+        given("", function(context)
+            ---@diagnostic disable-next-line: missing-fields
             config.setup({ float = { enter = true } })
 
             local _float = create_float("title", { "contents" })
 
-            assert(_float ~= nil, "Float was nil")
+            assert.is_not_nil(_float)
             assert.are.same(_float.buffer, vim.api.nvim_win_get_buf(0))
 
             normal("q")
-            assert.are._not.same(_float.buffer, vim.api.nvim_win_get_buf(0))
+            assert.are_not.same(_float.buffer, vim.api.nvim_win_get_buf(0))
 
             ui.float.close(context.win_id)
         end)
     end)
 
     it("switches to help page and back", function()
-        given(buffer_contents, function(context)
+        given("", function(context)
+            ---@diagnostic disable-next-line: missing-fields
             config.setup({ float = { enter = true } })
 
             local _float = create_float("title", { "contents" })
 
-            assert(_float ~= nil, "Float was nil")
+            assert.is_not_nil(_float)
 
             assert.are.same(_float.buffer, vim.api.nvim_win_get_buf(0))
-            normal("?")
+            normal("g?")
 
             expect({
-                "q - Close the floating window",
-                "a - Apply the encoding/decoding",
-                "J - Prettily format contents as json",
-                "? - Toggle this help",
+                "q          Close the preview",
+                "<leader>a  Apply the encoding/decoding to the original selection including any changes",
+                "<leader>u  Update the original selection with changes keeping text encoded/decoded",
+                "<leader>j  View as json if possible",
+                "g?         Toggle this help",
             }, _float.buffer)
 
-            normal("?")
+            normal("g?")
             expect({ "contents" }, _float.buffer)
 
             ui.float.close(context.win_id)
@@ -192,16 +211,171 @@ describe("ui.float", function()
 
     it("applies codec", function()
         given(buffer_contents, function(context)
+            ---@diagnostic disable-next-line: missing-fields
             config.setup({ float = { enter = true } })
 
             normal("viW<esc>")
             decipher.decode_selection("base64", { preview = true })
             expect({ "light work" })
 
-            normal("a")
+            normal("1 a")
             expect({ "light work" })
 
             ui.float.close(context.win_id)
+        end)
+    end)
+
+    it("applies preview with changes", function()
+        given({ "ewogICJhIjogMQp9" }, function(context)
+            ---@diagnostic disable-next-line: missing-fields
+            config.setup({ float = { enter = true } })
+
+            normal("V")
+            decipher.decode_selection("base64", { preview = true })
+
+            expect({ "{", '  "a": 1', "}" }, vim.api.nvim_get_current_buf())
+
+            -- Add a ("b", 2) key-value pair
+            normal('2ggA,<cr>"b": 2')
+
+            -- Apply decoded preview
+            normal("1 a")
+
+            -- Original buffer
+            expect({ "{", '  "a": 1,', '  "b": 2', "}" }, vim.api.nvim_get_current_buf())
+
+            ui.float.close(context.win_id)
+        end)
+    end)
+
+    it("updates original buffer with preview", function()
+        given({ "ewogICJhIjogMQp9" }, function(context)
+            ---@diagnostic disable-next-line: missing-fields
+            config.setup({ float = { enter = true, mappings = { update = "u" } } })
+
+            normal("V")
+            decipher.decode_selection("base64", { preview = true })
+
+            expect({ "{", '  "a": 1', "}" }, vim.api.nvim_get_current_buf())
+
+            -- Add a ("b", 2) key-value pair
+            normal('2ggA,<cr>"b": 2')
+
+            -- Update original buffer with change
+            -- NOTE: This does not work with the default leader keymap although
+            -- it works when applying. An 'undo' is done instead
+            normal("u")
+
+            -- Original buffer
+            expect({ "ewogICJhIjogMSwKICAiYiI6IDIKfQ==" }, vim.api.nvim_get_current_buf())
+        end)
+    end)
+
+    it("fails to switch to json view if json is malformed", function()
+        given({ "eyJhIjogMX0=" }, function(context)
+            ---@diagnostic disable-next-line: missing-fields
+            config.setup({ float = { enter = true, mappings = { json = "j" } } })
+
+            stub(vim, "notify")
+
+            normal("V")
+            decipher.decode_selection("base64", { preview = true })
+
+            expect({ '{"a": 1}' }, vim.api.nvim_get_current_buf())
+
+            -- Delete the first double-quote
+            normal('f"x')
+
+            -- Try to view as json
+            -- NOTE: This does not work with the default leader keymap although
+            -- it works when applying
+            normal("j")
+
+            assert
+                ---@diagnostic disable-next-line: param-type-mismatch
+                .stub(vim.notify)
+                ---@diagnostic disable-next-line: undefined-field
+                .was_called_with(match.has_match("Cannot decode as json: "), vim.log.levels.ERROR, { title = "decipher.nvim" })
+
+            ---@diagnostic disable-next-line: undefined-field
+            vim.notify:revert()
+        end)
+    end)
+
+    it("applies modified json view", function()
+        given({ "eyJhIjogMX0=" }, function(context)
+            ---@diagnostic disable-next-line: missing-fields
+            config.setup({ float = { enter = true, mappings = { json = "j", apply = "a" } } })
+
+            normal("V")
+            decipher.decode_selection("base64", { preview = true })
+
+            expect({ '{"a": 1}' }, vim.api.nvim_get_current_buf())
+
+            -- Change key from "a" to "b"
+            normal("farb")
+
+            -- View as json and apply
+            -- NOTE: This does not work with the default leader keymap although
+            -- it works when applying
+            normal("j")
+            normal("1 a")
+
+            expect({ "{", '  "b": 1', "}" }, 0)
+        end)
+    end)
+
+    it("updates with modified json view", function()
+        given({ "eyJhIjogMX0=" }, function(context)
+            ---@diagnostic disable-next-line: missing-fields
+            config.setup({ float = { enter = true, mappings = { json = "j", update = "u" } } })
+
+            normal("V")
+            decipher.decode_selection("base64", { preview = true })
+
+            expect({ '{"a": 1}' }, vim.api.nvim_get_current_buf())
+
+            -- Change key from "a" to "b"
+            normal("farb")
+
+            -- View as json and update
+            -- NOTE: This does not work with the default leader keymap although
+            -- it works when applying
+            normal("j")
+            normal("1 u")
+
+            expect({ "eyJiIjoxfQ==" }, 0)
+        end)
+    end)
+
+    it("fails to parse json when applying", function()
+        given({ "eyJhIjogMX0=" }, function(context)
+            ---@diagnostic disable-next-line: missing-fields
+            config.setup({ float = { enter = true, mappings = { json = "j", update = "a" } } })
+
+            stub(vim, "notify")
+
+            normal("V")
+            decipher.decode_selection("base64", { preview = true })
+
+            expect({ '{"a": 1}' }, vim.api.nvim_get_current_buf())
+
+            -- NOTE: This does not work with the default leader keymap although
+            -- it works when applying
+            normal("j")
+
+            -- Delete first brace and apply
+            normal("x")
+            normal("1 a")
+
+            assert
+                ---@diagnostic disable-next-line: param-type-mismatch
+                .stub(vim.notify)
+                ---@diagnostic disable-next-line: undefined-field
+                .was_called_with(match.has_match("Failed to parse json: "), vim.log.levels.ERROR, { title = "decipher.nvim" })
+
+            ---@diagnostic disable-next-line: undefined-field
+            vim.notify:revert()
         end)
     end)
 end)

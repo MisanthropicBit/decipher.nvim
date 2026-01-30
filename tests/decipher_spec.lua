@@ -21,36 +21,33 @@ describe("decipher", function()
 
     it("prints an error if the neovim version is not supported", function()
         stub(vim.fn, "has", false)
-        stub(vim.api, "nvim_echo")
+        stub(vim, "notify")
 
         decipher.setup({})
 
-        assert.stub(vim.fn.has).was_called_with("nvim-0.5.0")
-        assert.stub(vim.api.nvim_echo).was_called_with({
-            { "[decipher]:", "ErrorMsg" },
-            { " This plugin only works with Neovim >= v0.5.0" },
-        }, true, {})
+        assert.stub(vim.fn.has).was_called_with("nvim-0.8.0")
+        assert
+            .stub(vim.notify)
+            .was_called_with("This plugin only works with Neovim >= v0.8.0", vim.log.levels.ERROR, { title = "decipher.nvim" })
 
         vim.fn.has:revert()
-        vim.api.nvim_echo:revert()
+        vim.notify:revert()
     end)
 
     it("prints an error if a bit library is not available", function()
         stub(decipher, "has_bit_library", false)
-        stub(vim.api, "nvim_echo")
+        stub(vim, "notify")
 
         decipher.setup({})
 
-        assert.stub(vim.api.nvim_echo).was_called_with({
-            { "[decipher]:", "ErrorMsg" },
-            { " " },
-            { "A bit library is required. Ensure that either " },
-            { "neovim has been built with luajit " },
-            { "or use neovim v0.9.0+ which includes a bit library" },
-        }, true, {})
+        assert.stub(vim.notify).was_called_with(
+            "A bit library is required. Ensure that either neovim has been built with luajit or use neovim v0.9.0+ which includes a bit library",
+            vim.log.levels.ERROR,
+            { title = "decipher.nvim" }
+        )
 
         decipher.has_bit_library:revert()
-        vim.api.nvim_echo:revert()
+        vim.notify:revert()
     end)
 
     it("encodes a string using a codec", function()

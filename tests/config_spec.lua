@@ -12,6 +12,7 @@ describe("config", function()
             { float = { title = {} } },
             { float = { title_pos = 1 } },
             { float = { autoclose = 1 } },
+            { float = { autojson = "yes" } },
             { float = { win_options = "whoops" } },
             { float = { zindex = false } },
         }
@@ -47,6 +48,7 @@ describe("config", function()
                 title = false,
                 title_pos = "right",
                 autoclose = false,
+                autojson = true,
                 enter = true,
                 win_options = {
                     wrap = false,

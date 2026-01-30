@@ -1,21 +1,22 @@
 local config = {}
 
 ---@class decipher.WindowMappings
----@field close? string
----@field apply? string
+---@field close?  string
+---@field apply?  string
 ---@field update? string
----@field json? string
----@field help? string
+---@field json?   string
+---@field help?   string
 
 ---@class decipher.WindowConfig
----@field border? string | string[] | string[][]
----@field mappings? decipher.WindowMappings
----@field title? boolean
----@field title_pos? 'left' | 'center' | 'right'
----@field autoclose? boolean
----@field enter? boolean
+---@field border?      string | string[] | string[][]
+---@field mappings?    decipher.WindowMappings
+---@field title?       boolean
+---@field title_pos?   'left' | 'center' | 'right'
+---@field autoclose?   boolean
+---@field autojson?    boolean
+---@field enter?       boolean
 ---@field win_options? table<string, any>
----@field zindex integer?
+---@field zindex       integer?
 
 ---@class decipher.Config
 ---@field float? decipher.WindowConfig
@@ -43,6 +44,7 @@ local default_config = {
         title = true,
         title_pos = "left",
         autoclose = true,
+        autojson = false,
         enter = false,
         win_options = {},
         zindex = 50,
@@ -77,6 +79,7 @@ local function validate_config(_config)
         ["float.title"] = { _config.float.title, "boolean" },
         ["float.title_pos"] = { _config.float.title_pos, "string" },
         ["float.autoclose"] = { _config.float.autoclose, "boolean" },
+        ["float.autojson"] = { _config.float.autojson, "boolean" },
         ["float.enter"] = { _config.float.enter, "boolean" },
         ["float.win_options"] = { _config.float.win_options, "table" },
         ["float.zindex"] = { _config.float.zindex, "number" },

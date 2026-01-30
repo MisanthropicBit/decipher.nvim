@@ -448,12 +448,14 @@ function float.open(options)
     local _config = options.window_config or config.float
     local _float = Float:new(_config)
 
+    -- Escape the string since you cannot set lines in a buffer if it contains
+    -- newlines
+    local contents = util.str.escape_newlines(options.contents)
+
     _float:add_page("main", {
         parent = _float,
         title = options.title,
-        -- Escape the string since you cannot set lines in a buffer if it
-        -- contains newlines
-        contents = util.str.escape_newlines(options.contents),
+        contents = contents,
     })
 
     _float:add_page("help", {
@@ -523,7 +525,18 @@ function float.open(options)
     _float.codec_type = options.codec_type
     _float:set_selection(options.selection_type, options.selection)
     _float:open()
-    _float:switch_to_page("main")
+
+    if config.float.autojson then
+        local parse_ok, result = pcall(vim.json.decode, table.concat(contents))
+
+        if parse_ok then
+            _float:switch_to_page("json")
+        else
+            _float:switch_to_page("main")
+        end
+    else
+        _float:switch_to_page("main")
+    end
 
     floats[cur_win_id] = _float
 

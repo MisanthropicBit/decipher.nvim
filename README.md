@@ -89,11 +89,13 @@ require("decipher").setup({
         -- is moved
         autoclose = true,
         -- Automatically open the json view if the contents is valid json
-        autojson = true,
+        autojson = false,
         -- Automatically enter the floating window if opened
         enter = false,
         -- Options to apply to the floating window contents
-        options = {},
+        win_options = {},
+        -- Z-index of the floating preview
+        zindex = 50,
     },
 })
 ```

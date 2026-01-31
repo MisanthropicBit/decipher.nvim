@@ -10,9 +10,6 @@
   <br />
 </div>
 
-> [!IMPORTANT]  
-> A bit library is needed which requires that either neovim has been compiled with luajit or you are using v0.9.0+ which provides a bit library.
-
 ![demo](https://github.com/MisanthropicBit/decipher.nvim/assets/1846147/6bc4db76-9a3b-428b-99b4-98e56d06901e)
 
 # Table of contents
@@ -35,19 +32,10 @@
 
 ## Installing
 
-Requires at least neovim v0.8.0. Please check the [docs](doc/decipher.txt).
+> [!IMPORTANT]  
+> A bit library is needed which requires that either neovim has been compiled with luajit or you are using v0.9.0+ which provides a bit library.
 
-* **[vim-plug](https://github.com/junegunn/vim-plug)**
-
-```vim
-Plug 'MisanthropicBit/decipher.nvim'
-```
-
-* **[packer.nvim](https://github.com/wbthomason/packer.nvim)**
-
-```lua
-use 'MisanthropicBit/decipher.nvim'
-```
+Requires at least neovim v0.8.0.
 
 ## Setup
 
@@ -141,6 +129,31 @@ vim.keymap.set("n", "<mykeymap>", function()
 end)
 ```
 
+## Encode/decode text-objects
+
+Decipher can encode and decode text-objects. The following lua code sets up
+decipher to decode a text object using base64 using a floating window preview.
+
+```lua
+    local decipher = require("decipher")
+
+    vim.keymap.set(
+        "n",
+        "<leader>d",
+        function()
+            decipher.decode_motion("base64", { preview = true })
+        end,
+        { noremap = true, silent = true }
+    )
+```
+
+## Highlights
+
+### `DecipherFloatTitle`
+
+Highlight group for the title of the floating window preview. Defaults to
+`Title`.
+
 ## Supported Codecs
 
 #### Base32
@@ -220,3 +233,7 @@ A more human-readable version of base32.
 
 * Name: "zbase32" or `decipher.codec.zbase32`
 * Example: `"this is encoded" => "qtwg1h3ypf31y3mqcpzse3mr"`
+
+```{.include}
+API.md
+```

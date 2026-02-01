@@ -12,6 +12,27 @@
 
 ![demo](https://github.com/MisanthropicBit/decipher.nvim/assets/1846147/6bc4db76-9a3b-428b-99b4-98e56d06901e)
 
+# Table of contents
+
+- [Installing](#installing)
+- [Setup](#setup)
+- [JSON view](#json-view)
+- [Example keymaps](#example-keymaps)
+- [Encode/decode text-objects](#encode-decode-text-objects)
+- [Highlights](#highlights)
+- [Supported Codecs](#supported-codecs)
+    - [Base32](#base32)
+    - [Base64](#base64)
+    - [Base64-url](#base64-url)
+    - [Base64-url-safe](#base64)
+    - [Base64-url-encoded](#base64-url-encoded)
+    - [Crockford](#crockford)
+    - [C-escape](#c-escape)
+    - [Url](#url)
+    - [Url-plus](#url-plus)
+    - [Xml](#xml)
+    - [Z-base32](#z-base32)
+
 ## Installing
 
 > [!IMPORTANT]  

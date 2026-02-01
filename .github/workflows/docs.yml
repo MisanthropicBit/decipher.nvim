@@ -23,7 +23,7 @@ jobs:
           vimdoc: decipher
           pandoc: "README.md"
           version: "NVIM >= v0.8.0"
-          toc: true
+          toc: false
           description: "A plugin that provides ways to encode and decode text using various codecs like base64."
           demojify: false
           dedupsubheadings: true

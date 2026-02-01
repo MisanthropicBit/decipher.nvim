@@ -10,50 +10,40 @@
   <br />
 </div>
 
-> [!IMPORTANT]  
-> A bit library is needed which requires that either neovim has been compiled with luajit or you are using v0.9.0+ which provides a bit library.
-
 ![demo](https://github.com/MisanthropicBit/decipher.nvim/assets/1846147/6bc4db76-9a3b-428b-99b4-98e56d06901e)
 
 # Table of contents
 
 - [Installing](#installing)
 - [Setup](#setup)
+- [JSON view](#json-view)
 - [Example keymaps](#example-keymaps)
+- [Encode/decode text-objects](#encode-decode-text-objects)
+- [Highlights](#highlights)
 - [Supported Codecs](#supported-codecs)
-    - [base32](#base32)
-    - [base64](#base64)
-    - [base64-url](#base64-url)
-    - [base64-url-safe](#base64)
-    - [base64-url-encoded](#base64-url-encoded)
-    - [crockford](#crockford)
-    - [c-escape](#c-escape)
-    - [url](#url)
-    - [url-plus](#url-plus)
-    - [xml](#xml)
-    - [z-base32](#z-base32)
+    - [Base32](#base32)
+    - [Base64](#base64)
+    - [Base64-url](#base64-url)
+    - [Base64-url-safe](#base64)
+    - [Base64-url-encoded](#base64-url-encoded)
+    - [Crockford](#crockford)
+    - [C-escape](#c-escape)
+    - [Url](#url)
+    - [Url-plus](#url-plus)
+    - [Xml](#xml)
+    - [Z-base32](#z-base32)
 
 ## Installing
 
-Requires at least neovim v0.8.0. Please check the [docs](doc/decipher.txt).
+> [!IMPORTANT]  
+> A bit library is needed which requires that either neovim has been compiled with luajit or you are using v0.9.0+ which provides a bit library.
 
-* **[vim-plug](https://github.com/junegunn/vim-plug)**
-
-```vim
-Plug 'MisanthropicBit/decipher.nvim'
-```
-
-* **[packer.nvim](https://github.com/wbthomason/packer.nvim)**
-
-```lua
-use 'MisanthropicBit/decipher.nvim'
-```
+Requires at least neovim v0.8.0.
 
 ## Setup
 
 Setup decipher using `decipher.setup` unless you are content with the defaults.
-The options below are the default values. Refer to the
-[docs](doc/decipher.txt) for more help.
+The options below are the default values.
 
 ```lua
 require("decipher").setup({
@@ -126,7 +116,7 @@ normal view instead.
 ## Example keymaps
 
 There are several ways in which you can invoke `decipher`. Check out the
-[docs](doc/decipher.txt) for the full api. Below are some examples:
+[API docs](API.md) for more information. Below are some examples:
 
 ```lua
 -- Encode visually selected text as base64. If invoked from normal mode it will
@@ -140,6 +130,32 @@ vim.keymap.set("n", "<mykeymap>", function()
     require("decipher").decode_motion_prompt({ preview = true })
 end)
 ```
+
+## Encode/decode text-objects
+
+Decipher can encode and decode text-objects. The following `lua` code sets up
+`decipher` to decode a text-object using base64 using a floating window preview.
+Check out the [API docs](API.md) for more information
+
+```lua
+    local decipher = require("decipher")
+
+    vim.keymap.set(
+        "n",
+        "<leader>d",
+        function()
+            decipher.decode_motion("base64", { preview = true })
+        end,
+        { noremap = true, silent = true }
+    )
+```
+
+## Highlights
+
+### `DecipherFloatTitle`
+
+Highlight group for the title of the floating window preview. Defaults to
+`Title`.
 
 ## Supported Codecs
 

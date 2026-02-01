@@ -12,24 +12,6 @@
 
 ![demo](https://github.com/MisanthropicBit/decipher.nvim/assets/1846147/6bc4db76-9a3b-428b-99b4-98e56d06901e)
 
-# Table of contents
-
-- [Installing](#installing)
-- [Setup](#setup)
-- [Example keymaps](#example-keymaps)
-- [Supported Codecs](#supported-codecs)
-    - [base32](#base32)
-    - [base64](#base64)
-    - [base64-url](#base64-url)
-    - [base64-url-safe](#base64)
-    - [base64-url-encoded](#base64-url-encoded)
-    - [crockford](#crockford)
-    - [c-escape](#c-escape)
-    - [url](#url)
-    - [url-plus](#url-plus)
-    - [xml](#xml)
-    - [z-base32](#z-base32)
-
 ## Installing
 
 > [!IMPORTANT]  
@@ -40,8 +22,7 @@ Requires at least neovim v0.8.0.
 ## Setup
 
 Setup decipher using `decipher.setup` unless you are content with the defaults.
-The options below are the default values. Refer to the
-[docs](doc/decipher.txt) for more help.
+The options below are the default values.
 
 ```lua
 require("decipher").setup({
@@ -114,7 +95,7 @@ normal view instead.
 ## Example keymaps
 
 There are several ways in which you can invoke `decipher`. Check out the
-[docs](doc/decipher.txt) for the full api. Below are some examples:
+[API docs](API.md) for more information. Below are some examples:
 
 ```lua
 -- Encode visually selected text as base64. If invoked from normal mode it will
@@ -131,8 +112,9 @@ end)
 
 ## Encode/decode text-objects
 
-Decipher can encode and decode text-objects. The following lua code sets up
-decipher to decode a text object using base64 using a floating window preview.
+Decipher can encode and decode text-objects. The following `lua` code sets up
+`decipher` to decode a text-object using base64 using a floating window preview.
+Check out the [API docs](API.md) for more information
 
 ```lua
     local decipher = require("decipher")
@@ -233,7 +215,3 @@ A more human-readable version of base32.
 
 * Name: "zbase32" or `decipher.codec.zbase32`
 * Example: `"this is encoded" => "qtwg1h3ypf31y3mqcpzse3mr"`
-
-```{.include}
-API.md
-```

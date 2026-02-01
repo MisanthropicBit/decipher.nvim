@@ -35,7 +35,9 @@ jobs:
           incrementheadinglevelby: 0
       - name: preview changes
         if: github.event_name == 'pull_request'
-        run: git diff --color=always origin/master -- "doc/decipher.txt"
+        run: |
+          git diff --color=always origin/master -- "doc/decipher.txt"
+          cat "doc/decipher.txt"
       - uses: stefanzweifel/git-auto-commit-action@v6
         if: github.ref == 'refs/heads/master'
         with:

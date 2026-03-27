@@ -22,6 +22,36 @@ describe("commands", function()
         end)
     end)
 
+    it("handles invalid options for 'preview'", function()
+        local ok, err = pcall(vim.fn.execute, "DecipherEncode preview=nope", "")
+
+        assert.is_false(ok)
+
+        ---@diagnostic disable-next-line: undefined-field
+        assert.has_match(
+            "Found one or more errors: Invalid value for option 'preview', expected 'true' or 'false'",
+            err
+        )
+    end)
+
+    it("handles more than one codec", function()
+        local ok, err = pcall(vim.fn.execute, "DecipherEncode base64 base32", "")
+
+        assert.is_false(ok)
+
+        ---@diagnostic disable-next-line: undefined-field
+        assert.has_match("Multiple valid codecs given, specify only one", err)
+    end)
+
+    it("handles unknown arguments", function()
+        local ok, err = pcall(vim.fn.execute, "DecipherEncode nope preview=true", "")
+
+        assert.is_false(ok)
+
+        ---@diagnostic disable-next-line: undefined-field
+        assert.has_match("One or more unrecognised arguments: nope", err)
+    end)
+
     it("runs DecipherDecode", function()
         assert.are.same(vim.fn.exists(":DecipherDecode"), 2)
 

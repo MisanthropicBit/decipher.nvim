@@ -26,7 +26,7 @@ function decipher.version()
     return decipher_version
 end
 
----@return decipher.Codecs[] a list of the names of supported codecs
+---@return decipher.Codecs[] # a list of the names of supported codecs
 function decipher.supported_codecs()
     return codecs.supported()
 end
@@ -34,7 +34,7 @@ end
 ---@param codec_name decipher.CodecArg
 ---@param value string
 ---@param func_key "encode" | "decode"
----@return string | nil
+---@return string?
 local function handle_codec(codec_name, value, func_key)
     local codec = codecs.get(codec_name)
 
@@ -53,14 +53,14 @@ end
 
 ---@param codec_name decipher.CodecArg
 ---@param value string value to encode
----@return string | nil the encoded value or nil if encoding failed
+---@return string? the encoded value or nil if encoding failed
 function decipher.encode(codec_name, value)
     return handle_codec(codec_name, value, "encode")
 end
 
 ---@param codec_name decipher.CodecArg
 ---@param value string value to decode
----@return string | nil the decoded value or nil if decoding failed
+---@return string? the decoded value or nil if decoding failed
 function decipher.decode(codec_name, value)
     return handle_codec(codec_name, value, "decode")
 end

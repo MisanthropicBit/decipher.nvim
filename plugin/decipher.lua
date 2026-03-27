@@ -62,50 +62,34 @@ end
 ---@return decipher.CommandPreviewFunc
 local function create_preview_func(codec_func_name)
     return function(options, ns_id, preview_buffer)
-        local buffer = vim.api.nvim_get_current_buf()
-        local region = require("decipher.selection").get_selection("visual")
         local codecs, _ = parse_command_args(options.args)
 
         if #codecs == 0 then
             return 0
         end
 
-        local text = vim.api.nvim_buf_get_text(
-            buffer,
-            region.start.lnum - 1,
-            region.start.col - 1,
-            region["end"].lnum - 1,
-            region["end"].col,
-            {}
-        )
+        local buffer = vim.api.nvim_get_current_buf()
+        local region = require("decipher.selection").get_selection("visual")
+        local start_lnum, end_lnum = region.start.lnum - 1, region["end"].lnum - 1
+        local start_col, end_col = region.start.col - 1, region["end"].col - 1
+
+        local text = vim.api.nvim_buf_get_text(buffer, start_lnum, start_col, end_lnum, end_col, {})
 
         local codec_value = require("decipher")[codec_func_name](codecs[1], text[1])
 
-        vim.api.nvim_buf_set_text(
-            buffer,
-            region.start.lnum - 1,
-            region.start.col - 1,
-            region["end"].lnum - 1,
-            region["end"].col,
-            { codec_value }
-        )
+        -- Set preview text and highlight in buffer
+        vim.api.nvim_buf_set_text(buffer, start_lnum, start_col, end_lnum, end_col + 1, { codec_value })
+        vim.hl.range(buffer, ns_id, "Title", { start_lnum, start_col }, { end_lnum, start_col + #codec_value })
 
-        vim.hl.range(
-            buffer,
-            ns_id,
-            "Title",
-            { region.start.lnum - 1, region.start.col - 1 },
-            { region["end"].lnum - 1, region.start.col - 1 + #codec_value }
-        )
-
+        -- Set preview text and highlight in preview buffer if enabled
         if preview_buffer then
-            local lines = vim.api.nvim_buf_get_lines(buffer, region.start.lnum - 1, region["end"].lnum, true)
+            local lines = vim.api.nvim_buf_get_lines(buffer, start_lnum, end_lnum, true)
 
             vim.api.nvim_buf_set_lines(preview_buffer, 0, -1, false, lines)
-            vim.hl.range(preview_buffer, ns_id, "Title", { 0, region.start.col - 1 }, { -1, region["end"].col - 1 + #codec_value })
+            vim.hl.range(preview_buffer, ns_id, "Title", { 0, start_col - 1 }, { -1, end_col - 1 + #codec_value })
         end
 
-        return 2
+        return 2 -- TODO: Double-check
     end
 end
 

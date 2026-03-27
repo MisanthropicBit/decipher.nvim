@@ -120,7 +120,6 @@ vim.api.nvim_create_user_command("DecipherEncode", function(args)
     process_command_args(codecs, unrecognised_args, errors)
 
     local decipher = require("decipher")
-    vim.print(vim.inspect(require("decipher.selection").get_visual_selection()))
     if #codecs == 0 then
         decipher.encode_selection_prompt(options)
     else

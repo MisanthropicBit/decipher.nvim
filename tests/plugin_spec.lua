@@ -9,7 +9,8 @@ describe("commands", function()
         local output = vim.fn.execute("DecipherVersion", "")
         local version = vim.split(output, "\n", { plain = true, trimempty = true })[1]
 
-        assert.are.same(version, "3.0.0") -- TODO: Match instead?
+        ---@diagnostic disable-next-line: undefined-field
+        assert.has_match("^%d+%.%d+%.%d+$", version)
     end)
 
     it("runs DecipherEncode", function()

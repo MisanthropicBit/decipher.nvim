@@ -18,6 +18,7 @@ local function is_visual_mode(mode)
     return vim.tbl_contains({ "v", "V", block_visual_mode }, mode)
 end
 
+--- Get the current or last used visual mode
 ---@return string
 function selection.get_last_visual_mode()
     local mode = vim.fn.mode()
@@ -156,7 +157,7 @@ end
 ---@param region decipher.Region
 ---@param value string[]
 local function set_visual_text(bufnr, region, value)
-    local vmode = vim.fn.visualmode()
+    local vmode = selection.get_last_visual_mode()
 
     if not is_visual_mode(vmode) then
         -- We might be setting text from a floating window so get the visual mode in
@@ -168,12 +169,12 @@ local function set_visual_text(bufnr, region, value)
 
     if vmode == "V" then
         -- Line-wise selection
-        return vim.api.nvim_buf_set_lines(bufnr, region.start.lnum - 1, region["end"].lnum, false, value)
+        vim.api.nvim_buf_set_lines(bufnr, region.start.lnum - 1, region["end"].lnum, false, value)
     elseif vmode == "v" then
         -- Character-wise selection
         local selection_offset = get_selection_offset(bufnr, region["end"].col)
 
-        return vim.api.nvim_buf_set_text(
+        vim.api.nvim_buf_set_text(
             bufnr,
             region.start.lnum - 1,
             region.start.col - 1,

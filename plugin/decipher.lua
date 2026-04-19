@@ -3,15 +3,17 @@
 ---ns_id: integer,
 ---preview_buffer: integer): integer
 
+local command_arguments
+
 ---@param arg_lead   string
 ---@param cmdline    string
 ---@param cursor_pos integer
 local function command_complete(arg_lead, cmdline, cursor_pos)
-    if #arg_lead > 0 and vim.startswith("preview", arg_lead) then
-        return { "preview=true", "preview=false" }
+    if not command_arguments then
+        command_arguments = vim.list_extend({ "preview=true", "preview=false" }, require("decipher").supported_codecs())
     end
 
-    return require("decipher").supported_codecs()
+    return command_arguments
 end
 
 ---@param args string

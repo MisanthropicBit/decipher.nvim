@@ -19,6 +19,7 @@ decipher                                                              *decipher*
   Setup ....................................................... |decipher.setup|
   Types ....................................................... |decipher.types|
   Functions ............................................... |decipher.functions|
+  Commands ................................................. |decipher.commands|
   Mappings ................................................. |decipher.mappings|
   Motions ................................................... |decipher.motions|
   Highlights ............................................. |decipher.highlights|
@@ -212,6 +213,34 @@ decode_motion_prompt({options})                  *decipher.decode_motion_prompt*
 
     Parameters:  
       • {options}    (`decipher.Options`) Options to use
+
+==============================================================================
+Commands                                                     *decipher.commands*
+
+:DecipherVersion                                              *:DecipherVersion*
+                 Prints the current version
+
+:[range]DecipherEncode [options]                               *:DecipherEncode*
+                                Encode the selected visual range or the last
+                                visual selection with the codec given on the
+                                command line. Prompts for a codec if not
+                                given. Also takes an option for previewing
+                                i.e. `preview=true|false`.
+
+                                Example:
+                                >
+                                :'<,'>DecipherEncode crockford preview=false
+
+:[range]DecipherDecode [options]                               *:DecipherDecode*
+                                Decode the selected visual range or the last
+                                visual selection with the codec given on the
+                                command line. Prompts for a codec if not
+                                given. Also takes an option for previewing
+                                i.e. `preview=true|false`.
+
+                                Example:
+                                >
+                                :'<,'>DecipherDecode base64 preview=true
 
 ==============================================================================
 Mappings                                                     *decipher.mappings*

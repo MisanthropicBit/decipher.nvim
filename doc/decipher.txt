@@ -227,6 +227,9 @@ Commands                                                     *decipher.commands*
                                 given. Also takes an option for previewing
                                 i.e. `preview=true|false`.
 
+                                The command supports command previewing, see
+                                |'inccommand'|.
+
                                 Example:
                                 >
                                 :'<,'>DecipherEncode crockford preview=false
@@ -237,6 +240,9 @@ Commands                                                     *decipher.commands*
                                 command line. Prompts for a codec if not
                                 given. Also takes an option for previewing
                                 i.e. `preview=true|false`.
+
+                                The command supports command previewing, see
+                                |'inccommand'|.
 
                                 Example:
                                 >

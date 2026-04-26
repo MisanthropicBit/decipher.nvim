@@ -114,6 +114,8 @@ Encode the selected visual range or the last visual selection with the codec
 given on the command line. Prompts for a codec if not given. Also takes an
 option for previewing i.e. `preview=true|false`.
 
+The command supports command previewing, see `:h 'inccommand'`.
+
 Example: `:'<,'>DecipherEncode crockford preview=false`
 
 ### `[range]DecipherDecode [options]`
@@ -121,6 +123,8 @@ Example: `:'<,'>DecipherEncode crockford preview=false`
 Decode the selected visual range or the last visual selection with the codec
 given on the command line. Prompts for a codec if not given. Also takes an
 option for previewing i.e. `preview=true|false`.
+
+The command supports command previewing, see `:h 'inccommand'`.
 
 Example: `:'<,'>DecipherDecode base64 preview=true`
 

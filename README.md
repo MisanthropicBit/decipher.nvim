@@ -106,7 +106,7 @@ require("decipher").setup({
 
 ### `DecipherVersion`
 
-Prints the current version
+Prints the current version.
 
 ### `[range]DecipherEncode [options]`
 

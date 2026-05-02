@@ -3,11 +3,13 @@
 ---ns_id: integer,
 ---preview_buffer: integer): integer
 
+---@type string[]?
 local command_arguments
 
 ---@param arg_lead   string
 ---@param cmdline    string
 ---@param cursor_pos integer
+---@return string[]
 local function command_complete(arg_lead, cmdline, cursor_pos)
     if not command_arguments then
         command_arguments = vim.list_extend({ "preview=true", "preview=false" }, require("decipher").supported_codecs())
@@ -64,7 +66,7 @@ end
 ---@return decipher.CommandPreviewFunc
 local function create_preview_func(codec_func_name)
     return function(options, ns_id, preview_buffer)
-        local codecs, _ = parse_command_args(options.args)
+        local codecs, _, _, _ = parse_command_args(options.args)
 
         if #codecs == 0 then
             return 0
@@ -96,8 +98,8 @@ local function create_preview_func(codec_func_name)
 end
 
 vim.api.nvim_create_user_command("DecipherVersion", function()
-    local v = require("decipher").version()
-    vim.cmd.echo("'" .. v .. "'")
+    local version = require("decipher").version()
+    vim.cmd.echo("'" .. version .. "'")
 end, { nargs = 0 })
 
 vim.api.nvim_create_user_command("DecipherEncode", function(args)
@@ -106,6 +108,7 @@ vim.api.nvim_create_user_command("DecipherEncode", function(args)
     process_command_args(codecs, unrecognised_args, errors)
 
     local decipher = require("decipher")
+
     if #codecs == 0 then
         decipher.encode_selection_prompt(options)
     else

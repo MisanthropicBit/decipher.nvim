@@ -218,7 +218,7 @@ decode_motion_prompt({options})                  *decipher.decode_motion_prompt*
 Commands                                                     *decipher.commands*
 
 :DecipherVersion                                              *:DecipherVersion*
-                 Prints the current version
+                 Prints the current version.
 
 :[range]DecipherEncode [options]                               *:DecipherEncode*
                                 Encode the selected visual range or the last

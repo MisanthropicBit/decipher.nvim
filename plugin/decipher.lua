@@ -66,9 +66,10 @@ end
 ---@return decipher.CommandPreviewFunc
 local function create_preview_func(codec_func_name)
     return function(options, ns_id, preview_buffer)
-        local codecs, _, _, _ = parse_command_args(options.args)
+        local codecs, _, unrecognised_args, errors = parse_command_args(options.args)
 
-        if #codecs == 0 then
+        if #codecs ~= 1 or #unrecognised_args > 0 or #errors > 0 then
+            -- Do not show preview
             return 0
         end
 
@@ -80,6 +81,7 @@ local function create_preview_func(codec_func_name)
         local ok, result = pcall(require("decipher")[codec_func_name], codecs[1], table.concat(text, "\n"))
 
         if not ok then
+            -- Do not show preview
             return 0
         end
 

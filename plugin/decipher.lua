@@ -62,7 +62,7 @@ local function process_command_args(codecs, unrecognised_args, errors)
     end
 end
 
----@param codec_func_name string
+---@param codec_func_name "encode" | "decode"
 ---@return decipher.CommandPreviewFunc
 local function create_preview_func(codec_func_name)
     return function(options, ns_id, preview_buffer)
@@ -76,24 +76,36 @@ local function create_preview_func(codec_func_name)
         local region = require("decipher.selection").get_selection("visual")
         local start_lnum, end_lnum = region.start.lnum - 1, region["end"].lnum - 1
         local start_col, end_col = region.start.col - 1, region["end"].col - 1
+        local text = vim.api.nvim_buf_get_text(buffer, start_lnum, start_col, end_lnum, end_col + 1, {})
+        local ok, result = pcall(require("decipher")[codec_func_name], codecs[1], table.concat(text, "\n"))
 
-        local text = vim.api.nvim_buf_get_text(buffer, start_lnum, start_col, end_lnum, end_col, {})
+        if not ok then
+            return 0
+        end
 
-        local codec_value = require("decipher")[codec_func_name](codecs[1], text[1])
+        local new_lines = vim.split(result, "\r?\n")
+        local new_end_lnum = end_lnum + #new_lines - 1
+        local new_end_col = #new_lines[#new_lines]
+
+        if codec_func_name == "decode" and #new_lines == 1 then
+            -- If there is only one decoded line offset the new end column by
+            -- the original start column
+            new_end_col = start_col + new_end_col
+        end
 
         -- Set preview text and highlight in buffer
-        vim.api.nvim_buf_set_text(buffer, start_lnum, start_col, end_lnum, end_col + 1, { codec_value })
-        vim.hl.range(buffer, ns_id, "Title", { start_lnum, start_col }, { end_lnum, start_col + #codec_value })
+        vim.api.nvim_buf_set_text(buffer, start_lnum, start_col, end_lnum, end_col + 1, new_lines)
+        vim.hl.range(buffer, ns_id, "DecipherCommandPreview", { start_lnum, start_col }, { new_end_lnum, new_end_col })
 
         -- Set preview text and highlight in preview buffer if enabled
         if preview_buffer then
-            local lines = vim.api.nvim_buf_get_lines(buffer, start_lnum, end_lnum, true)
+            local lines = vim.api.nvim_buf_get_lines(buffer, start_lnum, new_end_lnum + 1, true)
 
             vim.api.nvim_buf_set_lines(preview_buffer, 0, -1, false, lines)
-            vim.hl.range(preview_buffer, ns_id, "Title", { 0, start_col - 1 }, { -1, end_col - 1 + #codec_value })
+            vim.hl.range(preview_buffer, ns_id, "DecipherCommandPreview", { 0, start_col }, { #new_lines, new_end_col })
         end
 
-        return 2 -- TODO: Double-check
+        return 2
     end
 end
 

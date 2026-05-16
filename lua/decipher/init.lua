@@ -227,6 +227,8 @@ function decipher.setup(user_config)
 
     config.setup(user_config)
     ui.float.setup()
+
+    vim.cmd([[hi default link DecipherCommandPreview Title]])
 end
 
 return decipher

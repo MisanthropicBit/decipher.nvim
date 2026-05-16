@@ -19,6 +19,13 @@ decipher.codec = codecs.codec
 ---@field selection_type decipher.SelectionType
 ---@field codec_type "encode" | "decode"
 
+---@class decipher.SetTextRegionOptions
+---@field codec_name string
+---@field codec_type "encode" | "decode"
+---@field status boolean
+---@field value string
+---@field selection_type decipher.SelectionType
+
 ---@alias decipher.CodecArg string | decipher.Codecs
 
 ---@return string
@@ -96,24 +103,31 @@ local function open_float_handler(codec_name, status, value, selection_type, cod
 end
 
 --- Handler for setting a text region to a value
----@param codec_name string
----@param status boolean
----@param value string
----@param selection_type decipher.SelectionType
----@diagnostic disable-next-line:unused-local
-local function set_text_region_handler(codec_name, status, value, selection_type)
-    if not status then
-        notifications.error(("%s: %s"):format(codec_name, value))
+---@param options decipher.SetTextRegionOptions
+local function set_text_region_handler(options)
+    local value = options.value
+
+    if not options.status then
+        notifications.error(("%s: %s"):format(options.codec_name, value))
         return
     end
 
     if value == nil then
-        notifications.codec_not_found("Codec not found: " .. codec_name)
+        notifications.codec_not_found("Codec not found: " .. options.codec_name)
         return
     end
 
+    ---@type string[]
+    local lines
+
+    if options.codec_type == "decode" then
+        lines = vim.split(value, "\r?\n")
+    else
+        lines = { value }
+    end
+
     -- Escape the string since you cannot set lines in a buffer if it contains newlines
-    selection.set_text(0, selection_type, str_utils.escape_newlines({ value }))
+    selection.set_text(0, options.selection_type, str_utils.escape_newlines(lines))
 end
 
 --- Process a codec action
@@ -134,7 +148,13 @@ local function process_codec(codec_name, codec_func, selection_type, codec_type,
     if do_preview then
         open_float_handler(_codec_name, status, value, selection_type, codec_type)
     else
-        set_text_region_handler(_codec_name, status, value, selection_type)
+        set_text_region_handler({
+            codec_name = _codec_name,
+            status = status,
+            value = value,
+            selection_type = selection_type,
+            codec_type = codec_type,
+        })
     end
 end
 

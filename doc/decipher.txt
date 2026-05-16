@@ -292,6 +292,10 @@ Highlights                                                 *decipher.highlights*
   Highlight group for the title of the floating window preview. Defaults to
   *Title*.
 
+*DecipherCommandPreview*
+  Highlight group used in command previews for the encoded/decoded text.
+  Defaults to *Title*.
+
 ==============================================================================
 Codecs                                                         *decipher.codecs*
 
